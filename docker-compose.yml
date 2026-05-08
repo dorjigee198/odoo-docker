@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dorji}
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo} -d ${POSTGRES_DB:-dorji}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  odoo:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ODOO_ADMIN_PASSWORD: ${ODOO_ADMIN_PASSWORD:-change-me}
+      ODOO_DB_HOST: db
+      ODOO_DB_PORT: 5432
+      ODOO_DB_USER: ${POSTGRES_USER:-odoo}
+      ODOO_DB_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      ODOO_DB_NAME: ${POSTGRES_DB:-dorji}
+      ODOO_DBFILTER: ^${POSTGRES_DB:-dorji}$
+      ODOO_PROXY_MODE: ${ODOO_PROXY_MODE:-True}
+      ODOO_WORKERS: ${ODOO_WORKERS:-0}
+      ODOO_MAX_CRON_THREADS: ${ODOO_MAX_CRON_THREADS:-2}
+      ODOO_LOG_LEVEL: ${ODOO_LOG_LEVEL:-info}
+      ODOO_LIST_DB: ${ODOO_LIST_DB:-False}
+    ports:
+      - "${ODOO_HTTP_PORT:-8069}:8069"
+      - "${ODOO_GEVENT_PORT:-8072}:8072"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./custom_addons:/opt/odoo/custom_addons
+
+volumes:
+  odoo-db-data:
+  odoo-web-data:

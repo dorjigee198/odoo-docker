@@ -1,0 +1,5 @@
+.env
+*.pyc
+__pycache__/
+odoo19/
+gitleaks-report.json
