@@ -1,0 +1,1166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="customer_tickets_kanban" name="Customer Tickets Kanban">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/portal_dashboard.css?v=4" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/portal_tickets.css?v=4" />
+                <link rel="stylesheet"
+                    href="/customer_support/static/src/css/portal_dashboard_mobile.css?v=5" />
+                <style>
+                    .notif-item {
+                    display: flex; align-items: flex-start; gap: 0.75rem;
+                    padding: 0.75rem 1rem; border-bottom: 1px solid rgba(5,150,105,0.07);
+                    cursor: default;
+                    }
+                    .notif-item:last-child { border-bottom: none; }
+                    .notif-icon-wrap {
+                    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+                    display: flex; align-items: center; justify-content: center; font-size: .9rem;
+                    }
+                    .notif-icon-wrap.status { background: rgba(5,150,105,.12); color: #059669; }
+                    .notif-icon-wrap.assigned { background: rgba(22,163,74,.12); color: #16a34a; }
+                    .notif-icon-wrap.breach { background: rgba(239,68,68,.12); color: #ef4444; }
+                    .notif-body { flex: 1; min-width: 0; }
+                    .notif-title {
+                    font-size: .8rem; font-weight: 700; color: #065f46;
+                    margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow:
+                    ellipsis;
+                    }
+                    .notif-sub {
+                    font-size: .78rem; color: #475569; line-height: 1.4;
+                    word-break: break-word; white-space: normal;
+                    }
+                    .notif-time-text { font-size: .7rem; color: #94a3b8; margin-top: 3px; }
+                    .notif-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+                    margin-top: 6px; }
+                    .notif-dot.status { background: #059669; }
+                    .notif-dot.assigned { background: #16a34a; }
+                    .notif-dot.breach { background: #ef4444; }
+
+                    /* Premium palette alignment */
+                    .notif-title { color: #065f46; }
+                    .notif-sub { color: #5b6f83; }
+                    .notif-icon-wrap.status {
+                    background: rgba(5,150,105,.12);
+                    color: #059669;
+                    }
+                    .notif-dot.status { background: #059669; }
+
+                    #portal-kanban-page {
+                    background:
+                    radial-gradient(circle at 14% 6%, rgba(5,150,105,0.06) 0%, transparent 34%),
+                    radial-gradient(circle at 92% 92%, rgba(5,150,105,0.04) 0%, transparent 36%),
+                    linear-gradient(160deg, #f0fdf4 0%, #f8fafc 50%, #f0fdf4 100%);
+                    min-height: 100vh;
+                    }
+                    .kanban-board { background: transparent; }
+                    .kanban-col {
+                    background: rgba(255,255,255,0.9);
+                    border-color: rgba(5,150,105,0.1);
+                    box-shadow: 0 10px 24px rgba(5,150,105,0.07);
+                    }
+                    .view-btn {
+                    background: rgba(255,255,255,0.6);
+                    border: 1px solid rgba(15,53,85,0.2);
+                    color: #065f46;
+                    padding: 6px 12px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                    }
+                    .view-btn:hover { background: rgba(255,255,255,0.85); border-color:
+                    rgba(5,150,105,0.35); }
+                    .view-btn.active {
+                    background: #059669;
+                    color: #ffffff;
+                    border-color: #047857;
+                    }
+
+                    /* ── Board Progress Bar ───────────────────────────────── */
+                    .kc-progress-wrap {
+                        margin: 8px 0 4px;
+                    }
+                    .kc-progress-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 4px;
+                    }
+                    .kc-progress-label {
+                        font-size: 10px;
+                        font-weight: 600;
+                        color: #64748b;
+                        letter-spacing: 0.03em;
+                        text-transform: uppercase;
+                    }
+                    .kc-progress-pct {
+                        font-size: 11px;
+                        font-weight: 700;
+                        color: #065f46;
+                    }
+                    .kc-progress-bar-bg {
+                        height: 5px;
+                        background: #e2e8f0;
+                        border-radius: 99px;
+                        overflow: hidden;
+                    }
+                    .kc-progress-bar-fill {
+                        height: 100%;
+                        border-radius: 99px;
+                        background: linear-gradient(90deg, #059669 0%, #2c7a9b 100%);
+                        transition: width 0.4s ease;
+                    }
+                    .kc-progress-bar-fill.is-done {
+                        background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+                    }
+                    .kc-no-tasks {
+                        font-size: 10px;
+                        color: #94a3b8;
+                        margin: 6px 0 2px;
+                        font-style: italic;
+                    }
+                    .kc-task-counts {
+                        font-size: 10px;
+                        color: #64748b;
+                    }
+                </style>
+            </t>
+
+            <div class="dashboard-wrapper" id="portal-kanban-page">
+
+                <!-- HEADER — identical to portal_tickets.xml -->
+                <header class="dashboard-header">
+                    <div class="header-content">
+                        <!-- ↓ MOBILE NAV COMPONENT (hamburger + drawer) -->
+                        <t t-set="mobile_active_page" t-value="'overview'" />
+                        <t t-call="customer_support.portal_mobile_nav_component" />
+
+                        <div class="header-nav">
+                            <a href="/customer_support/dashboard" class="nav-link">
+                                <i class="bi bi-speedometer2 me-2"></i>Overview</a>
+                            <a href="/customer_support/tickets" class="nav-link active">
+                                <i class="bi bi-ticket-detailed me-2"></i>Tickets</a>
+                            <a href="/customer_support/dashboard#reporting" class="nav-link">
+                                <i class="bi bi-folder-fill me-2"></i>Reports</a>
+                            <a href="/customer_support/chatbot" class="nav-link">
+                                <i class="bi bi-question-circle me-2"></i>FAQ</a>
+                        </div>
+                        <div class="header-right">
+                            <div class="header-actions">
+                                <a href="/customer_support/create_ticket" class="btn-new-ticket">
+                                    <i class="bi bi-plus-circle me-2"></i>New Ticket</a>
+                            </div>
+                            <div class="user-profile dropdown">
+                                <!-- NOTIFICATION BELL -->
+                                <div class="notif-wrap me-3">
+                                    <button class="notif-btn" id="kanbanNotifBell"
+                                        title="Notifications">
+                                        <i class="bi bi-bell-fill"></i>
+                                        <span class="notif-badge d-none" id="kanbanNotifBadge">0</span>
+                                    </button>
+                                    <div class="notif-dropdown" id="kanbanNotifDropdown">
+                                        <div class="notif-header">
+                                            <h6><i class="bi bi-bell me-2" style="color:#059669;"></i>
+                                                Notifications</h6>
+                                            <button class="notif-mark-read" id="kanbanMarkRead">Mark
+                                                all read</button>
+                                        </div>
+                                        <div class="notif-list" id="kanbanNotifList">
+                                            <div class="notif-empty">
+                                                <i class="bi bi-arrow-repeat"
+                                                    style="font-size:1.5rem;display:block;margin-bottom:.5rem;"></i>
+                                                Loading... </div>
+                                        </div>
+                                        <div class="notif-footer">
+                                            <a href="/customer_support/tickets">View my tickets
+                                                &#8594;</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <a class="d-flex align-items-center text-white dropdown-toggle"
+                                    href="#" id="userProfileDropdown"
+                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                    style="text-decoration:none;">
+                                    <span class="user-name me-3">
+                                        <t t-esc="user.name" />
+                                    </span>
+                                    <img t-att-src="'/web/image/res.users/%s/avatar_128' % user.id"
+                                        alt="User Avatar" class="user-avatar"
+                                        onerror="this.src='/web/static/img/avatar_gray.svg'" />
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    aria-labelledby="userProfileDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="/customer_support/profile">
+                                            <i class="bi bi-person me-2"></i>Edit Profile</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="/customer_support/logout_manual">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- KANBAN CONTENT -->
+                <div class="dashboard-content">
+                    <!-- Page Header with Toggle -->
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="bi bi-grid-3x3-gap-fill me-2"></i>My Tickets </h1>
+                        <div class="page-stats">
+                            <span class="stat-badge">
+                                <i class="bi bi-stack me-1"></i>
+                                <t
+                                    t-esc="ticket_counts.get('total', 0)" /> Total </span>
+                            <span class="stat-badge">
+                                <i class="bi bi-clock-history me-1"></i>
+                                <t
+                                    t-esc="ticket_counts.get('new', 0) + ticket_counts.get('in_progress', 0) + ticket_counts.get('assigned', 0) + ticket_counts.get('pending', 0)" />
+                                Open </span>
+                            <span class="stat-badge">
+                                <i class="bi bi-check-circle me-1"></i>
+                                <t
+                                    t-esc="ticket_counts.get('resolved', 0)" /> Resolved </span>
+                        </div>
+                        <div class="view-toggle">
+                            <button class="view-btn" id="listViewBtn" title="Switch to list view">
+                                <i class="bi bi-list me-1"></i>List </button>
+                            <button class="view-btn active" id="kanbanViewBtn" title="Switch to kanban view">
+                                <i class="bi bi-grid-3x3-gap me-1"></i>Kanban </button>
+                        </div>
+                    </div>
+
+                    <!-- Kanban Board -->
+                    <div class="kanban-board">
+                        <!-- New -->
+                        <div class="kanban-col" data-state="new">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">
+                                    <i class="bi bi-circle"></i> New </span>
+                                <span class="kanban-col-count" id="count-new">0</span>
+                            </div>
+                            <div class="kanban-cards" id="col-new">
+                                <t t-foreach="tickets" t-as="ticket">
+                                    <t t-if="ticket.state == 'new'">
+                                        <t t-call="customer_support.kanban_card_inner" />
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                        <!-- In Progress -->
+                        <div class="kanban-col" data-state="in_progress">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">
+                                    <i class="bi bi-arrow-repeat"></i> In Progress </span>
+                                <span class="kanban-col-count" id="count-in_progress">0</span>
+                            </div>
+                            <div class="kanban-cards" id="col-in_progress">
+                                <t t-foreach="tickets" t-as="ticket">
+                                    <t t-if="ticket.state in ['in_progress', 'assigned', 'pending']">
+                                        <t t-call="customer_support.kanban_card_inner" />
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                        <!-- Resolved -->
+                        <div class="kanban-col" data-state="resolved">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">
+                                    <i class="bi bi-check-circle"></i> Resolved </span>
+                                <span class="kanban-col-count" id="count-resolved">0</span>
+                            </div>
+                            <div class="kanban-cards" id="col-resolved">
+                                <t t-foreach="tickets" t-as="ticket">
+                                    <t t-if="ticket.state == 'resolved'">
+                                        <t t-call="customer_support.kanban_card_inner" />
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                        <!-- Closed -->
+                        <div class="kanban-col" data-state="closed">
+                            <div class="kanban-col-header">
+                                <span class="kanban-col-title">
+                                    <i class="bi bi-x-circle"></i> Closed </span>
+                                <span class="kanban-col-count" id="count-closed">0</span>
+                            </div>
+                            <div class="kanban-cards" id="col-closed">
+                                <t t-foreach="tickets" t-as="ticket">
+                                    <t t-if="ticket.state == 'closed'">
+                                        <t t-call="customer_support.kanban_card_inner" />
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── POLL TOAST ───────────────────────────────────────────── -->
+            <div id="kpToast" style="
+                position:fixed; bottom:24px; right:24px; z-index:9999;
+                background:#0c4a6e; color:#fff; border-radius:12px;
+                padding:12px 18px; font-size:13px; font-weight:600;
+                display:flex; align-items:center; gap:10px;
+                box-shadow:0 8px 32px rgba(10,40,70,.35);
+                transform:translateY(80px); opacity:0;
+                transition:transform 0.35s cubic-bezier(.22,1,.36,1), opacity 0.3s;
+                pointer-events:none;">
+                <span style="font-size:18px;">🔄</span>
+                <span id="kpToastMsg">Ticket status updated</span>
+            </div>
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script type="text/javascript">
+                //<![CDATA[
+                document.addEventListener('DOMContentLoaded', function () {
+
+                    // ── COLUMN COUNTS ─────────────────────────────────────
+                    function refreshCounts() {
+                        ['new', 'in_progress', 'resolved', 'closed'].forEach(function (state) {
+                            var col     = document.getElementById('col-' + state);
+                            var countEl = document.getElementById('count-' + state);
+                            if (col && countEl) {
+                                countEl.textContent = col.querySelectorAll('.kanban-card').length;
+                            }
+                        });
+                    }
+                    refreshCounts();
+
+                    // ── CARD CLICKS → open modal ─────────────────────────
+                    function bindCardClicks() {
+                        document.querySelectorAll('.kanban-card').forEach(function (card) {
+                            if (card._clickBound) return;
+                            card._clickBound = true;
+                            card.addEventListener('click', function () {
+                                var id = this.getAttribute('data-ticket-id');
+                                if (id) openTicketModal(id);
+                            });
+                        });
+                    }
+                    bindCardClicks();
+
+                    // ── TOGGLE BUTTONS ────────────────────────────────────
+                    document.getElementById('listViewBtn').addEventListener('click', function () {
+                        window.location.href = '/customer_support/tickets';
+                    });
+                    document.getElementById('kanbanViewBtn').addEventListener('click', function () {
+                        window.location.href = '/customer_support/tickets/kanban';
+                    });
+
+                    // ── COLUMN MAP: which DOM column each state belongs to ─
+                    var STATE_COL = {
+                        'new':         'col-new',
+                        'assigned':    'col-in_progress',
+                        'in_progress': 'col-in_progress',
+                        'pending':     'col-in_progress',
+                        'resolved':    'col-resolved',
+                        'closed':      'col-closed',
+                    };
+
+                    // ── TOAST helper ──────────────────────────────────────
+                    var _toastTimer = null;
+                    function showToast(msg) {
+                        var t = document.getElementById('kpToast');
+                        document.getElementById('kpToastMsg').textContent = msg;
+                        t.style.transform = 'translateY(0)';
+                        t.style.opacity   = '1';
+                        clearTimeout(_toastTimer);
+                        _toastTimer = setTimeout(function () {
+                            t.style.transform = 'translateY(80px)';
+                            t.style.opacity   = '0';
+                        }, 4000);
+                    }
+
+                    // ── POLLING ───────────────────────────────────────────
+                    function pollStates() {
+                        fetch('/customer_support/tickets/states', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jsonrpc:'2.0', method:'call', id:1, params:{} })
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(resp) {
+                            var data = (resp.result || {});
+                            if (!data.success) return;
+                            var states = data.states || {};
+                            var changed = 0;
+
+                            Object.keys(states).forEach(function(ticketId) {
+                                var newState = states[ticketId].state;
+                                var label    = states[ticketId].label;
+                                var card     = document.querySelector('.kanban-card[data-ticket-id="' + ticketId + '"]');
+                                if (!card) return;
+
+                                var targetColId = STATE_COL[newState];
+                                var targetCol   = targetColId ? document.getElementById(targetColId) : null;
+                                if (!targetCol) return;
+
+                                // Check if card is already in the right column
+                                if (targetCol.contains(card)) return;
+
+                                // Animate out, move, animate in
+                                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                                card.style.opacity    = '0';
+                                card.style.transform  = 'scale(0.92)';
+                                setTimeout(function () {
+                                    targetCol.appendChild(card);
+                                    card.style.opacity   = '1';
+                                    card.style.transform = 'scale(1)';
+                                    setTimeout(function() {
+                                        card.style.transition = '';
+                                        card.style.transform  = '';
+                                    }, 350);
+                                    // Update state badge inside modal if it's open for this ticket
+                                    var sb = document.getElementById('tdmStateBadge');
+                                    var tn = document.getElementById('tdmTicketNum');
+                                    if (sb && tn && tn.textContent) {
+                                        // Find current open ticket id from modal
+                                        var openCard = document.querySelector('.kanban-card._modal-open');
+                                        if (openCard && openCard.getAttribute('data-ticket-id') === ticketId) {
+                                            sb.textContent = label;
+                                            sb.className   = 'tdm-state-badge tdm-state-' + newState;
+                                        }
+                                    }
+                                    refreshCounts();
+                                    bindCardClicks();
+                                }, 320);
+                                changed++;
+                            });
+
+                            if (changed > 0) {
+                                showToast(changed === 1
+                                    ? '1 ticket status was updated'
+                                    : changed + ' ticket statuses were updated');
+                            }
+                        })
+                        .catch(function() { /* silent fail */ });
+                    }
+
+                    // Poll every 30 seconds
+                    setInterval(pollStates, 30000);
+
+                });
+                //]]>
+            </script>
+
+            <!-- Notification Bell JS -->
+            <script type="text/javascript">
+                //<![CDATA[
+            (function () {
+                var bell      = document.getElementById('kanbanNotifBell');
+                var dropdown  = document.getElementById('kanbanNotifDropdown');
+                var badge     = document.getElementById('kanbanNotifBadge');
+                var notifList = document.getElementById('kanbanNotifList');
+                if (bell && dropdown) {
+                    bell.addEventListener('click', function (e) { e.stopPropagation(); dropdown.classList.toggle('open'); });
+                    document.addEventListener('click', function () { dropdown.classList.remove('open'); });
+                    dropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+                }
+                var markReadBtn = document.getElementById('kanbanMarkRead');
+                if (markReadBtn) {
+                    markReadBtn.addEventListener('click', function () {
+                        fetch('/customer_support/customer/notifications/mark_read', { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                        .then(function () {
+                            if (badge) { badge.classList.add('d-none'); badge.textContent = '0'; }
+                            if (notifList) { notifList.innerHTML = '<div class="notif-empty"><i class="bi bi-check-circle-fill" style="font-size:2rem;color:#22c55e;display:block;margin-bottom:.5rem;"></i>All caught up!</div>'; }
+                        });
+                    });
+                }
+                function sanitise(str) { var d = document.createElement('div'); d.textContent = String(str || ''); return d.innerHTML; }
+                function renderNotifications(items) {
+                    if (!notifList) return;
+                    if (!items || !items.length) {
+                        notifList.innerHTML = '<div class="notif-empty"><i class="bi bi-check-circle-fill" style="font-size:2rem;color:#22c55e;display:block;margin-bottom:.5rem;"></i>No new notifications</div>';
+                        if (badge) badge.classList.add('d-none');
+                        return;
+                    }
+                    if (badge) { badge.textContent = items.length; badge.classList.remove('d-none'); }
+                    var typeLabels = { status_change: 'Status Update', assigned: 'Assigned', sla_breach: 'SLA Breach' };
+                    notifList.innerHTML = items.map(function (n) {
+                        var cls        = sanitise(n.cls   || 'status');
+                        var icon       = sanitise(n.icon  || 'bi-bell-fill');
+                        var ticketName = sanitise(n.ticket_name || (n.ticket_id ? '#' + n.ticket_id : ''));
+                        var typeLabel  = sanitise(typeLabels[n.type] || 'Notification');
+                        var msg        = sanitise(n.message || '');
+                        var time       = sanitise(n.time   || '');
+                        var title      = ticketName ? ticketName + ' \u00b7 ' + typeLabel : typeLabel;
+                        return '<div class="notif-item">'
+                            + '<div class="notif-icon-wrap ' + cls + '"><i class="bi ' + icon + '"></i></div>'
+                            + '<div class="notif-body">'
+                            + '<div class="notif-title">' + title + '</div>'
+                            + '<div class="notif-sub">' + msg + '</div>'
+                            + '<div class="notif-time-text">' + time + '</div>'
+                            + '</div>'
+                            + '<div class="notif-dot ' + cls + '"></div>'
+                            + '</div>';
+                    }).join('');
+                }
+                function loadNotifications() {
+                    fetch('/customer_support/customer/notifications', { method: 'GET', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) { renderNotifications(data.notifications || []); })
+                    .catch(function () { renderNotifications([]); });
+                }
+                loadNotifications();
+                setInterval(loadNotifications, 30000);
+            })();
+            //]]>
+            </script>
+
+            <!-- ── TICKET DETAIL MODAL ───────────────────────────────────── -->
+            <div id="ticketModal" class="tdm-overlay" style="display:none;" role="dialog" aria-modal="true">
+                <div class="tdm-panel">
+                    <!-- Header -->
+                    <div class="tdm-header">
+                        <div class="tdm-header-left">
+                            <span class="tdm-ticket-num" id="tdmTicketNum"></span>
+                            <span class="tdm-state-badge" id="tdmStateBadge"></span>
+                            <span class="tdm-pri-badge" id="tdmPriBadge"></span>
+                        </div>
+                        <button class="tdm-close" id="tdmClose" aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Scrollable body -->
+                    <div class="tdm-body" id="tdmBody">
+                        <!-- Loading state -->
+                        <div class="tdm-loading" id="tdmLoading">
+                            <div class="tdm-spinner"></div>
+                            <span>Loading ticket…</span>
+                        </div>
+
+                        <!-- Content (hidden until loaded) -->
+                        <div id="tdmContent" style="display:none;">
+                            <h2 class="tdm-subject" id="tdmSubject"></h2>
+
+                            <!-- Meta row -->
+                            <div class="tdm-meta-row">
+                                <div class="tdm-meta-item">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span id="tdmAssigned"></span>
+                                </div>
+                                <div class="tdm-meta-item">
+                                    <i class="bi bi-calendar3"></i>
+                                    <span id="tdmCreated"></span>
+                                </div>
+                                <div class="tdm-meta-item tdm-sla-wrap" id="tdmSlaWrap" style="display:none;">
+                                    <i class="bi bi-clock-fill"></i>
+                                    <span id="tdmSla"></span>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="tdm-section">
+                                <div class="tdm-section-title">
+                                    <i class="bi bi-file-text me-1"></i>Description
+                                </div>
+                                <div class="tdm-description" id="tdmDescription"></div>
+                            </div>
+
+                            <!-- Board progress -->
+                            <div class="tdm-section" id="tdmBoardSection">
+                                <div class="tdm-section-title">
+                                    <i class="bi bi-kanban me-1"></i>
+                                    Work Progress
+                                    <span class="tdm-progress-pct" id="tdmProgressPct"></span>
+                                </div>
+                                <div class="tdm-progress-bg">
+                                    <div class="tdm-progress-fill" id="tdmProgressFill"></div>
+                                </div>
+                                <div class="tdm-cols-row" id="tdmCols"></div>
+                            </div>
+
+                            <div class="tdm-section" id="tdmCommSection">
+                                <div class="tdm-section-title">
+                                    <i class="bi bi-chat-left-text me-1"></i>
+                                    Communication
+                                </div>
+                                <div class="tdm-msg-list" id="tdmMessages"></div>
+                                <div class="tdm-reply-box">
+                                    <textarea id="tdmReplyInput" class="tdm-reply-input" rows="3"
+                                        placeholder="Type a message to support team..."></textarea>
+                                    <button type="button" class="tdm-reply-send" id="tdmReplySend">
+                                        <i class="bi bi-send-fill"></i><span class="tdm-reply-send-label">Send</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="tdm-footer">
+                        <button class="tdm-close-btn" id="tdmCloseBtn">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+            /* ── TICKET DETAIL MODAL ── */
+            .tdm-overlay {
+                position: fixed; inset: 0; z-index: 9000;
+                background: rgba(10,25,47,0.55);
+                backdrop-filter: blur(3px);
+                display: flex; align-items: center; justify-content: center;
+                padding: 1rem;
+                animation: tdmFadeIn 0.2s ease;
+            }
+            @keyframes tdmFadeIn { from { opacity:0 } to { opacity:1 } }
+
+            .tdm-panel {
+                background: #ffffff;
+                border-radius: 16px;
+                box-shadow: 0 24px 80px rgba(10,25,47,0.35);
+                width: 100%; max-width: 720px;
+                max-height: 88vh;
+                display: flex; flex-direction: column;
+                animation: tdmSlideUp 0.22s ease;
+                overflow: hidden;
+            }
+            @keyframes tdmSlideUp { from { transform:translateY(20px); opacity:0 } to { transform:translateY(0); opacity:1 } }
+
+            /* Header */
+            .tdm-header {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 1rem 1.4rem 0.85rem;
+                border-bottom: 1px solid #e2e8f0;
+                background: #f8fafc;
+                flex-shrink: 0;
+                gap: 0.75rem;
+            }
+            .tdm-header-left { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; min-width: 0; }
+
+            .tdm-ticket-num {
+                font-family: 'Courier New', monospace;
+                font-size: 0.78rem; font-weight: 700;
+                color: #059669; background: #e0f2fe;
+                padding: 0.18rem 0.6rem; border-radius: 6px;
+                white-space: nowrap;
+            }
+            .tdm-state-badge {
+                font-size: 0.72rem; font-weight: 700; padding: 0.18rem 0.6rem;
+                border-radius: 999px; white-space: nowrap;
+            }
+            .tdm-state-new        { background:#dbeafe; color:#1d4ed8; }
+            .tdm-state-assigned   { background:#ede9fe; color:#6d28d9; }
+            .tdm-state-in_progress{ background:#fef3c7; color:#b45309; }
+            .tdm-state-pending    { background:#fee2e2; color:#b91c1c; }
+            .tdm-state-resolved   { background:#dcfce7; color:#15803d; }
+            .tdm-state-closed     { background:#f1f5f9; color:#475569; }
+
+            .tdm-pri-badge {
+                font-size: 0.72rem; font-weight: 700; padding: 0.18rem 0.6rem;
+                border-radius: 999px; white-space: nowrap;
+            }
+            .tdm-pri-low    { background:#f0fdf4; color:#166534; }
+            .tdm-pri-medium { background:#eff6ff; color:#1e40af; }
+            .tdm-pri-high   { background:#fff7ed; color:#9a3412; }
+            .tdm-pri-urgent { background:#fef2f2; color:#991b1b; }
+
+            .tdm-close {
+                width: 32px; height: 32px; border-radius: 8px;
+                background: transparent; border: 1px solid #e2e8f0;
+                color: #64748b; font-size: 0.85rem; cursor: pointer;
+                display: flex; align-items: center; justify-content: center;
+                flex-shrink: 0; transition: all 0.15s;
+            }
+            .tdm-close:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+
+            /* Scrollable body */
+            .tdm-body {
+                flex: 1; overflow-y: auto; padding: 1.4rem;
+                scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;
+            }
+
+            /* Loading */
+            .tdm-loading {
+                display: flex; flex-direction: column; align-items: center;
+                justify-content: center; gap: 0.85rem; padding: 3rem 1rem;
+                color: #64748b; font-size: 0.9rem;
+            }
+            .tdm-spinner {
+                width: 32px; height: 32px; border-radius: 50%;
+                border: 3px solid #e2e8f0; border-top-color: #059669;
+                animation: tdmSpin 0.7s linear infinite;
+            }
+            @keyframes tdmSpin { to { transform: rotate(360deg); } }
+
+            /* Subject */
+            .tdm-subject {
+                font-size: 1.15rem; font-weight: 700; color: #065f46;
+                margin: 0 0 0.85rem; line-height: 1.35;
+            }
+
+            /* Meta row */
+            .tdm-meta-row {
+                display: flex; flex-wrap: wrap; gap: 1rem;
+                margin-bottom: 1.2rem; padding-bottom: 1rem;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .tdm-meta-item {
+                display: flex; align-items: center; gap: 0.35rem;
+                font-size: 0.8rem; color: #475569;
+            }
+            .tdm-meta-item i { color: #94a3b8; font-size: 0.85rem; }
+            .tdm-sla-on_track { color: #15803d !important; }
+            .tdm-sla-at_risk  { color: #b45309 !important; }
+            .tdm-sla-breached { color: #b91c1c !important; }
+
+            /* Sections */
+            .tdm-section { margin-bottom: 1.4rem; }
+            .tdm-section:last-child { margin-bottom: 0; }
+
+            .tdm-section-title {
+                display: flex; align-items: center;
+                font-size: 0.78rem; font-weight: 700; color: #065f46;
+                text-transform: uppercase; letter-spacing: 0.06em;
+                margin-bottom: 0.65rem;
+            }
+            .tdm-progress-pct {
+                margin-left: auto;
+                font-size: 0.8rem; font-weight: 700; color: #059669;
+            }
+
+            /* Description */
+            .tdm-description {
+                font-size: 0.875rem; color: #334155;
+                line-height: 1.65;
+                background: #f8fafc; border: 1px solid #e2e8f0;
+                border-radius: 10px; padding: 0.85rem 1rem;
+                white-space: pre-wrap; word-break: break-word;
+            }
+
+            /* Progress bar */
+            .tdm-progress-bg {
+                height: 7px; background: #e2e8f0;
+                border-radius: 999px; overflow: hidden; margin-bottom: 1rem;
+            }
+            .tdm-progress-fill {
+                height: 100%; border-radius: 999px;
+                background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+                transition: width 0.5s ease;
+            }
+            .tdm-progress-fill.done { background: linear-gradient(90deg,#34d399,#10b981); }
+
+            /* Board columns */
+            .tdm-cols-row {
+                display: flex; gap: 0.65rem; overflow-x: auto; padding-bottom: 0.25rem;
+                scrollbar-width: thin;
+            }
+            .tdm-col {
+                flex: 0 0 auto; min-width: 160px; max-width: 200px;
+                background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+                overflow: hidden;
+            }
+            .tdm-col-head {
+                padding: 0.4rem 0.65rem;
+                display: flex; justify-content: space-between; align-items: center;
+                background: #f1f5f9; border-bottom: 1px solid #e2e8f0;
+            }
+            .tdm-col-name { font-size: 0.75rem; font-weight: 700; color: #334155; }
+            .tdm-col-count { font-size: 0.7rem; color: #94a3b8; }
+            .tdm-col-tasks { padding: 0.35rem 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+            .tdm-task {
+                display: flex; align-items: flex-start; gap: 0.4rem;
+                padding: 0.3rem 0.35rem; border-radius: 6px; font-size: 0.77rem;
+            }
+            .tdm-task-done { opacity: 0.6; }
+            .tdm-task-done .tdm-task-name { text-decoration: line-through; color: #94a3b8; }
+            .tdm-task i { font-size: 0.8rem; flex-shrink: 0; margin-top: 1px; }
+            .tdm-task .bi-check-circle-fill { color: #10b981; }
+            .tdm-task .bi-circle { color: #cbd5e1; }
+            .tdm-task-name { color: #475569; line-height: 1.3; }
+            .tdm-col-empty { padding: 0.5rem 0.65rem; font-size: 0.75rem; color: #94a3b8; font-style: italic; }
+
+            .tdm-msg-list {
+                max-height: 260px;
+                overflow: auto;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                background: #f8fafc;
+                padding: 0.65rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.55rem;
+            }
+            .tdm-msg-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.45rem;
+            }
+            .tdm-msg-row.mine {
+                justify-content: flex-end;
+            }
+            .tdm-msg-bubble {
+                max-width: 82%;
+                padding: 0.52rem 0.62rem;
+                border-radius: 10px;
+                border: 1px solid #e5e7eb;
+                background: #fff;
+            }
+            .tdm-msg-row.mine .tdm-msg-bubble {
+                background: #e0f2fe;
+                border-color: #7dd3fc;
+            }
+            .tdm-msg-head {
+                display: flex;
+                justify-content: space-between;
+                gap: 0.5rem;
+                margin-bottom: 0.25rem;
+            }
+            .tdm-msg-author {
+                font-size: 0.76rem;
+                font-weight: 700;
+                color: #065f46;
+            }
+            .tdm-msg-time {
+                font-size: 0.7rem;
+                color: #94a3b8;
+                white-space: nowrap;
+            }
+            .tdm-msg-body {
+                font-size: 0.8rem;
+                color: #334155;
+                white-space: pre-wrap;
+                word-break: break-word;
+                line-height: 1.45;
+            }
+            .tdm-msg-empty {
+                font-size: 0.78rem;
+                color: #94a3b8;
+                font-style: italic;
+                padding: 0.25rem 0;
+            }
+            .tdm-reply-box {
+                margin-top: 0.65rem;
+                position: relative;
+            }
+            .tdm-reply-input {
+                width: 100%;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 0.55rem 0.7rem 2.4rem 0.7rem;
+                font-size: 0.82rem;
+                resize: vertical;
+                min-height: 86px;
+                background: #fff;
+                color: #334155;
+            }
+            .tdm-reply-input:focus {
+                outline: none;
+                border-color: #38bdf8;
+                box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+            }
+            .tdm-reply-send {
+                position: absolute;
+                right: 0.45rem;
+                bottom: 0.45rem;
+                padding: 0.38rem 0.7rem;
+                border: 0;
+                border-radius: 7px;
+                background: #0c4a6e;
+                color: #fff;
+                font-size: 0.74rem;
+                font-weight: 700;
+                cursor: pointer;
+                line-height: 1;
+                display: flex;
+                align-items: center;
+                gap: 0.34rem;
+            }
+            .tdm-reply-send:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            @media (max-width: 576px) {
+                .tdm-reply-send {
+                    padding: 0.44rem 0.5rem;
+                    min-width: 34px;
+                    justify-content: center;
+                    gap: 0;
+                }
+                .tdm-reply-send-label {
+                    display: none;
+                }
+            }
+
+            /* Footer */
+            .tdm-footer {
+                display: flex; align-items: center; justify-content: flex-end;
+                padding: 0.85rem 1.4rem;
+                border-top: 1px solid #e2e8f0; background: #f8fafc;
+                flex-shrink: 0;
+            }
+            .tdm-close-btn {
+                padding: 0.45rem 1.2rem; border-radius: 8px;
+                background: #0c4a6e; border: none; color: #fff;
+                font-size: 0.82rem; font-weight: 600; cursor: pointer;
+                transition: background 0.15s;
+            }
+            .tdm-close-btn:hover { background: #075985; }
+            </style>
+
+            <script type="text/javascript">
+            //<![CDATA[
+            (function () {
+                var overlay  = document.getElementById('ticketModal');
+                var panel    = overlay ? overlay.querySelector('.tdm-panel') : null;
+                var loading  = document.getElementById('tdmLoading');
+                var content  = document.getElementById('tdmContent');
+                var currentTicketId = null;
+                var csrf     = (document.cookie.match(/\bsession_id=([^;]+)/) || [])[1] || '';
+
+                function escHtml(s) {
+                    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                }
+
+                function stripHtml(s) {
+                    var d = document.createElement('div');
+                    d.innerHTML = String(s || '');
+                    return (d.textContent || d.innerText || '').trim();
+                }
+
+                function renderMessages(items) {
+                    var host = document.getElementById('tdmMessages');
+                    if (!host) return;
+                    if (!items || !items.length) {
+                        host.innerHTML = '<div class="tdm-msg-empty">No messages yet.</div>';
+                        return;
+                    }
+                    host.innerHTML = items.map(function (m) {
+                        var mine = m.is_me ? ' mine' : '';
+                        return '<div class="tdm-msg-row' + mine + '">'
+                            + '<div class="tdm-msg-bubble">'
+                            + '<div class="tdm-msg-head"><span class="tdm-msg-author">' + escHtml(m.is_me ? 'You' : (m.author || 'Support')) + '</span><span class="tdm-msg-time">' + escHtml(m.date || '') + '</span></div>'
+                            + '<div class="tdm-msg-body">' + escHtml(stripHtml(m.body || '')) + '</div>'
+                            + '</div>'
+                            + '</div>';
+                    }).join('');
+                    host.scrollTop = host.scrollHeight;
+                }
+
+                function openTicketModal(ticketId) {
+                    currentTicketId = ticketId;
+                    overlay.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    loading.style.display = 'flex';
+                    content.style.display = 'none';
+                    var ri = document.getElementById('tdmReplyInput');
+                    if (ri) ri.value = '';
+
+                    fetch('/customer_support/customer/ticket/' + ticketId + '/data', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ jsonrpc:'2.0', method:'call', id:1, params:{} })
+                    })
+                    .then(function(r){ return r.json(); })
+                    .then(function(resp) {
+                        var data = resp.result || {};
+                        if (!data.success) {
+                            loading.innerHTML = '<i class="bi bi-exclamation-circle" style="font-size:1.5rem;color:#ef4444"></i><span>' + escHtml(data.error||'Failed to load') + '</span>';
+                            return;
+                        }
+                        fillModal(data);
+                        loading.style.display = 'none';
+                        content.style.display = '';
+                    })
+                    .catch(function(e) {
+                        loading.innerHTML = '<i class="bi bi-wifi-off" style="font-size:1.5rem;color:#ef4444"></i><span>Network error</span>';
+                    });
+                }
+
+                function fillModal(data) {
+                    var t = data.ticket;
+                    document.getElementById('tdmTicketNum').textContent = t.name;
+                    var sb = document.getElementById('tdmStateBadge');
+                    sb.textContent = t.state_label;
+                    sb.className = 'tdm-state-badge tdm-state-' + t.state;
+                    var pb = document.getElementById('tdmPriBadge');
+                    pb.textContent = t.priority.charAt(0).toUpperCase() + t.priority.slice(1);
+                    pb.className = 'tdm-pri-badge tdm-pri-' + t.priority;
+
+                    document.getElementById('tdmSubject').textContent = t.subject;
+                    document.getElementById('tdmAssigned').textContent = t.assigned_to;
+                    document.getElementById('tdmCreated').textContent = t.created;
+
+                    var slaWrap = document.getElementById('tdmSlaWrap');
+                    if (t.sla_deadline) {
+                        slaWrap.style.display = 'flex';
+                        slaWrap.className = 'tdm-meta-item tdm-sla-' + t.sla_status;
+                        document.getElementById('tdmSla').textContent = 'SLA: ' + t.sla_deadline;
+                    } else {
+                        slaWrap.style.display = 'none';
+                    }
+
+                    document.getElementById('tdmDescription').textContent = t.description || 'No description provided.';
+
+                    // Board progress
+                    var boardSec = document.getElementById('tdmBoardSection');
+                    if (data.board_total > 0) {
+                        boardSec.style.display = '';
+                        var pct = data.board_progress;
+                        document.getElementById('tdmProgressPct').textContent = data.board_done + '/' + data.board_total + ' · ' + pct + '%';
+                        var fill = document.getElementById('tdmProgressFill');
+                        fill.style.width = pct + '%';
+                        fill.className = 'tdm-progress-fill' + (pct === 100 ? ' done' : '');
+
+                        var colsHtml = '';
+                        (data.board_columns || []).forEach(function(col) {
+                            colsHtml += '<div class="tdm-col">';
+                            colsHtml += '<div class="tdm-col-head" style="border-left:3px solid ' + escHtml(col.color) + '">';
+                            colsHtml += '<span class="tdm-col-name">' + escHtml(col.name) + '</span>';
+                            colsHtml += '<span class="tdm-col-count">' + col.done_count + '/' + col.task_count + '</span>';
+                            colsHtml += '</div>';
+                            if (col.tasks && col.tasks.length) {
+                                colsHtml += '<div class="tdm-col-tasks">';
+                                col.tasks.forEach(function(task) {
+                                    var done = task.is_done;
+                                    colsHtml += '<div class="tdm-task' + (done ? ' tdm-task-done' : '') + '">';
+                                    colsHtml += '<i class="bi ' + (done ? 'bi-check-circle-fill' : 'bi-circle') + '"></i>';
+                                    colsHtml += '<span class="tdm-task-name">' + escHtml(task.name) + '</span>';
+                                    colsHtml += '</div>';
+                                });
+                                colsHtml += '</div>';
+                            } else {
+                                colsHtml += '<div class="tdm-col-empty">No tasks</div>';
+                            }
+                            colsHtml += '</div>';
+                        });
+                        document.getElementById('tdmCols').innerHTML = colsHtml;
+                    } else {
+                        boardSec.style.display = 'none';
+                    }
+
+                    renderMessages(data.messages || []);
+                }
+
+                function closeModal() {
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+
+                // Expose globally for inline handlers
+                window.openTicketModal = openTicketModal;
+
+                var sendBtn = document.getElementById('tdmReplySend');
+                var replyInput = document.getElementById('tdmReplyInput');
+                if (sendBtn && replyInput) {
+                    sendBtn.addEventListener('click', function () {
+                        var msg = (replyInput.value || '').trim();
+                        if (!currentTicketId || !msg) return;
+                        sendBtn.disabled = true;
+                        fetch('/customer_support/customer/ticket/' + currentTicketId + '/message/add', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jsonrpc: '2.0', method: 'call', id: 1, params: { message: msg } })
+                        })
+                        .then(function (r) { return r.json(); })
+                        .then(function (resp) {
+                            var d = resp.result || {};
+                            if (!d.success) return;
+                            replyInput.value = '';
+                            return fetch('/customer_support/customer/ticket/' + currentTicketId + '/data', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ jsonrpc: '2.0', method: 'call', id: 1, params: {} })
+                            }).then(function (r) { return r.json(); }).then(function (ref) {
+                                var rd = ref.result || {};
+                                if (rd.success) fillModal(rd);
+                            });
+                        })
+                        .finally(function () { sendBtn.disabled = false; });
+                    });
+                }
+
+                document.getElementById('tdmClose').addEventListener('click', closeModal);
+                document.getElementById('tdmCloseBtn').addEventListener('click', closeModal);
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) closeModal();
+                });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') closeModal();
+                });
+            })();
+            // bfcache guard
+            window.addEventListener('pageshow', function (e) {
+                if (e.persisted) { window.location.reload(); }
+            });
+            // popstate guard: if back/forward navigates outside the portal, redirect to dashboard
+            window.addEventListener('popstate', function () {
+                if (!window.location.pathname.startsWith('/customer_support/')) {
+                    window.location.replace('/customer_support/dashboard');
+                }
+            });
+            //]]>
+            </script>
+        </t>
+    </template>
+
+    <!-- ── Reusable kanban card (used in all 4 columns) ────────────────────── -->
+    <template id="kanban_card_inner" name="Kanban Card Inner">
+        <div class="kanban-card" t-att-data-ticket-id="ticket.id">
+            <div class="kanban-card-id">
+                <t t-esc="ticket.name" />
+            </div>
+            <div class="kanban-card-subject">
+                <t t-esc="ticket.subject" />
+            </div>
+
+            <!-- Board task progress -->
+            <t t-if="ticket.board_task_total > 0">
+                <t t-set="pct" t-value="ticket.board_progress" />
+                <div class="kc-progress-wrap">
+                    <div class="kc-progress-header">
+                        <span class="kc-progress-label">
+                            <i class="bi bi-kanban me-1"></i>Board tasks
+                        </span>
+                        <span class="kc-progress-pct">
+                            <t t-esc="ticket.board_task_done" />/<t t-esc="ticket.board_task_total" />
+                            &amp;nbsp;·&amp;nbsp;<t t-esc="pct" />%
+                        </span>
+                    </div>
+                    <div class="kc-progress-bar-bg">
+                        <div t-attf-class="kc-progress-bar-fill{{ ' is-done' if pct == 100 else '' }}"
+                             t-attf-style="width: {{ pct }}%;" />
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="kc-no-tasks">No board tasks yet</div>
+            </t>
+
+            <div class="kanban-card-footer">
+                <t t-set="kp" t-value="ticket.priority or 'low'" />
+                <span t-att-class="'kanban-priority priority-' + kp">
+                    <t t-esc="kp.title()" />
+                </span>
+            </div>
+            <div class="kanban-card-focal">
+                <i class="bi bi-person-fill"></i>
+                <span>
+                    <t t-esc="ticket.assigned_to.name if ticket.assigned_to else 'Unassigned'" />
+                </span>
+            </div>
+        </div>
+    </template>
+</odoo>

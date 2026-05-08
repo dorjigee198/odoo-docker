@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         FOCAL PERSON — PROJECT CARDS PAGE
+         Route: /customer_support/my_projects
+         ================================================================ -->
+    <template id="focal_projects_page" name="My Projects">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/focal_projects.css?v=5" />
+                <script
+                    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            </t>
+
+            <div id="wrap">
+                <!-- NAVBAR -->
+                <header class="dashboard-header">
+                    <div class="header-content">
+
+                        <!-- Mobile hamburger -->
+                        <button class="fp-hamburger" id="fpHamburger"
+                            onclick="this.classList.toggle('active'); this.closest('.header-content').classList.toggle('nav-open')"
+                            aria-label="Toggle navigation">
+                            <span></span><span></span><span></span>
+                        </button>
+
+                        <!-- Nav links -->
+                        <div class="header-nav">
+                            <a href="/customer_support/support_dashboard" class="nav-link-external">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Overview</span>
+                            </a>
+                            <a href="/customer_support/my_projects" class="nav-link active">
+                                <i class="bi bi-kanban"></i>
+                                <span>My Projects</span>
+                            </a>
+                        </div>
+
+                        <!-- Right controls -->
+                        <div class="header-right">
+
+                            <!-- Notification Bell -->
+                            <div class="notif-wrap me-1">
+                                <button class="notif-btn" id="notifBell" title="SLA Alerts">
+                                    <i class="bi bi-bell-fill"></i>
+                                    <span class="notif-badge d-none" id="notifBadge">0</span>
+                                </button>
+                                <div class="notif-dropdown" id="notifDropdown">
+                                    <div class="notif-header">
+                                        <h6><i class="bi bi-bell me-2"></i>SLA Alerts</h6>
+                                        <button class="notif-mark-read" id="markAllRead">Mark all
+                                            read</button>
+                                    </div>
+                                    <div class="notif-list" id="notifList">
+                                        <div class="notif-empty">
+                                            <i class="bi bi-arrow-repeat"
+                                                style="font-size:1.5rem;display:block;margin-bottom:.5rem;"></i>
+                                            Loading alerts... </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Profile Dropdown -->
+                            <div class="user-profile dropdown">
+                                <a class="d-flex align-items-center text-white dropdown-toggle"
+                                    href="#" id="fpUserDropdown" data-bs-toggle="dropdown"
+                                    aria-expanded="false" style="text-decoration:none; gap:0.6rem;">
+                                    <span class="user-name">
+                                        <t t-esc="user.name" />
+                                    </span>
+                                    <img t-att-src="'/web/image/res.users/%s/avatar_128' % user.id"
+                                        alt="Avatar" class="user-avatar"
+                                        onerror="this.src='/web/static/img/avatar_gray.svg'" />
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    aria-labelledby="fpUserDropdown">
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="/customer_support/support/profile">
+                                            <i class="bi bi-person me-2"></i>Edit Profile </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="/customer_support/logout_manual">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Logout </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+                </header>
+
+
+                <!-- PROJECT CARDS GRID -->
+                <div class="fp-content">
+                    <t t-if="not projects">
+                        <div class="fp-empty-state">
+                            <div class="fp-empty-icon">
+                                <i class="bi bi-folder-x"></i>
+                            </div>
+                            <h3>No Projects Assigned</h3>
+                            <p>You haven't been added to any project yet. Ask your admin to assign
+                                you to a project.</p>
+                        </div>
+                    </t>
+
+                    <t t-if="projects">
+                        <div class="fp-project-grid" id="projectGrid">
+                            <t t-foreach="projects" t-as="proj">
+                                <a
+                                    t-attf-href="/customer_support/my_projects/{{ proj['id'] }}/tickets"
+                                    class="fp-project-card">
+
+                                    <!-- Card header -->
+                                    <div class="fp-card-header">
+                                        <div class="fp-card-header-glow"></div>
+                                        <div class="fp-card-header-top">
+                                            <div class="fp-card-icon">
+                                                <i class="bi bi-kanban-fill"></i>
+                                            </div>
+                                            <span class="fp-card-code">
+                                                <t t-esc="proj.get('code') or '—'" />
+                                            </span>
+                                        </div>
+                                        <div class="fp-card-header-bottom">
+                                            <h3 class="fp-card-name">
+                                                <t t-esc="proj['name']" />
+                                            </h3>
+                                            <!-- Open ticket badge -->
+                                            <t t-if="proj['open_tickets'] &gt; 0">
+                                                <span class="fp-open-badge">
+                                                    <t t-esc="proj['open_tickets']" /> open </span>
+                                            </t>
+                                            <t t-if="proj['open_tickets'] == 0">
+                                                <span class="fp-done-badge">
+                                                    <i class="bi bi-check2-circle me-1"></i>All
+                                                    resolved </span>
+                                            </t>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stats row -->
+                                    <div class="fp-card-stats">
+                                        <div class="fp-stat fp-stat-open">
+                                            <i class="bi bi-ticket-detailed fp-stat-icon"></i>
+                                            <span class="fp-stat-value">
+                                                <t t-esc="proj['open_tickets']" />
+                                            </span>
+                                            <span class="fp-stat-label">Open</span>
+                                        </div>
+                                        <div class="fp-stat-divider"></div>
+                                        <div class="fp-stat">
+                                            <i class="bi bi-stack fp-stat-icon"></i>
+                                            <span class="fp-stat-value">
+                                                <t t-esc="proj['total_tickets']" />
+                                            </span>
+                                            <span class="fp-stat-label">Total</span>
+                                        </div>
+                                        <div class="fp-stat-divider"></div>
+                                        <div class="fp-stat">
+                                            <i class="bi bi-people fp-stat-icon"></i>
+                                            <span class="fp-stat-value">
+                                                <t t-esc="proj['member_count']" />
+                                            </span>
+                                            <span class="fp-stat-label">Members</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Progress section -->
+                                    <div class="fp-card-footer">
+                                        <t t-if="proj['total_tickets'] &gt; 0">
+                                            <div class="fp-progress-header">
+                                                <span class="fp-progress-title">Resolution Progress</span>
+                                                <span class="fp-progress-pct">
+                                                    <t
+                                                        t-esc="(proj['total_tickets'] - proj['open_tickets']) * 100 // proj['total_tickets']" />
+                                                    % </span>
+                                            </div>
+                                            <div class="fp-progress-wrap">
+                                                <div class="fp-progress-bar"
+                                                    t-attf-style="width: {{ (proj['total_tickets'] - proj['open_tickets']) * 100 // proj['total_tickets'] }}%">
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <t t-if="proj['total_tickets'] == 0">
+                                            <div class="fp-progress-header">
+                                                <span class="fp-progress-title">No tickets yet</span>
+                                            </div>
+                                            <div class="fp-progress-wrap">
+                                                <div class="fp-progress-bar" style="width:0%"></div>
+                                            </div>
+                                        </t>
+                                        <div class="fp-view-btn">
+                                            <span>View Tickets</span>
+                                            <i class="bi bi-arrow-right"></i>
+                                        </div>
+                                    </div>
+
+                                </a>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </div>
+
+            <!-- ── NOTIFICATION BELL JS ── -->
+            <script type="text/javascript">
+                //<![CDATA[
+            (function () {
+                var bell     = document.getElementById('notifBell');
+                var dropdown = document.getElementById('notifDropdown');
+                var badge    = document.getElementById('notifBadge');
+
+                bell.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('open');
+                });
+                document.addEventListener('click', function () {
+                    dropdown.classList.remove('open');
+                });
+                dropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+
+                document.getElementById('markAllRead').addEventListener('click', function () {
+                    fetch('/customer_support/dashboard/sla_alerts/mark_read', {
+                        method: 'POST', credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .catch(function () {})
+                    .then(function () { loadSlaAlerts(); });
+                });
+
+                function loadSlaAlerts() {
+                    fetch('/customer_support/dashboard/sla_alerts', {
+                        method: 'GET', credentials: 'same-origin',
+                        headers: { 'Accept': 'application/json' }
+                    })
+                    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+                    .then(function (data) { renderAlerts(data.alerts || []); })
+                    .catch(function () { renderAlerts([]); });
+                }
+
+                function renderAlerts(alerts) {
+                    var list = document.getElementById('notifList');
+                    if (!alerts.length) {
+                        list.innerHTML = '<div class="notif-empty"><i class="bi bi-check-circle-fill" style="font-size:2rem;color:#10b981;display:block;margin-bottom:.5rem;"></i>All tickets are on track!</div>';
+                        badge.classList.add('d-none');
+                        return;
+                    }
+                    badge.textContent = alerts.length;
+                    badge.classList.remove('d-none');
+                    list.innerHTML = alerts.map(function (a) {
+                        var isAssignment = a.alert_type === 'assignment';
+                        var cls   = isAssignment ? 'at-risk' : (a.sla_status === 'breached' ? 'breached' : 'at-risk');
+                        var icon  = isAssignment ? 'bi-ticket-detailed-fill' : (cls === 'breached' ? 'bi-x-octagon-fill' : 'bi-exclamation-triangle-fill');
+                        var label = isAssignment ? 'New Assignment' : (cls === 'breached' ? 'SLA Breached' : 'At Risk');
+                        var policyLine = isAssignment ? 'Ticket assigned to you' : ('Policy: ' + (a.policy_name || 'None'));
+                        return '<div class="notif-item unread">'
+                            + '<div class="notif-icon-wrap ' + cls + '"><i class="bi ' + icon + '"></i></div>'
+                            + '<div class="notif-body">'
+                            + '<div class="notif-title">Ticket #' + a.ticket_id + ' \u2014 ' + a.subject + '</div>'
+                            + '<div class="notif-sub">' + label + ' \u00b7 ' + a.time_display + '</div>'
+                            + '<div class="notif-time-text">Project: ' + (a.project_name || 'General') + '</div>'
+                            + '</div><div class="notif-dot ' + cls + '"></div></div>';
+                    }).join('');
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    loadSlaAlerts();
+                    setInterval(loadSlaAlerts, 30000);
+                });
+            })();
+            //]]>
+            </script>
+
+
+        </t>
+    </template>
+</odoo>

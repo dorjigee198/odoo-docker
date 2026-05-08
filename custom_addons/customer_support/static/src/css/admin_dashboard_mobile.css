@@ -1,0 +1,1095 @@
+/* ============================================================
+   ADMIN DASHBOARD — MOBILE OVERRIDES + HAMBURGER DRAWER
+   File: admin_dashboard_mobile.css
+
+   STEP 1 — Copy file to:
+   /opt/odoo/custom_addons/customer_support/static/src/css/admin_dashboard_mobile.css
+
+   STEP 2 — In admin_dashboard.xml, add AFTER existing CSS link:
+   <link rel="stylesheet" href="/customer_support/static/src/css/admin_dashboard.css" />
+   <link rel="stylesheet" href="/customer_support/static/src/css/admin_dashboard_mobile.css" />
+
+   STEP 3 — In admin_dashboard.xml, add the hamburger HTML and
+   drawer HTML (see instructions at bottom of this file).
+
+   DESKTOP SAFETY: Every rule is inside max-width media queries.
+   Zero impact on screens wider than 768px.
+   ============================================================ */
+
+
+/* ============================================================
+   HAMBURGER + DRAWER — hidden by default (desktop safe)
+   ============================================================ */
+.mobile-hamburger-btn {
+    display: none;
+}
+
+.mobile-nav-overlay {
+    display: none;
+}
+
+.mobile-nav-drawer {
+    display: none;
+}
+
+
+/* ============================================================
+   TABLET + MOBILE  (max-width: 768px)
+   ============================================================ */
+@media (width <= 768px) {
+    /* ── BASE FONT ── */
+    body {
+        font-size: 15px;
+    }
+
+    /* ════════════════════════════════════════
+       HEADER
+    ════════════════════════════════════════ */
+    .dashboard-header {
+        padding: 0 0.75rem;
+        height: 56px;
+        display: flex;
+        align-items: center;
+    }
+
+    .header-content {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    /* Kill the desktop tab row on mobile */
+    .header-left {
+        display: none !important;
+    }
+
+    .header-right {
+        padding-right: 0;
+        gap: 0.45rem;
+        margin-left: auto;
+    }
+
+    .user-name {
+        display: none;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    /* ════════════════════════════════════════
+       HAMBURGER BUTTON
+    ════════════════════════════════════════ */
+    .mobile-hamburger-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        background: rgb(255, 255, 255, 0.12);
+        border: 1.5px solid rgb(255, 255, 255, 0.2);
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.2s;
+        flex-shrink: 0;
+        order: -1;
+
+        /* stays left of everything */
+        margin-right: auto;
+    }
+
+    .mobile-hamburger-btn:hover,
+    .mobile-hamburger-btn:active {
+        background: rgb(255, 255, 255, 0.22);
+    }
+
+    .mobile-hamburger-btn i {
+        font-size: 1.15rem;
+        color: #fff;
+        pointer-events: none;
+    }
+
+    /* ════════════════════════════════════════
+       OVERLAY (dark backdrop)
+    ════════════════════════════════════════ */
+    .mobile-nav-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgb(2, 44, 34, 0.58);
+        backdrop-filter: blur(3px);
+        z-index: 1998;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.28s ease;
+    }
+
+    .mobile-nav-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* ════════════════════════════════════════
+       DRAWER PANEL
+    ════════════════════════════════════════ */
+    .mobile-nav-drawer {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 78vw;
+        max-width: 300px;
+        background: #071410;
+        z-index: 1999;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 8px 0 48px rgb(0, 0, 0, 0.4);
+        overflow: hidden;
+    }
+
+    .mobile-nav-drawer.open {
+        transform: translateX(0);
+    }
+
+    /* ── Drawer: top branding strip ── */
+    .mobile-nav-drawer-header {
+        background: #064e3b;
+        padding: 1rem 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 1px solid rgb(255, 255, 255, 0.07);
+        flex-shrink: 0;
+    }
+
+    .drawer-brand-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #047857, #065f46);
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: #fff;
+        box-shadow: 0 2px 10px rgb(5, 150, 105, 0.45);
+        flex-shrink: 0;
+    }
+
+    .drawer-brand-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .drawer-brand-text strong {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.02em;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .drawer-brand-text span {
+        font-size: 0.65rem;
+        color: rgb(255, 255, 255, 0.42);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        font-weight: 500;
+    }
+
+    .mobile-nav-drawer-close {
+        background: rgb(255, 255, 255, 0.07);
+        border: none;
+        color: rgb(255, 255, 255, 0.55);
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.15s;
+        flex-shrink: 0;
+    }
+
+    .mobile-nav-drawer-close:hover {
+        background: rgb(255, 255, 255, 0.15);
+        color: #fff;
+    }
+
+    /* ── Drawer: section label ── */
+    .mobile-nav-section-label {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgb(255, 255, 255, 0.28);
+        padding: 1rem 1.2rem 0.35rem;
+    }
+
+    /* ── Drawer: nav list ── */
+    .mobile-nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0.25rem 0.65rem;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .mobile-nav-list::-webkit-scrollbar {
+        width: 3px;
+    }
+
+    .mobile-nav-list::-webkit-scrollbar-thumb {
+        background: rgb(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+
+    .mobile-nav-list li {
+        margin-bottom: 0.18rem;
+    }
+
+    /* ── Drawer: each nav item ── */
+    .mobile-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.78rem 0.9rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        text-decoration: none !important;
+        border: 1.5px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mobile-nav-item:hover {
+        background: rgb(255, 255, 255, 0.06);
+        border-color: rgb(255, 255, 255, 0.07);
+    }
+
+    .mobile-nav-item.active {
+        background: linear-gradient(135deg,
+                rgb(5, 150, 105, 0.28),
+                rgb(29, 78, 216, 0.18));
+        border-color: rgb(59, 130, 246, 0.38);
+        box-shadow: 0 2px 14px rgb(5, 150, 105, 0.14);
+    }
+
+    /* Active: left accent bar */
+    .mobile-nav-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 18%;
+        bottom: 18%;
+        width: 3px;
+        background: #059669;
+        border-radius: 0 3px 3px 0;
+    }
+
+    /* ── Drawer: item icon box ── */
+    .mobile-nav-item-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+        transition: all 0.18s;
+        background: rgb(255, 255, 255, 0.06);
+        color: rgb(255, 255, 255, 0.55);
+    }
+
+    .mobile-nav-item.active .mobile-nav-item-icon {
+        background: linear-gradient(135deg, #047857, #065f46);
+        color: #fff;
+        box-shadow: 0 2px 10px rgb(5, 150, 105, 0.45);
+    }
+
+    /* ── Drawer: item text ── */
+    .mobile-nav-item-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mobile-nav-item-text strong {
+        display: block;
+        font-size: 0.87rem;
+        font-weight: 600;
+        color: rgb(255, 255, 255, 0.8);
+        line-height: 1.25;
+        letter-spacing: 0.01em;
+    }
+
+    .mobile-nav-item.active .mobile-nav-item-text strong {
+        color: #fff;
+    }
+
+    .mobile-nav-item-text span {
+        font-size: 0.67rem;
+        color: rgb(255, 255, 255, 0.32);
+        line-height: 1.2;
+    }
+
+    /* ── Drawer: chevron arrow ── */
+    .mobile-nav-item-arrow {
+        font-size: 0.68rem;
+        color: rgb(255, 255, 255, 0.18);
+        transition: color 0.18s;
+    }
+
+    .mobile-nav-item.active .mobile-nav-item-arrow {
+        color: rgb(59, 130, 246, 0.65);
+    }
+
+    /* ── Drawer: footer ── */
+    .mobile-nav-drawer-footer {
+        padding: 0.8rem 1.2rem;
+        border-top: 1px solid rgb(255, 255, 255, 0.07);
+        background: rgb(0, 0, 0, 0.18);
+        flex-shrink: 0;
+    }
+
+    .mobile-nav-drawer-footer p {
+        font-size: 0.63rem;
+        color: rgb(255, 255, 255, 0.22);
+        margin: 0;
+        text-align: center;
+        letter-spacing: 0.04em;
+    }
+
+    /* ════════════════════════════════════════
+       MAIN CONTENT
+    ════════════════════════════════════════ */
+    .container-fluid.admin-dashboard {
+        padding: 0.75rem;
+    }
+
+    .dashboard-content {
+        padding: 0.75rem;
+    }
+
+    .dashboard-grid {
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .dashboard-card,
+    .performance-card {
+        width: 100%;
+        flex: none;
+        padding: 0.9rem;
+        border-radius: 10px;
+    }
+
+    /* ── Card header ── */
+    .card-header {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.65rem;
+    }
+
+    .card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    .last-updated {
+        font-size: 0.72rem;
+    }
+
+    .performance-score {
+        font-size: 0.78rem;
+    }
+
+    .score-badge {
+        font-size: 0.78rem;
+        padding: 0.2rem 0.6rem;
+    }
+
+    /* ── Analytics grid: 2-col ── */
+    .analytics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* ── Stat box ── */
+    .stat-box {
+        padding: 0.75rem;
+        gap: 0.6rem;
+        border-radius: 8px;
+        align-items: center;
+    }
+
+    .stat-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+        flex-shrink: 0;
+        border-radius: 7px;
+    }
+
+    .stat-label {
+        font-size: 0.78rem;
+        margin-bottom: 0.2rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .stat-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin-bottom: 0.1rem;
+        line-height: 1;
+    }
+
+    .stat-subtitle {
+        font-size: 0.68rem;
+        color: #94a3b8;
+    }
+
+    /* ── Performance grid: 2-col ── */
+    .performance-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+    }
+
+    .performance-stat {
+        padding: 0.75rem;
+        gap: 0.6rem;
+        border-radius: 8px;
+        align-items: center;
+    }
+
+    .performance-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+        flex-shrink: 0;
+        border-radius: 7px;
+    }
+
+    .performance-label {
+        font-size: 0.78rem;
+        margin-bottom: 0.2rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .performance-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.1rem;
+    }
+
+    .performance-subtitle {
+        font-size: 0.68rem;
+        color: #94a3b8;
+    }
+
+    /* ── Progress bar ── */
+    .performance-progress {
+        margin-top: 0.85rem;
+        padding-top: 0.85rem;
+    }
+
+    .progress-label {
+        font-size: 0.82rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .progress {
+        height: 8px;
+    }
+
+    /* ── Quick actions ── */
+    .quick-actions {
+        margin-top: 0.75rem;
+    }
+
+    .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+    }
+
+    .action-card {
+        padding: 0.85rem;
+        gap: 0.65rem;
+        border-radius: 8px;
+    }
+
+    .action-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+        border-radius: 7px;
+        flex-shrink: 0;
+    }
+
+    .action-content h4 {
+        font-size: 0.85rem;
+        margin-bottom: 0.15rem;
+        font-weight: 700;
+    }
+
+    .action-content p {
+        font-size: 0.72rem;
+        line-height: 1.3;
+    }
+
+    /* ── Quick stat cards ── */
+    .quick-stat-card {
+        padding: 0.85rem;
+        border-radius: 8px;
+    }
+
+    .quick-stat-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .quick-stat-label {
+        font-size: 0.72rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .quick-stat-value {
+        font-size: 1.75rem;
+        line-height: 1;
+    }
+
+    .quick-stat-trend {
+        font-size: 0.72rem;
+    }
+
+    /* ── Ticket table ── */
+    .ticket-table thead th {
+        font-size: 0.68rem;
+        padding: 0.65rem 0.5rem;
+    }
+
+    .ticket-table tbody td {
+        font-size: 0.78rem;
+        padding: 0.65rem 0.5rem;
+    }
+
+    .priority-badge,
+    .status-badge {
+        font-size: 0.62rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    /* ── Config cards ── */
+    .config-option-card {
+        padding: 1.25rem;
+        border-radius: 10px;
+    }
+
+    .config-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .config-title {
+        font-size: 1rem;
+    }
+
+    .config-description {
+        font-size: 0.82rem;
+    }
+
+    /* ── Notification dropdown ── */
+    .admin-notif-dropdown {
+        width: calc(100vw - 24px);
+        right: -80px;
+        border-radius: 12px;
+    }
+
+    .admin-notif-title {
+        font-size: 0.82rem;
+    }
+
+    .admin-notif-sub,
+    .admin-notif-time {
+        font-size: 0.72rem;
+    }
+
+    /* ── Workload panel ── */
+    .workload-panel {
+        width: 100%;
+        max-width: 100vw;
+    }
+
+    /* ── General card ── */
+    .card {
+        border-radius: 10px;
+    }
+
+    .card-body {
+        padding: 0.85rem;
+    }
+
+    /* ── Forms ── */
+    .form-control,
+    .form-select {
+        font-size: 0.88rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-sm {
+        font-size: 0.78rem;
+        padding: 0.35rem 0.65rem;
+    }
+
+    /* ── Badges ── */
+    .badge {
+        font-size: 0.68rem;
+        padding: 0.28rem 0.6rem;
+    }
+
+    /* ── Modals ── */
+    .modal-title {
+        font-size: 1rem;
+    }
+
+    /* ── Reporting numbers ── */
+    #r-total-period,
+    #r-resolved,
+    #r-open,
+    #r-breached,
+    #r-sla-compliance,
+    #r-resolve-rate {
+        font-size: 1.4rem !important;
+    }
+
+    #reportKpiRow .text-muted {
+        font-size: 0.65rem;
+    }
+
+}
+
+
+/* ============================================================
+   SMALL PHONES  (max-width: 576px)
+   ============================================================ */
+@media (width <= 576px) {
+    .dashboard-header {
+        padding: 0 0.5rem;
+        height: 52px;
+    }
+
+    .mobile-hamburger-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+    }
+
+    .mobile-hamburger-btn i {
+        font-size: 1.05rem;
+    }
+
+    .mobile-nav-drawer {
+        width: 85vw;
+    }
+
+    .container-fluid.admin-dashboard {
+        padding: 0.5rem;
+    }
+
+    .dashboard-content {
+        padding: 0.5rem;
+    }
+
+    .stat-box,
+    .performance-stat {
+        padding: 0.65rem;
+        gap: 0.5rem;
+    }
+
+    .stat-icon,
+    .performance-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+
+    .stat-value,
+    .performance-value {
+        font-size: 1.2rem;
+    }
+
+    .stat-label,
+    .performance-label {
+        font-size: 0.72rem;
+    }
+
+    .stat-subtitle,
+    .performance-subtitle {
+        font-size: 0.62rem;
+    }
+
+    .analytics-grid {
+        gap: 0.5rem;
+    }
+
+    .actions-grid {
+        gap: 0.5rem;
+    }
+
+    .action-card {
+        padding: 0.7rem;
+        gap: 0.5rem;
+    }
+
+    .action-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.88rem;
+    }
+
+    .action-content h4 {
+        font-size: 0.78rem;
+    }
+
+    .action-content p {
+        font-size: 0.66rem;
+    }
+
+    .card-title {
+        font-size: 0.88rem;
+    }
+
+    .quick-stat-value {
+        font-size: 1.5rem;
+    }
+
+    #r-total-period,
+    #r-resolved,
+    #r-open,
+    #r-breached,
+    #r-sla-compliance,
+    #r-resolve-rate {
+        font-size: 1.2rem !important;
+    }
+
+    .admin-notif-dropdown {
+        right: -100px;
+    }
+
+    .workload-summary-val {
+        font-size: 1.1rem;
+    }
+
+    .workload-summary-lbl {
+        font-size: 0.58rem;
+    }
+
+}
+
+
+
+
+/* ============================================================
+   TICKET ASSIGNMENT TAB — MOBILE FIXES
+   ============================================================ */
+@media (width <= 768px) {
+    /* ════════════════════════════════════════
+       STAT CARDS: 2x2 grid
+    ════════════════════════════════════════ */
+    #ticket-assignment .row.mb-4 {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+        margin-bottom: 0.75rem !important;
+    }
+
+    /* Override bootstrap col classes inside the grid */
+    #ticket-assignment .row.mb-4>.col-md-3 {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Compact the stat card itself */
+    #ticket-assignment .quick-stat-card {
+        padding: 0.85rem 0.75rem;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgb(0, 0, 0, 0.06);
+    }
+
+    #ticket-assignment .quick-stat-icon {
+        font-size: 1.6rem;
+        margin-bottom: 0;
+        flex-shrink: 0;
+        width: 40px;
+        text-align: center;
+    }
+
+    /* Text block: label + value + trend stacked */
+    #ticket-assignment .quick-stat-card>*:not(.quick-stat-icon) {
+        flex: 1;
+        min-width: 0;
+    }
+
+    #ticket-assignment .quick-stat-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        margin-bottom: 0.1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #ticket-assignment .quick-stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #065f46;
+        margin-bottom: 0.15rem;
+    }
+
+    #ticket-assignment .quick-stat-trend {
+        font-size: 0.68rem;
+        font-weight: 600;
+    }
+
+    /* ════════════════════════════════════════
+       TICKET TABLE: hide on mobile
+    ════════════════════════════════════════ */
+    #ticket-assignment .ticket-table-container {
+        display: none !important;
+    }
+
+    /* ════════════════════════════════════════
+       MOBILE TICKET CARDS: show on mobile
+    ════════════════════════════════════════ */
+    .mobile-ticket-cards {
+        display: flex !important;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    /* Each ticket card */
+    .mobile-ticket-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 2px 8px rgb(0, 0, 0, 0.06);
+        transition: box-shadow 0.2s;
+    }
+
+    .mobile-ticket-card:hover {
+        box-shadow: 0 4px 16px rgb(5,150,105, 0.1);
+    }
+
+    /* Card top row: ID + badges */
+    .mtc-top {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .mtc-id {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #6b7280;
+        background: #f3f4f6;
+        border-radius: 5px;
+        padding: 0.2rem 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .mtc-top .priority-badge,
+    .mtc-top .status-badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 20px;
+    }
+
+    /* Ticket subject */
+    .mtc-subject {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #065f46;
+        margin-bottom: 0.4rem;
+        line-height: 1.3;
+    }
+
+    /* Meta row: client + date */
+    .mtc-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .mtc-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .mtc-meta-item i {
+        font-size: 0.78rem;
+        color: #9ca3af;
+    }
+
+    /* Assigned to row */
+    .mtc-assigned {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.75rem;
+        color: #374151;
+        margin-bottom: 0.65rem;
+        font-weight: 500;
+    }
+
+    .mtc-assigned i {
+        font-size: 0.85rem;
+        color: #065f46;
+    }
+
+    /* SLA badge inside assigned */
+    .mtc-assigned .badge {
+        font-size: 0.62rem;
+        padding: 0.18rem 0.5rem;
+    }
+
+    /* Divider before form */
+    .mtc-divider {
+        border: none;
+        border-top: 1px solid #f0f0f0;
+        margin: 0.65rem 0;
+    }
+
+    /* No action state */
+    .mtc-no-action {
+        font-size: 0.78rem;
+        color: #10b981;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    /* Assign form inside card */
+    .mtc-assign-form .form-select {
+        font-size: 0.82rem;
+        padding: 0.45rem 0.65rem;
+        border-radius: 7px;
+        margin-bottom: 0.45rem;
+        border-color: #d1d5db;
+    }
+
+    .mtc-assign-form .btn-primary {
+        width: 100%;
+        font-size: 0.82rem;
+        padding: 0.55rem;
+        border-radius: 7px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #065f46, #047857);
+        border: none;
+        margin-top: 0.1rem;
+    }
+
+    .mtc-assign-form .btn-primary:hover {
+        background: linear-gradient(135deg, #047857, #0f3a5c);
+    }
+
+    /* "No tickets" empty state */
+    .mobile-ticket-empty {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: #9ca3af;
+        font-size: 0.85rem;
+    }
+
+    .mobile-ticket-empty i {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 0.75rem;
+        color: #d1d5db;
+    }
+
+}
+
+/* ════════════════════════════════════════
+   SMALL PHONES extra tightening
+════════════════════════════════════════ */
+@media (width <= 576px) {
+    #ticket-assignment .row.mb-4 {
+        gap: 0.5rem;
+    }
+
+    #ticket-assignment .quick-stat-card {
+        padding: 0.7rem 0.6rem;
+        gap: 0.6rem;
+    }
+
+    #ticket-assignment .quick-stat-icon {
+        font-size: 1.35rem;
+        width: 34px;
+    }
+
+    #ticket-assignment .quick-stat-value {
+        font-size: 1.3rem;
+    }
+
+    .mobile-ticket-card {
+        padding: 0.85rem;
+        border-radius: 10px;
+    }
+
+    .mtc-subject {
+        font-size: 0.86rem;
+    }
+
+}
+
+/* ============================================================
+   DESKTOP SAFETY: hide mobile cards on desktop
+   ============================================================ */
+.mobile-ticket-cards {
+    display: none;
+}

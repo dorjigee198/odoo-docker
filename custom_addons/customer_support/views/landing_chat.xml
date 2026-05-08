@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="landing_chat" name="Dragon Coders AI Chatbot">
+        <t t-call="web.layout">
+
+            <!-- HEAD -->
+            <t t-set="head">
+                <title>Dragon Chat — Dragon Coders AI</title>
+
+                <!-- Desktop CSS -->
+                <link rel="stylesheet" href="/customer_support/static/src/css/landing_chat.css" />
+                <!-- Mobile CSS -->
+                <link rel="stylesheet"
+                    href="/customer_support/static/src/css/landing_chat_mobile.css" />
+            </t>
+
+            <!-- APP SHELL -->
+            <div class="app-shell">
+
+                <!-- ======================== -->
+                <!-- SIDEBAR                  -->
+                <!-- ======================== -->
+                <aside class="sidebar" id="sidebar">
+                    <!-- Inner wrapper keeps content width stable during slide animation -->
+                    <div class="sidebar-inner">
+
+                        <!-- Brand -->
+                        <div class="sidebar-brand">
+                            <div class="brand-avatar" id="sidebar-logo"><span>DC</span></div>
+                            <div class="brand-text">
+                                <span class="brand-name">Dragon Coders</span>
+                                <span class="brand-tagline">Chat</span>
+                            </div>
+                        </div>
+
+                        <!-- New Chat -->
+                        <button class="new-chat-btn" id="new-chat-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            New Chat </button>
+
+                        <!-- History Label -->
+                        <div class="sidebar-section-label">Recent Chats</div>
+
+                        <!-- Chat History List -->
+                        <div class="chat-history" id="chat-history">
+                            <div class="history-empty" id="history-empty"> No previous chats yet.<br />Start
+                                a conversation! </div>
+                            <!-- History items injected by JS -->
+                        </div>
+
+                    </div>
+                </aside>
+
+                <!-- Overlay for mobile sidebar -->
+                <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+                <!-- ======================== -->
+                <!-- MAIN CHAT AREA          -->
+                <!-- ======================== -->
+                <main class="main-chat">
+
+                    <!-- Chat Header Bar -->
+                    <div class="chat-header">
+
+                        <!-- Sidebar toggle — visible on ALL screen sizes -->
+                        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn"
+                            aria-label="Toggle sidebar">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+
+                        <div class="chat-header-avatar" id="header-logo">DC</div>
+                        <div class="chat-header-info">
+                            <div class="chat-header-name">Dragon Chat</div>
+                            <div class="chat-header-status">
+                                <span class="status-dot"></span> Online — ready to help </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages -->
+                    <div class="chat-messages" id="chat-box">
+                        <!-- Messages injected by JS -->
+                    </div>
+
+                    <!-- Quick Replies -->
+                    <div class="quick-replies" id="quick-replies">
+                        <button class="quick-reply-btn" data-msg="Services">Services</button>
+                        <button class="quick-reply-btn" data-msg="Pricing">Pricing</button>
+                        <button class="quick-reply-btn" data-msg="Request Demo">Request Demo</button>
+                        <button class="quick-reply-btn" data-msg="Contact Support">Contact
+                            Support</button>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="input-area">
+                        <div class="input-wrap">
+                            <input id="user-input" type="text" placeholder="Message Dragon Chat..."
+                                autocomplete="off" />
+                            <button id="send-msg-btn" aria-label="Send message">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="input-footer">Dragon Chat may make mistakes. Verify important
+                            information.</div>
+                    </div>
+
+                </main>
+
+            </div>
+
+            <!-- Chatbot JavaScript -->
+            <script type="text/javascript" src="/customer_support/static/src/js/chatbot.js"></script>
+
+            <!-- Sidebar + UI JavaScript -->
+            <script type="text/javascript">
+            <![CDATA[
+                // ── Element refs ─────────────────────────────────
+                const sidebar       = document.getElementById('sidebar');
+                const overlay       = document.getElementById('sidebar-overlay');
+                const toggleBtn     = document.getElementById('sidebar-toggle-btn');
+
+                // ── Breakpoint helper ────────────────────────────
+                function isMobile() {
+                    return window.innerWidth <= 768;
+                }
+
+                // ── Sidebar state ────────────────────────────────
+                // Desktop uses .collapsed (width: 0 slide)
+                // Mobile  uses .open     (transform slide-in)
+                const SIDEBAR_KEY = 'dragon_sidebar_open';
+
+                function isSidebarOpen() {
+                    if (isMobile()) {
+                        return sidebar.classList.contains('open');
+                    }
+                    return !sidebar.classList.contains('collapsed');
+                }
+
+                function openSidebar() {
+                    if (isMobile()) {
+                        sidebar.classList.add('open');
+                        overlay.classList.add('visible');
+                    } else {
+                        sidebar.classList.remove('collapsed');
+                    }
+                    try { localStorage.setItem(SIDEBAR_KEY, '1'); } catch(e) {}
+                }
+
+                function closeSidebar() {
+                    if (isMobile()) {
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('visible');
+                    } else {
+                        sidebar.classList.add('collapsed');
+                    }
+                    try { localStorage.setItem(SIDEBAR_KEY, '0'); } catch(e) {}
+                }
+
+                function toggleSidebar() {
+                    if (isSidebarOpen()) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
+                }
+
+                // Re-sync sidebar state when viewport crosses mobile breakpoint
+                window.addEventListener('resize', function () {
+                    if (!isMobile()) {
+                        // Switching to desktop: clear mobile .open, restore desktop state
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('visible');
+                        try {
+                            if (localStorage.getItem(SIDEBAR_KEY) === '0') {
+                                sidebar.classList.add('collapsed');
+                            } else {
+                                sidebar.classList.remove('collapsed');
+                            }
+                        } catch(e) {}
+                    } else {
+                        // Switching to mobile: clear desktop .collapsed
+                        sidebar.classList.remove('collapsed');
+                    }
+                });
+
+                // Restore last sidebar state on load
+                (function restoreSidebarState() {
+                    try {
+                        const saved = localStorage.getItem(SIDEBAR_KEY);
+                        if (isMobile()) {
+                            // Mobile: always start closed (no .open), overlay hidden
+                            sidebar.classList.remove('open');
+                        } else {
+                            // Desktop: restore saved preference, default open
+                            if (saved === '0') {
+                                sidebar.classList.add('collapsed');
+                            }
+                        }
+                    } catch(e) {}
+                })();
+
+                // ── Toggle button click ──────────────────────────
+                toggleBtn.addEventListener('click', toggleSidebar);
+
+                // ── Mobile overlay click closes sidebar ──────────
+                overlay.addEventListener('click', closeSidebar);
+
+                // ── New Chat button ──────────────────────────────
+                document.getElementById('new-chat-btn').addEventListener('click', function () {
+                    const chatBox = document.getElementById('chat-box');
+                    chatBox.innerHTML = '';
+                    // Always close sidebar after tapping New Chat on mobile
+                    if (isMobile()) closeSidebar();
+                    if (typeof window.resetChat === 'function') window.resetChat();
+                });
+
+                // ── Chat history helper (called from chatbot.js) ──
+                window.addChatToHistory = function (previewText) {
+                    const historyEl = document.getElementById('chat-history');
+                    const emptyEl   = document.getElementById('history-empty');
+                    if (emptyEl) emptyEl.remove();
+
+                    // Remove active class from others
+                    document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+
+                    const item = document.createElement('div');
+                    item.className = 'history-item active';
+                    item.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+                        </svg>
+                        <span class="history-item-text">${previewText.substring(0, 32)}${previewText.length > 32 ? '…' : ''}</span>
+                    `;
+                    historyEl.prepend(item);
+                };
+
+                // ── appendBotMessage helper ───────────────────────
+                // Call this from chatbot.js instead of manually building DOM.
+                // It creates a right-aligned bot message row with the dragon avatar.
+                window.appendBotMessage = function (text, timestamp) {
+                    const chatBox = document.getElementById('chat-box');
+
+                    // Remove typing indicator if present
+                    const typing = document.getElementById('typing-indicator');
+                    if (typing) typing.remove();
+
+                    const time = timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    const row = document.createElement('div');
+                    row.className = 'message-row bot-row';
+                    row.innerHTML = `
+                        <div class="msg-avatar" id="bot-msg-avatar">🐉</div>
+                        <div class="message-content-wrap">
+                            <span class="msg-sender">Dragon Chat</span>
+                            <div class="message-bubble bot-bubble">${text}</div>
+                            <span class="msg-timestamp">${time}</span>
+                        </div>
+                    `;
+                    chatBox.appendChild(row);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+
+                    // Swap emoji for logo image if one has been set
+                    if (window._logoSrc) {
+                        const av = row.querySelector('#bot-msg-avatar');
+                        if (av) av.innerHTML = `<img src="${window._logoSrc}" alt="Dragon Coders" />`;
+                    }
+                };
+
+                // ── appendUserMessage helper ──────────────────────
+                // Mirrors appendBotMessage for user messages (left-aligned, dark bubble).
+                window.appendUserMessage = function (text, timestamp) {
+                    const chatBox = document.getElementById('chat-box');
+                    const time = timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    const row = document.createElement('div');
+                    row.className = 'message-row user-row';
+                    row.innerHTML = `
+                        <div class="message-content-wrap">
+                            <span class="msg-sender">You</span>
+                            <div class="message-bubble user-bubble">${text}</div>
+                            <span class="msg-timestamp">${time}</span>
+                        </div>
+                    `;
+                    chatBox.appendChild(row);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                };
+
+                // ── showTypingIndicator helper ────────────────────
+                window.showTypingIndicator = function () {
+                    const chatBox = document.getElementById('chat-box');
+                    if (document.getElementById('typing-indicator')) return;
+
+                    const row = document.createElement('div');
+                    row.className = 'typing-row';
+                    row.id = 'typing-indicator';
+                    row.innerHTML = `
+                        <div class="msg-avatar">${window._logoSrc ? '<img src="' + window._logoSrc + '" alt="Dragon Coders"/>' : '🐉'}</div>
+                        <div class="typing-bubble">
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                        </div>
+                    `;
+                    chatBox.appendChild(row);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                };
+
+                // ── Logo swap helper ──────────────────────────────
+                window.setLogo = function (src) {
+                    window._logoSrc = src;
+                    ['sidebar-logo', 'header-logo'].forEach(function (id) {
+                        const el = document.getElementById(id);
+                        if (el) el.innerHTML = '<img src="' + src + '" alt="Dragon Coders Logo"/>';
+                    });
+                };
+            ]]>
+            </script>
+
+        </t>
+    </template>
+</odoo>

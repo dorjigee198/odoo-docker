@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <template id="portal_mobile_nav_component" name="Portal Mobile Navigation Component">
+
+        <!-- ── 1. HAMBURGER BUTTON ───────────────────────────────────────────
+             Inline element — rendered wherever t-call appears (first child of
+             .header-content so it sits at the far-left on mobile).
+             Hidden on desktop via CSS (.portal-hamburger-btn { display:none }).
+             ──────────────────────────────────────────────────────────────── -->
+        <button class="portal-hamburger-btn"
+            id="portalHamburgerBtn"
+            aria-label="Open navigation"
+            aria-expanded="false"
+            aria-controls="portalNavDrawer">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <!-- ── 2. DARK BACKDROP OVERLAY ─────────────────────────────────────
+             Fixed-position — safe to render here; CSS keeps it invisible
+             until JS adds the .open class.
+             ──────────────────────────────────────────────────────────────── -->
+        <div class="portal-nav-overlay" id="portalNavOverlay" aria-hidden="true"></div>
+
+        <!-- ── 3. SLIDE-IN DRAWER PANEL ─────────────────────────────────────
+             Fixed-position off-screen left. Slides in on .open.
+             ──────────────────────────────────────────────────────────────── -->
+        <div class="portal-nav-drawer"
+            id="portalNavDrawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu">
+
+            <!-- ── Drawer header / branding ── -->
+            <div class="portal-nav-drawer-header">
+                <div class="portal-drawer-brand-icon">
+                    <i class="bi bi-headset"></i>
+                </div>
+                <div class="portal-drawer-brand-text">
+                    <strong>Customer Support</strong>
+                    <span>Portal</span>
+                </div>
+                <button class="portal-nav-drawer-close"
+                    id="portalDrawerClose"
+                    aria-label="Close navigation">
+                    &#x2715;
+                </button>
+            </div>
+
+            <!-- ── Main navigation section ── -->
+            <p class="portal-nav-section-label">Navigation</p>
+            <ul class="portal-nav-list">
+
+                <li>
+                    <a href="#"
+                        class="portal-nav-item"
+                        id="drawerOverviewLink"
+                        t-att-class="'portal-nav-item' + (' active' if mobile_active_page == 'overview' else '')">
+                        <div class="portal-nav-item-icon">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        <div class="portal-nav-item-text">
+                            <strong>Overview</strong>
+                            <span>Dashboard summary</span>
+                        </div>
+                        <i class="bi bi-chevron-right portal-nav-item-arrow"></i>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/customer_support/tickets/list"
+                        class="portal-nav-item"
+                        id="drawerTicketsLink"
+                        t-att-class="'portal-nav-item' + (' active' if mobile_active_page == 'tickets' else '')">
+                        <div class="portal-nav-item-icon">
+                            <i class="bi bi-ticket-detailed"></i>
+                        </div>
+                        <div class="portal-nav-item-text">
+                            <strong>My Tickets</strong>
+                            <span>View &amp; manage tickets</span>
+                        </div>
+                        <i class="bi bi-chevron-right portal-nav-item-arrow"></i>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#"
+                        class="portal-nav-item"
+                        id="drawerReportingLink"
+                        t-att-class="'portal-nav-item' + (' active' if mobile_active_page == 'reporting' else '')">
+                        <div class="portal-nav-item-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="portal-nav-item-text">
+                            <strong>Reports</strong>
+                            <span>Project closure reports</span>
+                        </div>
+                        <i class="bi bi-chevron-right portal-nav-item-arrow"></i>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/customer_support/chatbot"
+                        class="portal-nav-item"
+                        t-att-class="'portal-nav-item' + (' active' if mobile_active_page == 'faq' else '')">
+                        <div class="portal-nav-item-icon">
+                            <i class="bi bi-question-circle"></i>
+                        </div>
+                        <div class="portal-nav-item-text">
+                            <strong>FAQ / Help</strong>
+                            <span>Browse help articles</span>
+                        </div>
+                        <i class="bi bi-chevron-right portal-nav-item-arrow"></i>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/customer_support/create_ticket"
+                        class="portal-nav-item">
+                        <div class="portal-nav-item-icon">
+                            <i class="bi bi-plus-circle"></i>
+                        </div>
+                        <div class="portal-nav-item-text">
+                            <strong>New Ticket</strong>
+                            <span>Submit a support request</span>
+                        </div>
+                        <i class="bi bi-chevron-right portal-nav-item-arrow"></i>
+                    </a>
+                </li>
+
+            </ul>
+
+
+        </div>
+        <!-- /portal-nav-drawer -->
+
+        <!-- ── 4. DRAWER JAVASCRIPT ──────────────────────────────────────────
+             Self-contained IIFE — safe to include on every page that calls
+             this template. All selectors use getElementById so multiple calls
+             on the same page are harmless (the second call simply finds the
+             same elements and re-attaches equivalent listeners).
+             ──────────────────────────────────────────────────────────────── -->
+        <script type="text/javascript">
+            //<![CDATA[
+(function () {
+    'use strict';
+
+    /* Guard: only initialise once per page load */
+    if (window.__portalMobileNavInit) return;
+    window.__portalMobileNavInit = true;
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var hamburgerBtn = document.getElementById('portalHamburgerBtn');
+        var drawerClose  = document.getElementById('portalDrawerClose');
+        var overlay      = document.getElementById('portalNavOverlay');
+        var drawer       = document.getElementById('portalNavDrawer');
+
+        if (!drawer) return; // component not present on this page
+
+        // ── OPEN / CLOSE HELPERS ──────────────────────────────────────
+        function openDrawer() {
+            drawer.classList.add('open');
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            if (hamburgerBtn) hamburgerBtn.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeDrawer() {
+            drawer.classList.remove('open');
+            overlay.classList.remove('open');
+            document.body.style.overflow = '';
+            if (hamburgerBtn) hamburgerBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        // ── TRIGGERS ─────────────────────────────────────────────────
+        if (hamburgerBtn) hamburgerBtn.addEventListener('click', openDrawer);
+        if (drawerClose)  drawerClose.addEventListener('click', closeDrawer);
+        if (overlay)      overlay.addEventListener('click', closeDrawer);
+
+        // ESC key closes drawer
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeDrawer();
+        });
+
+        // Swipe-left to close on touch devices
+        var touchStartX = 0;
+        drawer.addEventListener('touchstart', function (e) {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        drawer.addEventListener('touchend', function (e) {
+            if (touchStartX - e.changedTouches[0].clientX > 60) closeDrawer();
+        }, { passive: true });
+
+        // ── DRAWER NAV LINK WIRING ────────────────────────────────────
+
+        function setDrawerActive(el) {
+            drawer.querySelectorAll('.portal-nav-item').forEach(function (item) {
+                item.classList.remove('active');
+            });
+            if (el) el.classList.add('active');
+        }
+
+        // Overview — delegates to header nav click (handles SPA page switch)
+        var drawerOverview = document.getElementById('drawerOverviewLink');
+        if (drawerOverview) {
+            drawerOverview.addEventListener('click', function (e) {
+                e.preventDefault();
+                closeDrawer();
+                var nav = document.getElementById('portalOverviewNav');
+                if (nav) nav.click(); else window.location.href = '/customer_support/dashboard';
+                setDrawerActive(this);
+            });
+        }
+
+        // Reporting — delegates to header nav click
+        var drawerReporting = document.getElementById('drawerReportingLink');
+        if (drawerReporting) {
+            drawerReporting.addEventListener('click', function (e) {
+                e.preventDefault();
+                closeDrawer();
+                var nav = document.getElementById('portalReportingNav');
+                if (nav) nav.click(); else window.location.href = '/customer_support/dashboard#reporting';
+                setDrawerActive(this);
+            });
+        }
+
+        // Tickets — has a real href; just close drawer and let browser navigate
+        var drawerTickets = document.getElementById('drawerTicketsLink');
+        if (drawerTickets) {
+            drawerTickets.addEventListener('click', function () {
+                closeDrawer();
+                // navigation happens via href
+            });
+        }
+
+        // ── SYNC DRAWER ACTIVE STATE WITH HEADER NAV ──────────────────
+        // Runs once on load so the drawer highlights the correct item
+        // even on pages that don't call showOverview() / showReporting().
+        var activeHeaderNav = document.querySelector('.header-nav .nav-link.active');
+        if (activeHeaderNav) {
+            var idMap = {
+                'portalOverviewNav':  'drawerOverviewLink',
+                'portalReportingNav': 'drawerReportingLink',
+                'portalTicketsNav':   'drawerTicketsLink'
+            };
+            var drawerId = idMap[activeHeaderNav.id];
+            if (drawerId) setDrawerActive(document.getElementById(drawerId));
+        }
+
+    }); // DOMContentLoaded
+
+})();
+            //]]>
+        </script>
+
+    </template>
+</odoo>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Set server-side session inactivity to 1 hour (3600 seconds).
+             noupdate=1 means this only applies on first install, not on every upgrade. -->
+        <record id="session_inactivity_param" model="ir.config_parameter">
+            <field name="key">web.session_inactivity</field>
+            <field name="value">3600</field>
+        </record>
+    </data>
+
+    <data noupdate="0">
+        <!-- Public base URL — applied on every module upgrade so email links
+             always point to the correct public IP. -->
+        <function model="ir.config_parameter" name="set_param"
+                  eval="['web.base.url', 'http://103.133.216.202']"/>
+    </data>
+</odoo>

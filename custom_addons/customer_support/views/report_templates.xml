@@ -1,0 +1,1126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+     REPORT 1: PROJECT HEALTH REPORT
+════════════════════════════════════════════════════════════════════════ -->
+    <template id="report_project_health" name="Project Health Report">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <style>
+                    @import
+                    url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&amp;family=Source+Sans+3:wght@300;400;600&amp;display=swap');
+                    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+                    :root {
+                    --primary: #1a3a5c;
+                    --accent: #e8b84b;
+                    --green: #2ecc71;
+                    --amber: #f39c12;
+                    --red: #e74c3c;
+                    --light-bg: #f8f9fc;
+                    --border: #dee2e6;
+                    --text: #2c3e50;
+                    --muted: #6c757d;
+                    }
+                    body { font-family: 'Source Sans 3', sans-serif; color: var(--text); background:
+                    #fff; font-size: 13px; }
+                    .report-wrapper { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+                    /* Header */
+                    .report-header { display: flex; justify-content: space-between; align-items:
+                    flex-start; padding-bottom: 24px; border-bottom: 3px solid var(--primary);
+                    margin-bottom: 32px; }
+                    .report-header-left h1 { font-family: 'Rajdhani', sans-serif; font-size: 28px;
+                    font-weight: 700; color: var(--primary); letter-spacing: 1px; }
+                    .report-header-left .subtitle { color: var(--muted); font-size: 13px;
+                    margin-top: 4px; }
+                    .report-header-right { text-align: right; }
+                    .company-name { font-family: 'Rajdhani', sans-serif; font-size: 18px;
+                    font-weight: 600; color: var(--primary); }
+                    .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+                    /* Health badge */
+                    .health-hero { display: flex; align-items: center; gap: 24px; background:
+                    var(--light-bg); border-radius: 12px; padding: 24px 28px; margin-bottom: 28px;
+                    border-left: 6px solid var(--primary); }
+                    .health-score-circle { width: 80px; height: 80px; border-radius: 50%; display:
+                    flex; flex-direction: column; align-items: center; justify-content: center;
+                    font-family: 'Rajdhani', sans-serif; font-weight: 700; flex-shrink: 0; }
+                    .health-score-circle.green { background: #d5f5e3; color: #1e8449; border: 3px
+                    solid #2ecc71; }
+                    .health-score-circle.amber { background: #fef9e7; color: #9a7d0a; border: 3px
+                    solid #f39c12; }
+                    .health-score-circle.red { background: #fde8e6; color: #922b21; border: 3px
+                    solid #e74c3c; }
+                    .health-score-circle .score-num { font-size: 22px; line-height: 1; }
+                    .health-score-circle .score-label { font-size: 9px; letter-spacing: 1px;
+                    text-transform: uppercase; }
+                    .health-hero-info h2 { font-family: 'Rajdhani', sans-serif; font-size: 22px;
+                    font-weight: 700; color: var(--primary); }
+                    .health-hero-info .project-code { background: var(--primary); color: #fff;
+                    padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;
+                    letter-spacing: 1px; margin-left: 8px; vertical-align: middle; }
+                    .health-verdict { font-size: 13px; margin-top: 6px; }
+                    .health-verdict.green { color: #1e8449; } .health-verdict.amber { color:
+                    #9a7d0a; } .health-verdict.red { color: #922b21; }
+
+                    /* KPI grid */
+                    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+                    margin-bottom: 28px; }
+                    .kpi-box { background: var(--light-bg); border-radius: 10px; padding: 16px;
+                    text-align: center; border-top: 3px solid var(--border); }
+                    .kpi-box.accent { border-top-color: var(--accent); }
+                    .kpi-box.danger { border-top-color: var(--red); }
+                    .kpi-box.success { border-top-color: var(--green); }
+                    .kpi-box.info { border-top-color: #3498db; }
+                    .kpi-val { font-family: 'Rajdhani', sans-serif; font-size: 30px; font-weight:
+                    700; color: var(--primary); line-height: 1; }
+                    .kpi-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase;
+                    letter-spacing: 0.5px; margin-top: 4px; }
+
+                    /* Section */
+                    .section { margin-bottom: 28px; }
+                    .section-title { font-family: 'Rajdhani', sans-serif; font-size: 15px;
+                    font-weight: 600; color: var(--primary); text-transform: uppercase;
+                    letter-spacing: 1px; border-bottom: 2px solid var(--border); padding-bottom:
+                    8px; margin-bottom: 16px; }
+                    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+                    /* Priority bars */
+                    .priority-row { display: flex; align-items: center; gap: 10px; margin-bottom:
+                    8px; }
+                    .priority-name { width: 60px; font-size: 12px; font-weight: 600; text-transform:
+                    capitalize; }
+                    .priority-bar-wrap { flex: 1; background: #e9ecef; border-radius: 4px; height:
+                    18px; overflow: hidden; }
+                    .priority-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+                    .priority-bar.urgent { background: #e74c3c; }
+                    .priority-bar.high { background: #e67e22; }
+                    .priority-bar.medium { background: #3498db; }
+                    .priority-bar.low { background: #2ecc71; }
+                    .priority-count { width: 30px; text-align: right; font-size: 12px; font-weight:
+                    600; }
+
+                    /* Status pills */
+                    .status-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+                    .status-pill { padding: 6px 14px; border-radius: 20px; font-size: 12px;
+                    font-weight: 600; }
+                    .pill-new { background: #e8f4fd; color: #2980b9; }
+                    .pill-assigned { background: #e8f8f5; color: #1a8a72; }
+                    .pill-in_progress { background: #fef9e7; color: #d68910; }
+                    .pill-resolved { background: #eafaf1; color: #1e8449; }
+                    .pill-closed { background: #f2f3f4; color: #555; }
+
+                    /* Table */
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    thead th { background: var(--primary); color: #fff; font-family: 'Rajdhani',
+                    sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; padding:
+                    10px 12px; text-align: left; }
+                    tbody tr:nth-child(even) { background: var(--light-bg); }
+                    tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+
+                    /* Print button */
+                    .print-bar { display: flex; gap: 12px; justify-content: flex-end; margin-bottom:
+                    24px; }
+                    .btn-print { background: var(--primary); color: #fff; border: none; padding:
+                    10px 22px; border-radius: 6px; font-family: 'Rajdhani', sans-serif; font-weight:
+                    600; font-size: 14px; letter-spacing: 0.5px; cursor: pointer; display: flex;
+                    align-items: center; gap: 8px; }
+                    .btn-back { background: #fff; color: var(--primary); border: 2px solid
+                    var(--primary); padding: 10px 22px; border-radius: 6px; font-family: 'Rajdhani',
+                    sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; cursor:
+                    pointer; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+                    .btn-print:hover { background: #0f2640; }
+
+                    /* Footer */
+                    .report-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid
+                    var(--border); display: flex; justify-content: space-between; font-size: 10px;
+                    color: var(--muted); }
+
+                    /* Page break control */
+                    .report-header  { break-inside: avoid; }
+                    .health-hero    { break-inside: avoid; page-break-inside: avoid; }
+                    .kpi-grid       { break-inside: avoid; page-break-inside: avoid; }
+                    .two-col        { break-inside: avoid; page-break-inside: avoid; }
+                    .section-title  { break-after:  avoid; page-break-after:  avoid; }
+                    .report-footer  { break-inside: avoid; page-break-inside: avoid; }
+                    tbody tr        { break-inside: avoid; page-break-inside: avoid; }
+
+                    @media print {
+                    .print-bar { display: none !important; }
+                    body { font-size: 11px; }
+                    .report-wrapper { padding: 0; max-width: 100%; }
+                    @page { margin: 15mm 12mm; size: A4 portrait; }
+                    }
+                </style>
+            </t>
+
+            <div class="report-wrapper">
+                <!-- Print Bar -->
+                <div class="print-bar">
+                    <a href="/customer_support/admin_dashboard#reporting" class="btn-back">
+                        ← Back
+                    </a>
+                    <button class="btn-print" id="rptDownloadBtn" onclick="downloadPdf()">
+                        ⬇ Download PDF
+                    </button>
+                </div>
+
+                <!-- Header -->
+                <div class="report-header">
+                    <div class="report-header-left">
+                        <h1>Project Health Report</h1>
+                        <div class="subtitle">Support ticket analysis · Last <t t-esc="days" /> days</div>
+                    </div>
+                    <div class="report-header-right">
+                        <div class="company-name">
+                            <t t-esc="company.name" />
+                        </div>
+                        <div class="meta">Generated: <t t-esc="generated_at" /></div>
+                        <div class="meta">Prepared by: <t t-esc="user.name" /></div>
+                    </div>
+                </div>
+
+                <!-- Health Hero -->
+                <div class="health-hero">
+                    <div t-att-class="'health-score-circle ' + health">
+                        <span class="score-num"><t t-esc="health_score" />%</span>
+                        <span class="score-label">Health</span>
+                    </div>
+                    <div class="health-hero-info">
+                        <h2>
+                            <t t-esc="project.name" />
+                            <span class="project-code">
+                                <t t-esc="project.code or 'N/A'" />
+                            </span>
+                        </h2>
+                        <div t-att-class="'health-verdict ' + health">
+                            <t t-if="health == 'green'">✔ Good Standing — project is performing well
+                                with strong resolution rates.</t>
+                            <t t-if="health == 'amber'">⚠ Needs Attention — moderate issues
+                                detected, review SLA breaches and open backlog.</t>
+                            <t t-if="health == 'red'">✘ Critical — significant unresolved tickets or
+                                SLA breaches require immediate action.</t>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-box info">
+                        <div class="kpi-val">
+                            <t t-esc="total" />
+                        </div>
+                        <div class="kpi-lbl">Total Tickets</div>
+                    </div>
+                    <div class="kpi-box success">
+                        <div class="kpi-val">
+                            <t t-esc="resolved_count" />
+                        </div>
+                        <div class="kpi-lbl">Resolved</div>
+                    </div>
+                    <div class="kpi-box danger">
+                        <div class="kpi-val">
+                            <t t-esc="breach_count" />
+                        </div>
+                        <div class="kpi-lbl">SLA Breaches</div>
+                    </div>
+                    <div class="kpi-box accent">
+                        <div class="kpi-val"><t t-esc="avg_resolution" />h</div>
+                        <div class="kpi-lbl">Avg Resolution</div>
+                    </div>
+                </div>
+
+                <!-- Status + Priority -->
+                <div class="two-col section">
+                    <div>
+                        <div class="section-title">Status Breakdown</div>
+                        <div class="status-pills">
+                            <t t-foreach="status_breakdown.items()" t-as="item">
+                                <span t-att-class="'status-pill pill-' + item[0]">
+                                    <t t-esc="item[0].replace('_',' ').title()" />: <strong>
+                                        <t t-esc="item[1]" />
+                                    </strong>
+                                </span>
+                            </t>
+                        </div>
+                        <div style="margin-top:16px;">
+                            <strong style="font-size:13px;">Resolve Rate:</strong>
+                            <span
+                                style="font-size:20px; font-family:'Rajdhani',sans-serif; font-weight:700; color:#1a3a5c; margin-left:8px;"><t
+                                    t-esc="resolve_rate" />%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="section-title">Priority Distribution</div>
+                        <t t-set="max_p" t-value="max(list(priority_breakdown.values()) + [1])" />
+                        <t t-foreach="['urgent','high','medium','low']" t-as="p">
+                            <div class="priority-row">
+                                <span class="priority-name">
+                                    <t t-esc="p.capitalize()" />
+                                </span>
+                                <div class="priority-bar-wrap">
+                                    <div t-att-class="'priority-bar ' + p"
+                                        t-att-style="'width:' + str(round(priority_breakdown.get(p,0)/max_p*100)) + '%'"></div>
+                                </div>
+                                <span class="priority-count">
+                                    <t t-esc="priority_breakdown.get(p, 0)" />
+                                </span>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Focal Person Summary -->
+                <div class="section">
+                    <div class="section-title">Focal Person Contributions</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Focal Person</th>
+                                <th>Assigned</th>
+                                <th>Resolved</th>
+                                <th>Open</th>
+                                <th>Resolve Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="not focal_summary">
+                                <tr>
+                                    <td colspan="5"
+                                        style="text-align:center;color:#6c757d;padding:16px;">No
+                                        agents assigned to this project yet.</td>
+                                </tr>
+                            </t>
+                            <t t-foreach="focal_summary" t-as="fp">
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <t t-esc="fp['name']" />
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="fp['assigned']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="fp['resolved']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="fp['assigned'] - fp['resolved']" />
+                                    </td>
+                                    <td>
+                                        <t
+                                            t-esc="round(fp['resolved']/fp['assigned']*100,1) if fp['assigned'] > 0 else 0" />
+                                        % </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Recent Tickets -->
+                <div class="section">
+                    <div class="section-title">Recent Tickets (Last <t t-esc="days" /> Days)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:12%">Ticket #</th>
+                                <th style="width:35%">Subject</th>
+                                <th style="width:10%">Priority</th>
+                                <th style="width:12%">Status</th>
+                                <th style="width:18%">Assigned To</th>
+                                <th style="width:13%">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="not period_tickets">
+                                <tr>
+                                    <td colspan="6"
+                                        style="text-align:center;color:#6c757d;padding:16px;">No
+                                        tickets in this period.</td>
+                                </tr>
+                            </t>
+                            <t t-foreach="period_tickets[:30]" t-as="t">
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <t t-esc="t.name" />
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="(t.subject or '')[:50]" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.priority.capitalize() if t.priority else '-'" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.state.replace('_',' ').title()" />
+                                    </td>
+                                    <td>
+                                        <t
+                                            t-esc="t.assigned_to.name if t.assigned_to else 'Unassigned'" />
+                                    </td>
+                                    <td>
+                                        <t
+                                            t-esc="t.create_date.strftime('%Y-%m-%d') if t.create_date else '-'" />
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <t t-if="len(period_tickets) > 30">
+                        <p style="text-align:right;font-size:11px;color:#6c757d;margin-top:8px;">
+                            Showing 30 of <t t-esc="len(period_tickets)" /> tickets. </p>
+                    </t>
+                </div>
+
+                <!-- Footer -->
+                <div class="report-footer">
+                    <span><t t-esc="company.name" /> · Confidential</span>
+                    <span>Project Health Report · <t t-esc="project.name" /> · Generated <t
+                            t-esc="generated_at" /></span>
+                </div>
+            </div>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+            <script>
+            function downloadPdf() {
+                var bar = document.querySelector('.print-bar');
+                var btn = document.getElementById('rptDownloadBtn');
+                if (bar) bar.style.display = 'none';
+                if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+                /* mirror @media print font reduction that html2canvas never sees */
+                document.body.style.fontSize = '11px';
+                var el   = document.querySelector('.report-wrapper');
+                var name = (document.title || 'report').replace(/[^a-z0-9_\-]/gi, '_').toLowerCase();
+                html2pdf().set({
+                    margin:      [12, 10, 12, 10],
+                    filename:    name + '.pdf',
+                    image:       { type: 'jpeg', quality: 0.97 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak:   { mode: ['css', 'legacy'] }
+                }).from(el).save().then(function () {
+                    document.body.style.fontSize = '';
+                    if (bar) bar.style.display = '';
+                    if (btn) { btn.disabled = false; btn.textContent = '⬇ Download PDF'; }
+                });
+            }
+            </script>
+        </t>
+    </template>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+     REPORT 2: FOCAL PERSON PERFORMANCE REPORT
+════════════════════════════════════════════════════════════════════════ -->
+    <template id="report_focal_performance" name="Focal Person Performance Report">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <style>
+                    @import
+                    url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&amp;family=Source+Sans+3:wght@300;400;600&amp;display=swap');
+                    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+                    :root { --primary: #1a3a5c; --accent: #e8b84b; --green: #2ecc71; --red: #e74c3c;
+                    --light-bg: #f8f9fc; --border: #dee2e6; --text: #2c3e50; --muted: #6c757d; }
+                    body { font-family: 'Source Sans 3', sans-serif; color: var(--text); background:
+                    #fff; font-size: 13px; }
+                    .report-wrapper { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+                    .report-header { display: flex; justify-content: space-between; align-items:
+                    flex-start; padding-bottom: 24px; border-bottom: 3px solid var(--primary);
+                    margin-bottom: 32px; }
+                    .report-header-left h1 { font-family: 'Rajdhani', sans-serif; font-size: 28px;
+                    font-weight: 700; color: var(--primary); letter-spacing: 1px; }
+                    .report-header-left .subtitle { color: var(--muted); font-size: 13px;
+                    margin-top: 4px; }
+                    .report-header-right { text-align: right; }
+                    .company-name { font-family: 'Rajdhani', sans-serif; font-size: 18px;
+                    font-weight: 600; color: var(--primary); }
+                    .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+                    .agent-hero { background: linear-gradient(135deg, var(--primary) 0%, #2c5282
+                    100%); border-radius: 12px; padding: 24px 28px; margin-bottom: 28px; display:
+                    flex; align-items: center; gap: 24px; color: #fff; }
+                    .agent-avatar { width: 64px; height: 64px; border-radius: 50%; background:
+                    rgba(255,255,255,0.2); display: flex; align-items: center; justify-content:
+                    center; font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700;
+                    flex-shrink: 0; overflow: hidden; }
+                    .agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
+                    .agent-info h2 { font-family: 'Rajdhani', sans-serif; font-size: 24px;
+                    font-weight: 700; }
+                    .agent-info .role { background: rgba(255,255,255,0.2); padding: 2px 12px;
+                    border-radius: 12px; font-size: 11px; letter-spacing: 1px; margin-top: 4px;
+                    display: inline-block; }
+                    .agent-stats { display: flex; gap: 32px; margin-left: auto; }
+                    .agent-stat { text-align: center; }
+                    .agent-stat-val { font-family: 'Rajdhani', sans-serif; font-size: 28px;
+                    font-weight: 700; line-height: 1; }
+                    .agent-stat-lbl { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+
+                    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+                    margin-bottom: 28px; }
+                    .kpi-box { background: var(--light-bg); border-radius: 10px; padding: 16px;
+                    text-align: center; border-top: 3px solid var(--border); }
+                    .kpi-box.accent { border-top-color: var(--accent); }
+                    .kpi-box.danger { border-top-color: var(--red); }
+                    .kpi-box.success { border-top-color: var(--green); }
+                    .kpi-box.info { border-top-color: #3498db; }
+                    .kpi-val { font-family: 'Rajdhani', sans-serif; font-size: 30px; font-weight:
+                    700; color: var(--primary); line-height: 1; }
+                    .kpi-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase;
+                    letter-spacing: 0.5px; margin-top: 4px; }
+
+                    .section { margin-bottom: 28px; }
+                    .section-title { font-family: 'Rajdhani', sans-serif; font-size: 15px;
+                    font-weight: 600; color: var(--primary); text-transform: uppercase;
+                    letter-spacing: 1px; border-bottom: 2px solid var(--border); padding-bottom:
+                    8px; margin-bottom: 16px; }
+                    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                    .priority-row { display: flex; align-items: center; gap: 10px; margin-bottom:
+                    8px; }
+                    .priority-name { width: 60px; font-size: 12px; font-weight: 600; text-transform:
+                    capitalize; }
+                    .priority-bar-wrap { flex: 1; background: #e9ecef; border-radius: 4px; height:
+                    18px; overflow: hidden; }
+                    .priority-bar { height: 100%; border-radius: 4px; }
+                    .priority-bar.urgent { background: #e74c3c; } .priority-bar.high { background:
+                    #e67e22; }
+                    .priority-bar.medium { background: #3498db; } .priority-bar.low { background:
+                    #2ecc71; }
+                    .priority-count { width: 30px; text-align: right; font-size: 12px; font-weight:
+                    600; }
+
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    thead th { background: var(--primary); color: #fff; font-family: 'Rajdhani',
+                    sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; padding:
+                    10px 12px; text-align: left; }
+                    tbody tr:nth-child(even) { background: var(--light-bg); }
+                    tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+                    .sla-gauge { background: var(--light-bg); border-radius: 10px; padding: 20px; }
+                    .sla-gauge-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+                    .sla-bar-wrap { background: #e9ecef; border-radius: 6px; height: 24px; overflow:
+                    hidden; }
+                    .sla-bar { height: 100%; border-radius: 6px; display: flex; align-items: center;
+                    padding-left: 8px; color: #fff; font-size: 12px; font-weight: 600; }
+                    .sla-val { font-family: 'Rajdhani', sans-serif; font-size: 32px; font-weight:
+                    700; color: var(--primary); margin-top: 8px; }
+
+                    .print-bar { display: flex; gap: 12px; justify-content: flex-end; margin-bottom:
+                    24px; }
+                    .btn-print { background: var(--primary); color: #fff; border: none; padding:
+                    10px 22px; border-radius: 6px; font-family: 'Rajdhani', sans-serif; font-weight:
+                    600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap:
+                    8px; }
+                    .btn-back { background: #fff; color: var(--primary); border: 2px solid
+                    var(--primary); padding: 10px 22px; border-radius: 6px; font-family: 'Rajdhani',
+                    sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration:
+                    none; display: flex; align-items: center; gap: 8px; }
+                    .report-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid
+                    var(--border); display: flex; justify-content: space-between; font-size: 10px;
+                    color: var(--muted); }
+
+                    /* Page break control */
+                    .report-header  { break-inside: avoid; }
+                    .agent-hero     { break-inside: avoid; page-break-inside: avoid; }
+                    .kpi-grid       { break-inside: avoid; page-break-inside: avoid; }
+                    .two-col        { break-inside: avoid; page-break-inside: avoid; }
+                    .section-title  { break-after:  avoid; page-break-after:  avoid; }
+                    .report-footer  { break-inside: avoid; page-break-inside: avoid; }
+                    tbody tr        { break-inside: avoid; page-break-inside: avoid; }
+
+                    @media print {
+                    .print-bar { display: none !important; }
+                    body { font-size: 11px; }
+                    .report-wrapper { padding: 0; max-width: 100%; }
+                    @page { margin: 15mm 12mm; size: A4 portrait; }
+                    }
+                </style>
+            </t>
+            <div class="report-wrapper">
+                <div class="print-bar">
+                    <a href="/customer_support/admin_dashboard#reporting" class="btn-back">← Back</a>
+                    <button class="btn-print" id="rptDownloadBtn" onclick="downloadPdf()">⬇ Download PDF</button>
+                </div>
+
+                <div class="report-header">
+                    <div class="report-header-left">
+                        <h1>Focal Person Performance</h1>
+                        <div class="subtitle">Individual performance analysis · Last <t t-esc="days" />
+                            days</div>
+                    </div>
+                    <div class="report-header-right">
+                        <div class="company-name">
+                            <t t-esc="company.name" />
+                        </div>
+                        <div class="meta">Generated: <t t-esc="generated_at" /></div>
+                        <div class="meta">Prepared by: <t t-esc="user.name" /></div>
+                    </div>
+                </div>
+
+                <!-- Agent Hero -->
+                <div class="agent-hero">
+                    <div class="agent-avatar">
+                        <img t-att-src="'/web/image/res.users/%s/avatar_128' % focal.id"
+                            onerror="this.style.display='none';this.parentElement.textContent=this.closest('.agent-hero').querySelector('.agent-info h2').textContent.charAt(0);"
+                            alt="avatar" />
+                    </div>
+                    <div class="agent-info">
+                        <h2>
+                            <t t-esc="focal.name" />
+                        </h2>
+                        <span class="role">FOCAL PERSON · SUPPORT AGENT</span>
+                    </div>
+                    <div class="agent-stats">
+                        <div class="agent-stat">
+                            <div class="agent-stat-val">
+                                <t t-esc="len(all_tickets)" />
+                            </div>
+                            <div class="agent-stat-lbl">Total Assigned</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-val">
+                                <t t-esc="len(resolved)" />
+                            </div>
+                            <div class="agent-stat-lbl">Resolved</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-val"><t t-esc="resolve_rate" />%</div>
+                            <div class="agent-stat-lbl">Resolve Rate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-box info">
+                        <div class="kpi-val">
+                            <t t-esc="len(open_tickets)" />
+                        </div>
+                        <div class="kpi-lbl">Open Backlog</div>
+                    </div>
+                    <div class="kpi-box danger">
+                        <div class="kpi-val">
+                            <t t-esc="len(breached)" />
+                        </div>
+                        <div class="kpi-lbl">SLA Breached</div>
+                    </div>
+                    <div class="kpi-box accent">
+                        <div class="kpi-val"><t t-esc="avg_resolution" />h</div>
+                        <div class="kpi-lbl">Avg Resolution</div>
+                    </div>
+                    <div class="kpi-box success">
+                        <div class="kpi-val">
+                            <t t-esc="len(period_tickets)" />
+                        </div>
+                        <div class="kpi-lbl">This Period</div>
+                    </div>
+                </div>
+
+                <!-- SLA + Priority -->
+                <div class="two-col section">
+                    <div>
+                        <div class="section-title">SLA Compliance</div>
+                        <div class="sla-gauge">
+                            <div class="sla-gauge-label">SLA Compliance Rate</div>
+                            <div class="sla-bar-wrap">
+                                <div class="sla-bar"
+                                    t-att-style="'width:' + str(sla_rate) + '%; background:' + ('#2ecc71' if sla_rate >= 80 else '#f39c12' if sla_rate >= 60 else '#e74c3c') + ';'">
+                                    <t t-esc="sla_rate" />% </div>
+                            </div>
+                            <div class="sla-val"><t t-esc="sla_rate" />%</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="section-title">Priority Distribution</div>
+                        <t t-set="max_p" t-value="max(list(priority_breakdown.values()) + [1])" />
+                        <t t-foreach="['urgent','high','medium','low']" t-as="p">
+                            <div class="priority-row">
+                                <span class="priority-name">
+                                    <t t-esc="p.capitalize()" />
+                                </span>
+                                <div class="priority-bar-wrap">
+                                    <div t-att-class="'priority-bar ' + p"
+                                        t-att-style="'width:' + str(round(priority_breakdown.get(p,0)/max_p*100)) + '%'"></div>
+                                </div>
+                                <span class="priority-count">
+                                    <t t-esc="priority_breakdown.get(p,0)" />
+                                </span>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Project Breakdown -->
+                <div class="section">
+                    <div class="section-title">Projects Handled</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Tickets</th>
+                                <th>Resolved</th>
+                                <th>Open</th>
+                                <th>Resolve Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="not project_summary">
+                                <tr>
+                                    <td colspan="5"
+                                        style="text-align:center;color:#6c757d;padding:16px;">No
+                                        project data available.</td>
+                                </tr>
+                            </t>
+                            <t t-foreach="project_summary" t-as="p">
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <t t-esc="p['name']" />
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="p['count']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="p['resolved']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="p['count'] - p['resolved']" />
+                                    </td>
+                                    <td><t
+                                            t-esc="round(p['resolved']/p['count']*100,1) if p['count'] > 0 else 0" />
+                                        %</td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Recent Resolved -->
+                <div class="section">
+                    <div class="section-title">Recently Resolved Tickets</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Subject</th>
+                                <th>Priority</th>
+                                <th>Project</th>
+                                <th>Resolved On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="recent_resolved"
+                                t-value="resolved.sorted(key=lambda t: t.resolved_date or t.create_date, reverse=True)[:20]" />
+                            <t t-if="not recent_resolved">
+                                <tr>
+                                    <td colspan="5"
+                                        style="text-align:center;color:#6c757d;padding:16px;">No
+                                        resolved tickets found.</td>
+                                </tr>
+                            </t>
+                            <t t-foreach="recent_resolved" t-as="t">
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <t t-esc="t.name" />
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="(t.subject or '')[:40]" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.priority.capitalize() if t.priority else '-'" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="t.project_id.name if t.project_id else '-'" />
+                                    </td>
+                                    <td>
+                                        <t
+                                            t-esc="t.resolved_date.strftime('%Y-%m-%d') if t.resolved_date else '-'" />
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="report-footer">
+                    <span><t t-esc="company.name" /> · Confidential</span>
+                    <span>Focal Person Report · <t t-esc="focal.name" /> · Generated <t
+                            t-esc="generated_at" /></span>
+                </div>
+            </div>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+            <script>
+            function downloadPdf() {
+                var bar = document.querySelector('.print-bar');
+                var btn = document.getElementById('rptDownloadBtn');
+                if (bar) bar.style.display = 'none';
+                if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+                /* mirror @media print font reduction that html2canvas never sees */
+                document.body.style.fontSize = '11px';
+                var el   = document.querySelector('.report-wrapper');
+                var name = (document.title || 'report').replace(/[^a-z0-9_\-]/gi, '_').toLowerCase();
+                html2pdf().set({
+                    margin:      [12, 10, 12, 10],
+                    filename:    name + '.pdf',
+                    image:       { type: 'jpeg', quality: 0.97 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak:   { mode: ['css', 'legacy'] }
+                }).from(el).save().then(function () {
+                    document.body.style.fontSize = '';
+                    if (bar) bar.style.display = '';
+                    if (btn) { btn.disabled = false; btn.textContent = '⬇ Download PDF'; }
+                });
+            }
+            </script>
+        </t>
+    </template>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+     REPORT 3: EXECUTIVE SUMMARY REPORT
+════════════════════════════════════════════════════════════════════════ -->
+    <template id="report_executive_summary" name="Executive Summary Report">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <style>
+                    @import
+                    url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&amp;family=Source+Sans+3:wght@300;400;600&amp;display=swap');
+                    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+                    :root { --primary: #1a3a5c; --accent: #e8b84b; --green: #2ecc71; --red: #e74c3c;
+                    --amber: #f39c12; --light-bg: #f8f9fc; --border: #dee2e6; --text: #2c3e50;
+                    --muted: #6c757d; }
+                    body { font-family: 'Source Sans 3', sans-serif; color: var(--text); background:
+                    #fff; font-size: 13px; }
+                    .report-wrapper { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+                    .report-header { display: flex; justify-content: space-between; align-items:
+                    flex-start; padding-bottom: 24px; border-bottom: 4px solid var(--primary);
+                    margin-bottom: 32px; }
+                    .report-header-left h1 { font-family: 'Rajdhani', sans-serif; font-size: 32px;
+                    font-weight: 700; color: var(--primary); letter-spacing: 2px; text-transform:
+                    uppercase; }
+                    .report-header-left .subtitle { color: var(--muted); font-size: 13px;
+                    margin-top: 4px; }
+                    .report-header-right { text-align: right; }
+                    .company-name { font-family: 'Rajdhani', sans-serif; font-size: 20px;
+                    font-weight: 700; color: var(--primary); }
+                    .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+                    .exec-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+                    margin-bottom: 32px; }
+                    .exec-kpi { background: var(--light-bg); border-radius: 10px; padding: 16px
+                    12px; text-align: center; border-bottom: 3px solid var(--primary); }
+                    .exec-kpi.green { border-bottom-color: var(--green); }
+                    .exec-kpi.red { border-bottom-color: var(--red); }
+                    .exec-kpi.amber { border-bottom-color: var(--amber); }
+                    .exec-kpi-val { font-family: 'Rajdhani', sans-serif; font-size: 26px;
+                    font-weight: 700; color: var(--primary); line-height: 1; }
+                    .exec-kpi-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase;
+                    letter-spacing: 0.5px; margin-top: 4px; }
+
+                    .section { margin-bottom: 32px; }
+                    .section-title { font-family: 'Rajdhani', sans-serif; font-size: 16px;
+                    font-weight: 700; color: var(--primary); text-transform: uppercase;
+                    letter-spacing: 1px; border-bottom: 2px solid var(--border); padding-bottom:
+                    8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    thead th { background: var(--primary); color: #fff; font-family: 'Rajdhani',
+                    sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; padding:
+                    10px 12px; text-align: left; }
+                    tbody tr:nth-child(even) { background: var(--light-bg); }
+                    tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border);
+                    vertical-align: middle; }
+
+                    .health-dot { display: inline-block; width: 10px; height: 10px; border-radius:
+                    50%; margin-right: 6px; }
+                    .health-dot.green { background: var(--green); }
+                    .health-dot.amber { background: var(--amber); }
+                    .health-dot.red { background: var(--red); }
+                    .health-label.green { color: #1e8449; font-weight: 600; }
+                    .health-label.amber { color: #9a7d0a; font-weight: 600; }
+                    .health-label.red { color: #922b21; font-weight: 600; }
+
+                    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size:
+                    11px; font-weight: 600; }
+                    .badge-gold { background: #fef9e7; color: #9a7d0a; border: 1px solid
+                    var(--amber); }
+                    .badge-silver { background: #f2f3f4; color: #555; border: 1px solid #aaa; }
+                    .badge-bronze { background: #fdebd0; color: #784212; border: 1px solid #e67e22;
+                    }
+
+                    .score-bar-wrap { background: #e9ecef; border-radius: 4px; height: 8px; width:
+                    80px; display: inline-block; vertical-align: middle; overflow: hidden; }
+                    .score-bar { height: 100%; border-radius: 4px; }
+
+                    .print-bar { display: flex; gap: 12px; justify-content: flex-end; margin-bottom:
+                    24px; }
+                    .btn-print { background: var(--primary); color: #fff; border: none; padding:
+                    10px 22px; border-radius: 6px; font-family: 'Rajdhani', sans-serif; font-weight:
+                    600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap:
+                    8px; }
+                    .btn-back { background: #fff; color: var(--primary); border: 2px solid
+                    var(--primary); padding: 10px 22px; border-radius: 6px; font-family: 'Rajdhani',
+                    sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration:
+                    none; display: flex; align-items: center; gap: 8px; }
+                    .report-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid
+                    var(--border); display: flex; justify-content: space-between; font-size: 10px;
+                    color: var(--muted); }
+
+                    /* Page break control */
+                    .report-header  { break-inside: avoid; }
+                    .exec-kpis      { break-inside: avoid; page-break-inside: avoid; }
+                    .section-title  { break-after:  avoid; page-break-after:  avoid; }
+                    .report-footer  { break-inside: avoid; page-break-inside: avoid; }
+                    tbody tr        { break-inside: avoid; page-break-inside: avoid; }
+                    /* Second section starts on a new page in the executive report */
+                    .section + .section { break-before: page; page-break-before: always; }
+
+                    @media print {
+                    .print-bar { display: none !important; }
+                    .exec-kpis { grid-template-columns: repeat(3, 1fr); }
+                    body { font-size: 11px; }
+                    .report-wrapper { padding: 0; max-width: 100%; }
+                    @page { margin: 15mm 12mm; size: A4 portrait; }
+                    }
+                </style>
+            </t>
+            <div class="report-wrapper">
+                <div class="print-bar">
+                    <a href="/customer_support/admin_dashboard#reporting" class="btn-back">← Back</a>
+                    <button class="btn-print" id="rptDownloadBtn" onclick="downloadPdf()">⬇ Download PDF</button>
+                </div>
+
+                <div class="report-header">
+                    <div class="report-header-left">
+                        <h1>Executive Summary</h1>
+                        <div class="subtitle">System-wide overview · Last <t t-esc="days" /> days ·
+                            All projects &amp; focal persons</div>
+                    </div>
+                    <div class="report-header-right">
+                        <div class="company-name">
+                            <t t-esc="company.name" />
+                        </div>
+                        <div class="meta">Generated: <t t-esc="generated_at" /></div>
+                        <div class="meta">Prepared by: <t t-esc="user.name" /></div>
+                    </div>
+                </div>
+
+                <!-- Executive KPIs -->
+                <div class="exec-kpis">
+                    <div class="exec-kpi">
+                        <div class="exec-kpi-val">
+                            <t t-esc="total" />
+                        </div>
+                        <div class="exec-kpi-lbl">Total Tickets</div>
+                    </div>
+                    <div class="exec-kpi green">
+                        <div class="exec-kpi-val">
+                            <t t-esc="resolved_count" />
+                        </div>
+                        <div class="exec-kpi-lbl">Resolved</div>
+                    </div>
+                    <div class="exec-kpi">
+                        <div class="exec-kpi-val">
+                            <t t-esc="open_count" />
+                        </div>
+                        <div class="exec-kpi-lbl">Open</div>
+                    </div>
+                    <div class="exec-kpi red">
+                        <div class="exec-kpi-val">
+                            <t t-esc="breached_count" />
+                        </div>
+                        <div class="exec-kpi-lbl">SLA Breached</div>
+                    </div>
+                    <div class="exec-kpi green">
+                        <div class="exec-kpi-val"><t t-esc="sla_compliance" />%</div>
+                        <div class="exec-kpi-lbl">SLA Compliance</div>
+                    </div>
+                    <div class="exec-kpi amber">
+                        <div class="exec-kpi-val"><t t-esc="resolve_rate" />%</div>
+                        <div class="exec-kpi-lbl">Resolve Rate</div>
+                    </div>
+                </div>
+
+                <!-- Project Health Summary -->
+                <div class="section">
+                    <div class="section-title">📁 Project Health Summary</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Total</th>
+                                <th>Resolved</th>
+                                <th>Open</th>
+                                <th>SLA Breaches</th>
+                                <th>Health Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="not project_rows">
+                                <tr>
+                                    <td colspan="7"
+                                        style="text-align:center;color:#6c757d;padding:16px;">No
+                                        projects found.</td>
+                                </tr>
+                            </t>
+                            <t t-foreach="project_rows" t-as="p">
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <t t-esc="p['name']" />
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="p['total']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="p['resolved']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="p['open']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="p['breached']" />
+                                    </td>
+                                    <td>
+                                        <div class="score-bar-wrap">
+                                            <div class="score-bar"
+                                                t-att-style="'width:' + str(p['health_score']) + '%; background:' + ('#2ecc71' if p['health'] == 'green' else '#f39c12' if p['health'] == 'amber' else '#e74c3c') + ';'">
+                                            </div>
+                                        </div>
+                                        <span
+                                            style="margin-left:6px;font-size:11px;font-weight:600;"><t
+                                                t-esc="p['health_score']" />%</span>
+                                    </td>
+                                    <td>
+                                        <span class="health-dot"
+                                            t-att-class="'health-dot ' + p['health']"></span>
+                                        <span t-att-class="'health-label ' + p['health']">
+                                            <t t-if="p['health'] == 'green'">Good</t>
+                                            <t t-if="p['health'] == 'amber'">Attention</t>
+                                            <t t-if="p['health'] == 'red'">Critical</t>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Focal Person Leaderboard -->
+                <div class="section">
+                    <div class="section-title"> Focal Person Performance</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:5%">#</th>
+                                <th>Name</th>
+                                <th>Assigned</th>
+                                <th>Resolved</th>
+                                <th>Open</th>
+                                <th>Breached</th>
+                                <th>Resolve Rate</th>
+                                <th>SLA Rate</th>
+                                <th>Avg Res. (h)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="not focal_rows">
+                                <tr>
+                                    <td colspan="9"
+                                        style="text-align:center;color:#6c757d;padding:16px;">No
+                                        focal persons found.</td>
+                                </tr>
+                            </t>
+                            <t t-foreach="focal_rows" t-as="fp">
+                                <tr>
+                                    <td>
+                                        <t t-if="fp_index == 0">
+                                            <span class="badge badge-gold"> 1</span>
+                                        </t>
+                                        <t t-if="fp_index == 1">
+                                            <span class="badge badge-silver"> 2</span>
+                                        </t>
+                                        <t t-if="fp_index == 2">
+                                            <span class="badge badge-bronze"> 3</span>
+                                        </t>
+                                        <t t-if="fp_index > 2">
+                                            <t t-esc="fp_index + 1" />
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <strong>
+                                            <t t-esc="fp['name']" />
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <t t-esc="fp['assigned']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="fp['resolved']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="fp['open']" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="fp['breached']" />
+                                    </td>
+                                    <td>
+                                        <div class="score-bar-wrap">
+                                            <div class="score-bar"
+                                                t-att-style="'width:' + str(fp['resolve_rate']) + '%; background:' + ('#2ecc71' if fp['resolve_rate'] >= 80 else '#f39c12' if fp['resolve_rate'] >= 60 else '#e74c3c') + ';'">
+                                            </div>
+                                        </div>
+                                        <span
+                                            style="margin-left:4px;font-size:11px;font-weight:600;"><t
+                                                t-esc="fp['resolve_rate']" />%</span>
+                                    </td>
+                                    <td><t t-esc="fp['sla_rate']" />%</td>
+                                    <td><t t-esc="fp['avg_resolution']" />h</td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="report-footer">
+                    <span><t t-esc="company.name" /> · Strictly Confidential</span>
+                    <span>Executive Summary · Generated <t t-esc="generated_at" /></span>
+                </div>
+            </div>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+            <script>
+            function downloadPdf() {
+                var bar  = document.querySelector('.print-bar');
+                var btn  = document.getElementById('rptDownloadBtn');
+                var kpis = document.querySelector('.exec-kpis');
+                if (bar)  bar.style.display  = 'none';
+                if (btn)  { btn.disabled = true; btn.textContent = 'Generating…'; }
+                /* mirror @media print rules that html2canvas never sees */
+                if (kpis) kpis.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                document.body.style.fontSize = '11px';
+                var el   = document.querySelector('.report-wrapper');
+                var name = (document.title || 'report').replace(/[^a-z0-9_\-]/gi, '_').toLowerCase();
+                html2pdf().set({
+                    margin:      [12, 10, 12, 10],
+                    filename:    name + '.pdf',
+                    image:       { type: 'jpeg', quality: 0.97 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak:   { mode: ['css', 'legacy'] }
+                }).from(el).save().then(function () {
+                    if (kpis) kpis.style.gridTemplateColumns = '';
+                    document.body.style.fontSize = '';
+                    if (bar)  bar.style.display  = '';
+                    if (btn)  { btn.disabled = false; btn.textContent = '⬇ Download PDF'; }
+                });
+            }
+            </script>
+        </t>
+    </template>
+
+</odoo>

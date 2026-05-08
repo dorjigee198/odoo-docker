@@ -1,0 +1,1425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="support_agent_dashboard" name="Support Dashboard">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/support_dashboard.css?v=5" />
+                <link rel="stylesheet"
+                    href="/customer_support/static/src/css/support_dashboard_mobile.css?v=4" />
+                <style>
+                    /* ── NOTIFICATION BELL DROPDOWN ── */
+                    .notif-wrap { position: relative; }
+                    .notif-btn { background: none; border: none; cursor: pointer; padding: 6px 8px;
+                    border-radius: 8px; color: rgba(255,255,255,0.75); font-size: 1.15rem;
+                    transition: all 0.2s; position: relative; display: flex; align-items: center; }
+                    .notif-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+                    .notif-badge { position: absolute; top: 2px; right: 2px; background: #ef4444;
+                    color: #fff; border-radius: 999px; font-size: 0.58rem; font-weight: 700;
+                    min-width: 16px; height: 16px; display: flex; align-items: center;
+                    justify-content: center; border: 2px solid #111827; padding: 0 3px; line-height:
+                    1; }
+                    .notif-badge.d-none { display: none !important; }
+                    .notif-dropdown { position: absolute; top: calc(100% + 12px); right: 0; width:
+                    360px; background: #ffffff; border: 1px solid rgba(5,150,105,0.15);
+                    border-radius: 14px; box-shadow: 0 16px 48px rgba(5,150,105,0.18); z-index: 300;
+                    overflow: hidden; opacity: 0; pointer-events: none; transform: translateY(-8px);
+                    transition: opacity 0.18s ease, transform 0.18s ease; }
+                    .notif-dropdown.open { opacity: 1; pointer-events: all; transform:
+                    translateY(0); }
+                    .notif-header { padding: 0.9rem 1.25rem; border-bottom: 1px solid
+                    rgba(5,150,105,0.08); display: flex; justify-content: space-between;
+                    align-items: center; background: #f0fdf4; }
+                    .notif-header h6 { font-size: 0.875rem; font-weight: 600; margin: 0; color:
+                    #065f46; }
+                    .notif-mark-read { font-size: 0.75rem; color: #065f46; cursor: pointer;
+                    background: none; border: none; padding: 0; font-weight: 500; }
+                    .notif-list { max-height: 360px; overflow-y: auto; }
+                    .notif-list::-webkit-scrollbar { width: 4px; }
+                    .notif-list::-webkit-scrollbar-thumb { background: rgba(5,150,105,0.1);
+                    border-radius: 4px; }
+                    .notif-item { display: flex; align-items: flex-start; gap: 0.85rem; padding:
+                    0.9rem 1.25rem; border-bottom: 1px solid rgba(5,150,105,0.06); cursor: pointer;
+                    transition: background 0.15s; text-decoration: none; }
+                    .notif-item:last-child { border-bottom: none; }
+                    .notif-item:hover { background: #f0fdf4; }
+                    .notif-item.unread { background: rgba(5,150,105,0.04); }
+                    .notif-icon-wrap { width: 36px; height: 36px; border-radius: 10px; flex-shrink:
+                    0; display: flex; align-items: center; justify-content: center; font-size: 1rem;
+                    }
+                    .notif-icon-wrap.breached { background: rgba(239,68,68,0.1); color: #ef4444; }
+                    .notif-icon-wrap.at-risk { background: rgba(245,158,11,0.1); color: #f59e0b; }
+                    .notif-body { flex: 1; min-width: 0; }
+                    .notif-title { font-size: 0.825rem; font-weight: 600; margin-bottom: 2px; color:
+                    #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                    .notif-sub { font-size: 0.75rem; color: #64748b; }
+                    .notif-time-text { font-size: 0.7rem; color: #94a3b8; margin-top: 3px; }
+                    .notif-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+                    margin-top: 6px; }
+                    .notif-dot.breached { background: #ef4444; }
+                    .notif-dot.at-risk { background: #f59e0b; }
+                    .notif-empty { padding: 2rem; text-align: center; color: #64748b; font-size:
+                    0.85rem; }
+                    .notif-footer { padding: 0.75rem 1.25rem; border-top: 1px solid
+                    rgba(5,150,105,0.08); text-align: center; background: #f8fafc; }
+                    .notif-footer a { font-size: 0.8rem; color: #065f46; text-decoration: none;
+                    font-weight: 500; }
+
+                    /* ── KANBAN ── */
+                    .kanban-board { display: flex; gap: 1rem; padding: 1.5rem 2rem; overflow-x:
+                    auto; min-height: calc(100vh - 160px); align-items: flex-start; }
+                    .kanban-board::-webkit-scrollbar { height: 6px; }
+                    .kanban-board::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1);
+                    border-radius: 4px; }
+                    .kanban-col { flex: 0 0 270px; background: #f8fafc; border-radius: 12px; border:
+                    1px solid #e5e7eb; display: flex; flex-direction: column; max-height: calc(100vh
+                    - 180px); }
+                    .kanban-col-header { padding: 1rem 1rem 0.75rem; border-bottom: 1px solid
+                    #e5e7eb; display: flex; align-items: center; justify-content: space-between;
+                    flex-shrink: 0; }
+                    .kanban-col-title { font-size: 0.8rem; font-weight: 700; text-transform:
+                    uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap:
+                    0.5rem; }
+                    .kanban-col-count { font-size: 0.72rem; background: rgba(0,0,0,0.06); color:
+                    #6b7280; border-radius: 999px; padding: 2px 8px; font-weight: 600; }
+                    .kanban-col[data-state="new"] { border-top: 3px solid #3b82f6; }
+                    .kanban-col[data-state="in_progress"] { border-top: 3px solid #f59e0b; }
+                    .kanban-col[data-state="resolved"] { border-top: 3px solid #10b981; }
+                    .kanban-col[data-state="closed"] { border-top: 3px solid #6b7280; }
+                    .kanban-col[data-state="new"] .kanban-col-title { color: #1d4ed8; }
+                    .kanban-col[data-state="in_progress"] .kanban-col-title { color: #d97706; }
+                    .kanban-col[data-state="resolved"] .kanban-col-title { color: #059669; }
+                    .kanban-col[data-state="closed"] .kanban-col-title { color: #6b7280; }
+                    .kanban-cards { padding: 0.75rem; display: flex; flex-direction: column; gap:
+                    0.65rem; overflow-y: auto; flex: 1; min-height: 80px; }
+                    .kanban-cards::-webkit-scrollbar { width: 4px; }
+                    .kanban-cards::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08);
+                    border-radius: 4px; }
+                    .kanban-card { background: white; border: 1px solid #e5e7eb; border-radius: 8px;
+                    padding: 0.9rem; cursor: grab; transition: all 0.2s; user-select: none;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+                    .kanban-card:hover { border-color: rgba(5,150,105,0.3); transform:
+                    translateY(-2px); box-shadow: 0 6px 15px rgba(5,150,105,0.1); }
+                    .kanban-card.dragging { opacity: 0.5; transform: rotate(2deg) scale(1.02);
+                    cursor: grabbing; }
+                    .kanban-card-id { font-size: 0.68rem; color: #065f46; font-weight: 700;
+                    font-family: monospace; margin-bottom: 0.4rem; }
+                    .kanban-card-subject { font-size: 0.82rem; font-weight: 600; color: #1f2937;
+                    margin-bottom: 0.6rem; line-height: 1.3; display: -webkit-box;
+                    -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+                    .kanban-card-footer { display: flex; align-items: center; justify-content:
+                    space-between; gap: 0.5rem; }
+                    .kanban-card-customer { display: flex; align-items: center; gap: 0.4rem;
+                    font-size: 0.72rem; color: #6b7280; }
+                    .kanban-card-customer img { width: 20px; height: 20px; border-radius: 50%;
+                    object-fit: cover; }
+                    .kanban-priority { font-size: 0.65rem; font-weight: 700; padding: 2px 7px;
+                    border-radius: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+                    .kanban-priority.priority-low { background: #d1fae5; color: #065f46; }
+                    .kanban-priority.priority-medium { background: #dcfce7; color: #1e40af; }
+                    .kanban-priority.priority-high { background: #fee2e2; color: #991b1b; }
+                    .kanban-priority.priority-urgent { background: #fef3c7; color: #92400e; }
+                    .kanban-drop-zone { border: 2px dashed rgba(5,150,105,0.3); border-radius: 8px;
+                    padding: 1rem; text-align: center; font-size: 0.75rem; color: #065f46; display:
+                    none; margin-top: 0.5rem; }
+                    .kanban-col.drag-over .kanban-drop-zone { display: block; }
+                    .kanban-col.drag-over { background: rgba(5,150,105,0.03); }
+
+                    /* ── VIEW TOGGLE ── */
+                    .view-toggle-btn { background: none; border: none; color:
+                    rgba(255,255,255,0.75); font-size: 1.2rem; cursor: pointer; padding: 6px 8px;
+                    border-radius: 8px; transition: all 0.2s; }
+                    .view-toggle-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+                    .view-toggle-btn.active { background: rgba(255,255,255,0.15); color: #fff; }
+
+                    /* ── TOAST ── */
+                    #kanbanToast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;
+                    background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding:
+                    0.75rem 1.25rem; font-size: 0.82rem; color: #1f2937; display: flex; align-items:
+                    center; gap: 0.6rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform:
+                    translateY(80px); opacity: 0; transition: all 0.3s ease; }
+                    #kanbanToast.show { transform: translateY(0); opacity: 1; }
+                    #kanbanToast.success { border-color: rgba(16,185,129,0.4); }
+                    #kanbanToast.error { border-color: rgba(239,68,68,0.4); }
+                    #kanbanToast.warning { border-color: rgba(245,158,11,0.45); background: #fffbeb; }
+
+                    /* ── NEW TICKET FLASH ── */
+                    @keyframes ticketNewFlash {
+                    0% { border-color: #065f46; box-shadow: 0 0 0 0 rgba(5,150,105,0.4); }
+                    50% { border-color: #059669; box-shadow: 0 0 0 6px rgba(5,150,105,0); }
+                    100% { border-color: #e5e7eb; box-shadow: none; }
+                    }
+                    .kanban-card.ticket-new-flash { animation: ticketNewFlash 1.2s ease-out
+                    forwards; }
+
+                    /* ── MOBILE VIEW PILL ── */
+                    .mobile-view-pill { display: none; }
+                    @media (max-width: 768px) {
+                    .mobile-view-pill { display: flex; background: #f1f5f9; border-radius: 999px;
+                    padding: 3px; gap: 2px; margin-bottom: 1rem; width: fit-content; }
+                    .mobile-view-pill-btn { border: none; background: transparent; border-radius:
+                    999px; padding: 0.4rem 1.1rem; font-size: 0.82rem; font-weight: 500; color:
+                    #64748b; cursor: pointer; transition: all 0.18s; }
+                    .mobile-view-pill-btn.active { background: white; color: #065f46; font-weight:
+                    600; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+                    }
+                    /* ── BACK BUTTON WARNING MODAL ── */
+                    #focalLogoutWarningModal {
+                    display: none; position: fixed; top: 0; left: 0;
+                    width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.5); z-index: 99999;
+                    align-items: center; justify-content: center;
+                    backdrop-filter: blur(4px);
+                    }
+                    #focalLogoutWarningModal.show { display: flex !important; }
+                    .focal-logout-modal-box {
+                    background: #ffffff; border-radius: 20px;
+                    padding: 2.5rem 2rem; max-width: 420px; width: 90%;
+                    box-shadow: 0 24px 60px rgba(5,150,105,0.25);
+                    text-align: center;
+                    animation: focalModalPop 0.25s ease;
+                    }
+                    @keyframes focalModalPop {
+                    from { transform: scale(0.88); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                    }
+                    .focal-logout-modal-icon {
+                    width: 68px; height: 68px; background: #fef3c7;
+                    border-radius: 50%; display: flex; align-items: center;
+                    justify-content: center; margin: 0 auto 1.25rem;
+                    border: 3px solid #fde68a;
+                    }
+                    .focal-logout-modal-icon i { font-size: 1.9rem; color: #d97706; }
+                    .focal-logout-modal-box h5 {
+                    color: #065f46; font-weight: 700; font-size: 1.2rem; margin-bottom: 0.6rem;
+                    }
+                    .focal-logout-modal-box p {
+                    color: #475569; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.75rem;
+                    }
+                    .focal-logout-modal-box p strong { color: #065f46; }
+                    .focal-logout-modal-btns { display: flex; gap: 0.85rem; justify-content: center;
+                    }
+                    .focal-btn-stay {
+                    padding: 0.6rem 1.4rem; border-radius: 10px;
+                    border: 1.5px solid rgba(5,150,105,0.2); background: #f0fdf4;
+                    color: #065f46; font-weight: 600; font-size: 0.9rem;
+                    cursor: pointer; transition: background 0.2s, border-color 0.2s;
+                    }
+                    .focal-btn-stay:hover { background: #f0fdf4; border-color: #065f46; }
+                    .focal-btn-logout-now {
+                    padding: 0.6rem 1.4rem; border-radius: 10px; border: none;
+                    background: #065f46; color: #ffffff; font-weight: 600;
+                    font-size: 0.9rem; cursor: pointer; transition: background 0.2s;
+                    }
+                    .focal-btn-logout-now:hover { background: #047857; }
+
+                    /* ── EMERALD CONSISTENCY LAYER ── */
+                    .dashboard-wrapper {
+                    background:
+                    radial-gradient(circle at 14% 6%, rgba(5, 150, 105, 0.07) 0%, transparent 34%),
+                    radial-gradient(circle at 92% 92%, rgba(5, 150, 105, 0.05) 0%, transparent 36%),
+                    linear-gradient(160deg, #f8fafc 0%, #f0fdf4 50%, #f8fafc 100%) !important;
+                    }
+                    .dashboard-header {
+                    background: linear-gradient(130deg, #022c22 0%, #064e3b 46%, #065f46 100%) !important;
+                    border-bottom: 1px solid rgba(5, 150, 105, 0.15) !important;
+                    box-shadow: 0 8px 24px rgba(2, 44, 34, 0.22) !important;
+                    }
+                    .nav-link.active {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border-bottom: 2px solid rgba(255, 255, 255, 0.6) !important;
+                    }
+                    .dashboard-card,
+                    .ticket-table-wrapper,
+                    .action-card,
+                    .kanban-col {
+                    background: rgba(255, 255, 255, 0.92) !important;
+                    border: 1px solid rgba(5, 150, 105, 0.12) !important;
+                    box-shadow: 0 8px 24px rgba(5, 150, 105, 0.08) !important;
+                    }
+                    .card-title,
+                    .action-content h4,
+                    .stat-value,
+                    .performance-value,
+                    .kanban-col-title,
+                    .tkt-ref,
+                    .tkt-subject {
+                    color: #065f46 !important;
+                    }
+                    .card-title i,
+                    .action-icon i,
+                    .kanban-card-id {
+                    color: #059669 !important;
+                    }
+                    .stat-icon,
+                    .performance-icon {
+                    background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%) !important;
+                    color: #065f46 !important;
+                    }
+                    .action-icon,
+                    .score-badge,
+                    .view-btn.active,
+                    .filter-pill.active,
+                    .focal-btn-logout-now {
+                    background: linear-gradient(140deg, #047857 0%, #059669 100%) !important;
+                    color: #ffffff !important;
+                    border-color: #047857 !important;
+                    }
+                    .notif-dropdown {
+                    border: 1px solid rgba(5, 150, 105, 0.15) !important;
+                    box-shadow: 0 16px 36px rgba(5, 150, 105, 0.18) !important;
+                    border-radius: 14px !important;
+                    }
+                    .notif-header {
+                    background: #f0fdf4 !important;
+                    }
+                    .notif-item:hover,
+                    .ticket-table tbody tr:hover {
+                    background: rgba(5, 150, 105, 0.04) !important;
+                    }
+                    .kanban-card:hover {
+                    border-color: rgba(5, 150, 105, 0.35) !important;
+                    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.12) !important;
+                    }
+                    .focal-logout-modal-box {
+                    border: 1px solid rgba(5, 150, 105, 0.12) !important;
+                    box-shadow: 0 22px 60px rgba(5, 150, 105, 0.2) !important;
+                    }
+                </style>
+            </t>
+
+            <div class="dashboard-wrapper">
+
+                <!-- BACK BUTTON WARNING MODAL -->
+                <div id="focalLogoutWarningModal" role="dialog" aria-modal="true"
+                    aria-labelledby="focalLogoutModalTitle">
+                    <div class="focal-logout-modal-box">
+                        <div class="focal-logout-modal-icon">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <h5 id="focalLogoutModalTitle">Hold On!</h5>
+                        <p>Please use the <strong>Logout</strong> button to exit safely.<br />
+                            Pressing the back button may leave your session unsecured and expose
+                            your account to unauthorised access.</p>
+                        <div class="focal-logout-modal-btns">
+                            <button class="focal-btn-stay" id="focalModalStayBtn">
+                                <i class="bi bi-arrow-left-circle me-1"></i> Stay on Page </button>
+                            <button class="focal-btn-logout-now" id="focalModalLogoutBtn">
+                                <i class="bi bi-box-arrow-right me-1"></i> Logout Properly </button>
+                        </div>
+                    </div>
+                </div>
+
+                <header class="dashboard-header">
+                    <div class="header-content">
+
+                        <button class="mobile-hamburger-btn" id="mobileHamburgerBtn"
+                            aria-label="Open navigation">
+                            <i class="bi bi-list"></i>
+                        </button>
+
+                        <div class="header-nav">
+                            <a href="#" class="nav-link active" data-view="overview">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Overview</span>
+                            </a>
+                            <a href="/customer_support/my_projects" class="nav-link-external">
+                                <i class="bi bi-kanban"></i>
+                                <span>My Projects</span>
+                            </a>
+                        </div>
+
+                        <div class="header-right">
+                            <div class="notif-wrap me-3">
+                                <button class="notif-btn" id="notifBell" title="SLA Alerts">
+                                    <i class="bi bi-bell-fill"></i>
+                                    <span class="notif-badge d-none" id="notifBadge">0</span>
+                                </button>
+                                <div class="notif-dropdown" id="notifDropdown">
+                                    <div class="notif-header">
+                                        <h6><i class="bi bi-bell me-2"></i>SLA Alerts</h6>
+                                        <button class="notif-mark-read" id="markAllRead">Mark all
+                                            read</button>
+                                    </div>
+                                    <div class="notif-list" id="notifList">
+                                        <div class="notif-empty">
+                                            <i class="bi bi-arrow-repeat"
+                                                style="font-size:1.5rem;display:block;margin-bottom:.5rem;"></i>
+                                            Loading alerts... </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="user-profile dropdown">
+                                <a class="d-flex align-items-center text-white dropdown-toggle"
+                                    href="#" id="userProfileDropdown" data-bs-toggle="dropdown"
+                                    aria-expanded="false" style="text-decoration:none;">
+                                    <span class="user-name me-3">
+                                        <t t-esc="user.name" />
+                                    </span>
+                                    <img t-att-src="'/web/image/res.users/%s/avatar_128' % user.id"
+                                        alt="User Avatar" class="user-avatar"
+                                        onerror="this.src='/web/static/img/avatar_gray.svg'" />
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    aria-labelledby="userProfileDropdown">
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="/customer_support/support/profile"><i
+                                                class="bi bi-person me-2"></i>Edit Profile</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="/customer_support/logout_manual"><i
+                                                class="bi bi-box-arrow-right me-2"></i>Logout</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Alerts -->
+                <t
+                    t-if="request.params.get('success') or request.params.get('error') or request.params.get('created')">
+                    <div class="container-fluid" style="max-width:1600px;padding:1rem 2rem 0;">
+                        <t t-if="request.params.get('success')">
+                            <div class="alert alert-success alert-dismissible fade show"
+                                role="alert">
+                                <i class="bi bi-check-circle-fill"></i> <strong>Success!</strong>
+                                Operation completed successfully. <button type="button"
+                                    class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        </t>
+                        <t t-if="request.params.get('error')">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill"></i> <strong>Error!</strong>
+                                An error occurred. <button type="button" class="btn-close"
+                                    data-bs-dismiss="alert"></button>
+                            </div>
+                        </t>
+                        <t t-if="request.params.get('created')">
+                            <div class="alert alert-success alert-dismissible fade show"
+                                role="alert">
+                                <i class="bi bi-check-circle-fill"></i> <strong>Success!</strong>
+                                Ticket created successfully. <button type="button" class="btn-close"
+                                    data-bs-dismiss="alert"></button>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- ═══ OVERVIEW PAGE ═══ -->
+                <div class="page-content dashboard-content" id="overview-page">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="bi bi-bar-chart-fill"></i>Ticket
+                                Analytics</h2>
+                            <div class="card-actions">
+                                <span class="last-updated"><i class="bi bi-clock"></i>Updated just
+                                    now</span>
+                            </div>
+                        </div>
+                        <div class="analytics-grid">
+                            <div class="stat-box" data-key="open_tickets">
+                                <div class="stat-icon">
+                                    <i class="bi bi-folder-plus"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Open Tickets</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('open_tickets',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">Active Tickets</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="total_tickets">
+                                <div class="stat-icon">
+                                    <i class="bi bi-stack"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Total Tickets</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('total_tickets',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">All Tickets</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="high_priority">
+                                <div class="stat-icon">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">High Priority</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('high_priority',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">High Priority</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="urgent">
+                                <div class="stat-icon">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Urgent</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('urgent',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">Urgent Priority</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="analytics-grid">
+                            <div class="stat-box" data-key="avg_open_hours">
+                                <div class="stat-icon">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Avg Open Hours</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('avg_open_hours',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">Hours</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="total_hours">
+                                <div class="stat-icon">
+                                    <i class="bi bi-clock-fill"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Total Hours</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('total_hours',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">Hours Open</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="avg_high_hours">
+                                <div class="stat-icon">
+                                    <i class="bi bi-exclamation-octagon"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Avg High Priority Hours</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('avg_high_hours',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">Hours</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="avg_urgent_hours">
+                                <div class="stat-icon">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Avg Urgent Hours</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('avg_urgent_hours',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">Hours</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="analytics-grid">
+                            <div class="stat-box" data-key="resolved_tickets">
+                                <div class="stat-icon">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Resolved Tickets</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('resolved_tickets',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">Fixed Tickets</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="solve_rate">
+                                <div class="stat-icon">
+                                    <i class="bi bi-percent"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Solve Rate</div>
+                                    <div class="stat-value"><t
+                                            t-esc="analytics.get('solve_rate',0)" />%</div>
+                                    <div class="stat-subtitle">Success Rate</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="high_resolved">
+                                <div class="stat-icon">
+                                    <i class="bi bi-check-square"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">High Priority Resolved</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('high_resolved',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">High Fixed</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" data-key="urgent_resolved">
+                                <div class="stat-icon">
+                                    <i class="bi bi-check-all"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Urgent Resolved</div>
+                                    <div class="stat-value">
+                                        <t t-esc="analytics.get('urgent_resolved',0)" />
+                                    </div>
+                                    <div class="stat-subtitle">Urgent Fixed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ═══ END OVERVIEW ═══ -->
+
+                <!-- ═══ TICKETS PAGE ═══ -->
+                <div class="page-content dashboard-content" id="tickets-page" style="display:none;">
+
+                    <!-- Header row: search + view toggle -->
+                    <div class="tickets-header">
+                        <div class="search-container">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="search-input" id="ticketSearchInput"
+                                placeholder="Search tickets, customers..." />
+                        </div>
+                        <div class="view-toggle">
+                            <button class="view-btn active" id="listViewBtn" title="List view">
+                                <i class="bi bi-list"></i>
+                            </button>
+                            <button class="view-btn" id="kanbanViewBtn" title="Kanban view">
+                                <i class="bi bi-grid-3x3-gap"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mobile pill -->
+                    <div class="mobile-view-pill" id="mobileViewPill">
+                        <button class="mobile-view-pill-btn active" id="mobilePillList"
+                            data-target="list"><i class="bi bi-list-ul me-1"></i>List</button>
+                        <button class="mobile-view-pill-btn" id="mobilePillKanban"
+                            data-target="kanban"><i class="bi bi-grid-3x3-gap me-1"></i>Kanban</button>
+                    </div>
+
+                    <!-- ── LIST VIEW ── -->
+                    <div id="listView">
+
+                        <!-- Filter bar -->
+                        <div class="ticket-filter-bar" id="ticketFilterBar">
+                            <span class="filter-label">Status</span>
+                            <div class="filter-pill-group" id="statusFilters">
+                                <button class="filter-pill active" data-filter-type="status"
+                                    data-filter-val="all" title="Show all tickets">All</button>
+                                <button class="filter-pill" data-filter-type="status"
+                                    data-filter-val="new" title="Show new tickets">New</button>
+                                <button class="filter-pill" data-filter-type="status"
+                                    data-filter-val="in_progress" title="Show in progress tickets">In Progress</button>
+                                <button class="filter-pill" data-filter-type="status"
+                                    data-filter-val="resolved" title="Show resolved tickets">Resolved</button>
+                                <button class="filter-pill" data-filter-type="status"
+                                    data-filter-val="closed" title="Show closed tickets">Closed</button>
+                            </div>
+                            <div class="filter-divider"></div>
+                            <span class="filter-label">Priority</span>
+                            <div class="filter-pill-group" id="priorityFilters">
+                                <button class="filter-pill active" data-filter-type="priority"
+                                    data-filter-val="all" title="Show all priority levels">All</button>
+                                <button class="filter-pill prio-urgent" data-filter-type="priority"
+                                    data-filter-val="urgent" title="Show urgent tickets">Urgent</button>
+                                <button class="filter-pill prio-high" data-filter-type="priority"
+                                    data-filter-val="high" title="Show high priority tickets">High</button>
+                                <button class="filter-pill prio-medium" data-filter-type="priority"
+                                    data-filter-val="medium" title="Show medium priority tickets">Medium</button>
+                                <button class="filter-pill prio-low" data-filter-type="priority"
+                                    data-filter-val="low" title="Show low priority tickets">Low</button>
+                            </div>
+                            <span class="filter-count" id="filterCount"></span>
+                        </div>
+
+                        <div class="ticket-table-wrapper">
+                            <table class="ticket-table" id="ticketTable" style="display:none;">
+                                <thead>
+                                    <tr>
+                                        <th class="col-ticket th-sortable" data-sort="name"> Ticket <span
+                                                class="sort-icon bi bi-chevron-expand"></span>
+                                        </th>
+                                        <th class="col-customer">Customer</th>
+                                        <th class="col-status th-sortable" data-sort="state"> Status <span
+                                                class="sort-icon bi bi-chevron-expand"></span>
+                                        </th>
+                                        <th class="col-priority th-sortable" data-sort="priority">
+                                            Priority <span class="sort-icon bi bi-chevron-expand"></span>
+                                        </th>
+                                        <th class="col-created th-sortable" data-sort="create_date">
+                                            Created <span class="sort-icon bi bi-chevron-expand"></span>
+                                        </th>
+                                        <th class="col-project">Project</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ticketTableBody"></tbody>
+                            </table>
+                            <div class="tickets-empty-state" id="ticketsEmptyState"
+                                style="display:none;">
+                                <i class="bi bi-inbox"></i>
+                                <h3>No tickets found.</h3>
+                                <p>Try adjusting your filters or search term.</p>
+                            </div>
+                            <div class="tickets-empty-state" id="ticketsLoadingState">
+                                <i class="bi bi-arrow-repeat"
+                                    style="animation:spin 1s linear infinite;display:inline-block;"></i>
+                                <h3>Loading tickets...</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── KANBAN VIEW ── -->
+                    <div id="kanbanView" style="display:none;">
+                        <div class="kanban-board" id="kanbanBoard">
+                            <div class="kanban-col" data-state="new">
+                                <div class="kanban-col-header" data-col-toggle="new">
+                                    <span class="kanban-col-title"><i class="bi bi-circle"></i> New</span>
+                                    <div class="kanban-col-header-right">
+                                        <span class="kanban-col-count" id="count-new">0</span>
+                                        <i class="bi bi-chevron-down kanban-col-chevron mobile-only"></i>
+                                    </div>
+                                </div>
+                                <div class="kanban-cards" id="col-new"></div>
+                                <div class="kanban-drop-zone">Drop here</div>
+                            </div>
+                            <div class="kanban-col" data-state="in_progress">
+                                <div class="kanban-col-header" data-col-toggle="in_progress">
+                                    <span class="kanban-col-title"><i class="bi bi-arrow-repeat"></i>
+                                        In Progress</span>
+                                    <div class="kanban-col-header-right">
+                                        <span class="kanban-col-count" id="count-in_progress">0</span>
+                                        <i class="bi bi-chevron-down kanban-col-chevron mobile-only"></i>
+                                    </div>
+                                </div>
+                                <div class="kanban-cards" id="col-in_progress"></div>
+                                <div class="kanban-drop-zone">Drop here</div>
+                            </div>
+                            <div class="kanban-col" data-state="resolved">
+                                <div class="kanban-col-header" data-col-toggle="resolved">
+                                    <span class="kanban-col-title"><i class="bi bi-check-circle"></i>
+                                        Resolved</span>
+                                    <div class="kanban-col-header-right">
+                                        <span class="kanban-col-count" id="count-resolved">0</span>
+                                        <i class="bi bi-chevron-down kanban-col-chevron mobile-only"></i>
+                                    </div>
+                                </div>
+                                <div class="kanban-cards" id="col-resolved"></div>
+                                <div class="kanban-drop-zone">Drop here</div>
+                            </div>
+                            <div class="kanban-col" data-state="closed">
+                                <div class="kanban-col-header" data-col-toggle="closed">
+                                    <span class="kanban-col-title"><i class="bi bi-x-circle"></i>
+                                        Closed</span>
+                                    <div class="kanban-col-header-right">
+                                        <span class="kanban-col-count" id="count-closed">0</span>
+                                        <i class="bi bi-chevron-down kanban-col-chevron mobile-only"></i>
+                                    </div>
+                                </div>
+                                <div class="kanban-cards" id="col-closed"></div>
+                                <div class="kanban-drop-zone">Drop here</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ═══ END TICKETS PAGE ═══ -->
+
+                <!-- Hover tooltip (single shared instance) -->
+                <div class="ticket-tooltip" id="ticketTooltip"></div>
+
+                <!-- Mobile nav overlay + drawer -->
+                <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+                <div class="mobile-nav-drawer" id="mobileNavDrawer">
+                    <div class="mobile-nav-drawer-header">
+                        <div class="drawer-brand-icon">
+                            <i class="bi bi-headset"></i>
+                        </div>
+                        <div class="drawer-brand-text">
+                            <strong>Customer Support</strong>
+                            <span>Agent Panel</span>
+                        </div>
+                        <button class="mobile-nav-drawer-close" id="mobileNavClose">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="mobile-nav-section-label">Navigation</div>
+                    <ul class="mobile-nav-list">
+                        <li>
+                            <a class="mobile-nav-item active" data-view="overview">
+                                <div class="mobile-nav-item-icon">
+                                    <i class="bi bi-speedometer2"></i>
+                                </div>
+                                <div class="mobile-nav-item-text">
+                                    <strong>Overview</strong>
+                                    <span>Dashboard summary</span>
+                                </div>
+                                <i class="bi bi-chevron-right mobile-nav-item-arrow"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="mobile-nav-item" data-view="tickets">
+                                <div class="mobile-nav-item-icon">
+                                    <i class="bi bi-ticket-detailed"></i>
+                                </div>
+                                <div class="mobile-nav-item-text">
+                                    <strong>Tickets</strong>
+                                    <span>View &amp; manage tickets</span>
+                                </div>
+                                <i class="bi bi-chevron-right mobile-nav-item-arrow"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="mobile-nav-drawer-footer">
+                        <p>Customer Support System &#169; 2025</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="kanbanToast"></div>
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+            <!-- ═══ 1. BELL / SLA ALERTS ═══ -->
+            <script type="text/javascript">
+                //<![CDATA[
+(function(){
+'use strict';
+var bell=document.getElementById('notifBell');
+var dropdown=document.getElementById('notifDropdown');
+bell.addEventListener('click',function(e){e.stopPropagation();dropdown.classList.toggle('open');});
+document.addEventListener('click',function(){dropdown.classList.remove('open');});
+dropdown.addEventListener('click',function(e){e.stopPropagation();});
+document.getElementById('markAllRead').addEventListener('click',function(){
+    fetch('/customer_support/dashboard/sla_alerts/mark_read',{method:'POST',credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .catch(function(){})
+    .then(function(){loadSlaAlerts();});
+});
+document.querySelectorAll('.notif-nav-link').forEach(function(a){
+    a.addEventListener('click',function(e){
+        e.preventDefault();
+        window.switchView(this.getAttribute('data-view'));
+        dropdown.classList.remove('open');
+    });
+});
+function loadSlaAlerts(){
+    fetch('/customer_support/dashboard/sla_alerts',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json'}})
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+    .then(function(data){renderAlerts(data.alerts||[]);})
+    .catch(function(){renderAlerts([]);});
+}
+function renderAlerts(alerts){
+    var list=document.getElementById('notifList');
+    var badge=document.getElementById('notifBadge');
+    if(!alerts.length){
+        list.innerHTML='<div class="notif-empty"><i class="bi bi-check-circle-fill" style="font-size:2rem;color:#10b981;display:block;margin-bottom:.5rem;"></i>All tickets are on track!</div>';
+        badge.classList.add('d-none');
+        return;
+    }
+    badge.textContent=alerts.length;
+    badge.classList.remove('d-none');
+    list.innerHTML=alerts.map(function(a){
+        var isAssignment=a.alert_type==='assignment';
+        var cls=isAssignment?'at-risk':(a.sla_status==='breached'?'breached':'at-risk');
+        var icon=isAssignment?'bi-ticket-detailed-fill':(cls==='breached'?'bi-x-octagon-fill':'bi-exclamation-triangle-fill');
+        var label=isAssignment?'New Assignment':(cls==='breached'?'SLA Breached':'At Risk');
+        var policyLine=isAssignment?'Ticket assigned to you':'Policy: '+(a.policy_name||'None');
+        return '<div class="notif-item unread">'
+            +'<div class="notif-icon-wrap '+cls+'"><i class="bi '+icon+'"></i></div>'
+            +'<div class="notif-body">'
+            +'<div class="notif-title">Ticket #'+a.ticket_id+' \u2014 '+a.subject+'</div>'
+            +'<div class="notif-sub">'+label+' \u00b7 '+a.time_display+'</div>'
+            +'<div class="notif-time-text">Project: '+(a.project_name||'General')+'</div>'
+            +'</div><div class="notif-dot '+cls+'"></div></div>';
+    }).join('');
+}
+document.addEventListener('DOMContentLoaded',function(){loadSlaAlerts();setInterval(loadSlaAlerts,30000);});
+})();
+//]]>
+            </script>
+
+            <!-- ═══ 2. LIVE ANALYTICS ═══ -->
+            <script type="text/javascript">
+                //<![CDATA[
+(function(){
+'use strict';
+var INTERVAL=15000;
+var A=[
+    {key:'open_tickets',sel:'[data-key="open_tickets"] .stat-value'},
+    {key:'total_tickets',sel:'[data-key="total_tickets"] .stat-value'},
+    {key:'high_priority',sel:'[data-key="high_priority"] .stat-value'},
+    {key:'urgent',sel:'[data-key="urgent"] .stat-value'},
+    {key:'avg_open_hours',sel:'[data-key="avg_open_hours"] .stat-value'},
+    {key:'total_hours',sel:'[data-key="total_hours"] .stat-value'},
+    {key:'avg_high_hours',sel:'[data-key="avg_high_hours"] .stat-value'},
+    {key:'avg_urgent_hours',sel:'[data-key="avg_urgent_hours"] .stat-value'},
+    {key:'resolved_tickets',sel:'[data-key="resolved_tickets"] .stat-value'},
+    {key:'solve_rate',sel:'[data-key="solve_rate"] .stat-value',sfx:'%'},
+    {key:'high_resolved',sel:'[data-key="high_resolved"] .stat-value'},
+    {key:'urgent_resolved',sel:'[data-key="urgent_resolved"] .stat-value'}
+];
+var P=[
+    {key:'today_closed',sel:'[data-key="today_closed"] .performance-value'},
+    {key:'avg_resolve_rate',sel:'[data-key="avg_resolve_rate"] .performance-value',sfx:'%'},
+    {key:'daily_target',sel:'[data-key="daily_target"] .performance-value',sfx:'%'},
+    {key:'achievement',sel:'[data-key="achievement"] .performance-value',sfx:'%'},
+    {key:'sample_performance',sel:'[data-key="sample_performance"] .score-badge',sfx:'%'}
+];
+function upd(sel,val,sfx){var el=document.querySelector(sel);if(el)el.textContent=val+(sfx||'');}
+function flash(sel){var el=document.querySelector(sel);if(el){el.style.transition='color 0.3s';el.style.color='#059669';setTimeout(function(){el.style.color='';},600);}}
+function updBar(v){var b=document.querySelector('.progress-bar');if(b){b.style.width=v+'%';b.className='progress-bar '+(v>=80?'bg-success':'bg-warning');}}
+function updBarLabel(v){var ls=document.querySelectorAll('.progress-label span');if(ls.length>=2)ls[1].textContent=v+'%';}
+function updTime(){var t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.querySelectorAll('.last-updated').forEach(function(el){el.innerHTML='<i class="bi bi-clock me-1"></i>Updated at '+t;});}
+function run(){
+    fetch('/customer_support/dashboard/analytics',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json'}})
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+    .then(function(d){
+        var a=d.analytics||{},p=d.performance||{};
+        A.forEach(function(i){var v=a[i.key];if(v!==undefined){upd(i.sel,v,i.sfx||'');flash(i.sel);}});
+        P.forEach(function(i){var v=p[i.key];if(v!==undefined)upd(i.sel,v,i.sfx||'');});
+        if(p.achievement!==undefined){updBar(p.achievement);updBarLabel(p.achievement);}
+        updTime();
+    })
+    .catch(function(e){console.warn('Analytics refresh failed:',e);});
+}
+document.addEventListener('DOMContentLoaded',function(){run();setInterval(run,INTERVAL);});
+})();
+//]]>
+            </script>
+
+            <!-- ═══ 3. NAV + TICKET POLLING + KANBAN + FILTERS + TOOLTIP ═══ -->
+            <script type="text/javascript">
+                //<![CDATA[
+document.addEventListener('DOMContentLoaded',function(){
+
+    /* ── Spinner ── */
+    var spinStyle=document.createElement('style');
+    spinStyle.textContent='@keyframes spin{to{transform:rotate(360deg);}}';
+    document.head.appendChild(spinStyle);
+
+    /* ── Alerts auto-close ── */
+    setTimeout(function(){document.querySelectorAll('.alert').forEach(function(a){new bootstrap.Alert(a).close();});},5000);
+
+    /* ── Toast ── */
+    var toastEl=document.getElementById('kanbanToast');
+    var toastTimer;
+    function showToast(msg,type){
+        toastEl.textContent=msg;
+        toastEl.className='show '+(type||'');
+        clearTimeout(toastTimer);
+        toastTimer=setTimeout(function(){toastEl.className='';},3000);
+    }
+
+    /* ── Page switching ── */
+    window.switchView=function(viewId){
+        document.querySelectorAll('.header-nav .nav-link').forEach(function(l){l.classList.remove('active');});
+        var nl=document.querySelector('.header-nav .nav-link[data-view="'+viewId+'"]');
+        if(nl)nl.classList.add('active');
+        document.querySelectorAll('.mobile-nav-item').forEach(function(i){i.classList.remove('active');});
+        var mni=document.querySelector('.mobile-nav-item[data-view="'+viewId+'"]');
+        if(mni)mni.classList.add('active');
+        document.querySelectorAll('.page-content').forEach(function(p){p.style.display='none';});
+        var target=document.getElementById(viewId+'-page');
+        if(target)target.style.display='block';
+    };
+    document.querySelectorAll('.header-nav .nav-link').forEach(function(link){
+        link.addEventListener('click',function(e){e.preventDefault();window.switchView(this.getAttribute('data-view'));});
+    });
+
+    /* ── Handle ?view= param from external pages ── */
+    (function(){
+        var p = new URLSearchParams(window.location.search);
+        var v = p.get('view');
+        if(v && document.getElementById(v+'-page')) window.switchView(v);
+    })();
+    document.querySelectorAll('.action-card[data-view]').forEach(function(card){
+        card.addEventListener('click',function(e){e.preventDefault();window.switchView(this.getAttribute('data-view'));});
+    });
+
+    /* ── List / Kanban toggle ── */
+    var listViewBtn=document.getElementById('listViewBtn');
+    var kanbanViewBtn=document.getElementById('kanbanViewBtn');
+    var listView=document.getElementById('listView');
+    var kanbanView=document.getElementById('kanbanView');
+    var shouldShowKanbanReminder=true;
+
+    function showList(){
+        listView.style.display='block';kanbanView.style.display='none';
+        listViewBtn.classList.add('active');kanbanViewBtn.classList.remove('active');
+        document.getElementById('mobilePillList').classList.add('active');
+        document.getElementById('mobilePillKanban').classList.remove('active');
+        shouldShowKanbanReminder=true;
+    }
+    function showKanban(){
+        listView.style.display='none';kanbanView.style.display='block';
+        listViewBtn.classList.remove('active');kanbanViewBtn.classList.add('active');
+        document.getElementById('mobilePillList').classList.remove('active');
+        document.getElementById('mobilePillKanban').classList.add('active');
+        updateCounts();
+        if(shouldShowKanbanReminder){
+            showToast('Please update ticket status promptly to keep customers assured.','warning');
+            shouldShowKanbanReminder=false;
+        }
+    }
+    listViewBtn.addEventListener('click',showList);
+    kanbanViewBtn.addEventListener('click',showKanban);
+    document.getElementById('mobilePillList').addEventListener('click',showList);
+    document.getElementById('mobilePillKanban').addEventListener('click',showKanban);
+    var kanbanToggleBtn=document.getElementById('kanbanToggleBtn');
+    if(kanbanToggleBtn){
+        kanbanToggleBtn.addEventListener('click',function(){
+            window.switchView('tickets');showKanban();this.classList.toggle('active');
+        });
+    }
+
+    /* ── Column counts ── */
+    function updateCounts(){
+        ['new','in_progress','resolved','closed'].forEach(function(s){
+            var col=document.getElementById('col-'+s);
+            var cnt=document.getElementById('count-'+s);
+            if(col&&cnt)cnt.textContent=col.querySelectorAll('.kanban-card').length;
+        });
+    }
+
+    /* ── Mobile kanban collapse ── */
+    document.querySelectorAll('.kanban-col-header[data-col-toggle]').forEach(function(header){
+        header.addEventListener('click',function(){
+            if(window.innerWidth>768)return;
+            var col=this.closest('.kanban-col');
+            col.classList.toggle('collapsed');
+            var chevron=this.querySelector('.kanban-col-chevron');
+            if(chevron){chevron.classList.toggle('bi-chevron-down');chevron.classList.toggle('bi-chevron-up');}
+        });
+    });
+
+    /* ── Filter state ── */
+    var activeStatus='all';
+    var activePriority='all';
+
+    document.querySelectorAll('[data-filter-type="status"]').forEach(function(btn){
+        btn.addEventListener('click',function(){
+            document.querySelectorAll('[data-filter-type="status"]').forEach(function(b){b.classList.remove('active');});
+            this.classList.add('active');
+            activeStatus=this.getAttribute('data-filter-val');
+            applyFilters();
+        });
+    });
+    document.querySelectorAll('[data-filter-type="priority"]').forEach(function(btn){
+        btn.addEventListener('click',function(){
+            document.querySelectorAll('[data-filter-type="priority"]').forEach(function(b){b.classList.remove('active');});
+            this.classList.add('active');
+            activePriority=this.getAttribute('data-filter-val');
+            applyFilters();
+        });
+    });
+
+    /* ── Search ── */
+    var searchInput=document.getElementById('ticketSearchInput');
+    if(searchInput)searchInput.addEventListener('input',applyFilters);
+
+    function applyFilters(){
+        var term=searchInput?searchInput.value.toLowerCase():'';
+        var rows=document.querySelectorAll('.ticket-row');
+        var visible=0;
+        rows.forEach(function(r){
+            var rowState=r.getAttribute('data-state')||'';
+            var rowPrio=r.getAttribute('data-priority')||'';
+            var rowText=r.textContent.toLowerCase();
+            var stateMatch=activeStatus==='all'||(activeStatus==='new'&&(rowState==='new'||rowState==='assigned'))||rowState===activeStatus;
+            var prioMatch=activePriority==='all'||rowPrio===activePriority;
+            var textMatch=!term||rowText.includes(term);
+            var show=stateMatch&&prioMatch&&textMatch;
+            r.style.display=show?'':'none';
+            if(show)visible++;
+        });
+        /* Kanban search */
+        document.querySelectorAll('.kanban-card').forEach(function(c){
+            c.style.display=c.textContent.toLowerCase().includes(term)?'':'none';
+        });
+        /* Update count label */
+        var countEl=document.getElementById('filterCount');
+        if(countEl)countEl.textContent=visible+' ticket'+(visible!==1?'s':'');
+        /* Show/hide empty state */
+        var table=document.getElementById('ticketTable');
+        var emptyState=document.getElementById('ticketsEmptyState');
+        if(table&&table.style.display!=='none'){
+            if(emptyState){
+                if(visible===0&&rows.length>0){emptyState.style.display='block';}
+                else{emptyState.style.display='none';}
+            }
+        }
+    }
+
+    /* ── Helpers ── */
+    function escHtml(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+    function toColState(state){
+        if(state==='assigned'||state==='new')return 'new';
+        if(state==='in_progress')return 'in_progress';
+        if(state==='resolved')return 'resolved';
+        if(state==='closed')return 'closed';
+        return 'new';
+    }
+    function stateLabel(state){
+        var map={new:'New',assigned:'Assigned',in_progress:'In Progress',resolved:'Resolved',closed:'Closed'};
+        return map[state]||state.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+    }
+    function stateCssClass(state){
+        if(state==='new'||state==='assigned')return 'status-new';
+        if(state==='in_progress')return 'status-in-progress';
+        if(state==='resolved')return 'status-resolved';
+        if(state==='closed')return 'status-closed';
+        return 'status-new';
+    }
+    function prioClass(p){return 'priority-'+(p||'low');}
+    function prioLabel(p){return(p||'low').charAt(0).toUpperCase()+(p||'low').slice(1);}
+
+    /* Age helper */
+    function ticketAge(createDate){
+        if(!createDate)return '';
+        var d=new Date(createDate);
+        if(isNaN(d))return createDate;
+        var diffMs=Date.now()-d.getTime();
+        var diffMins=Math.floor(diffMs/60000);
+        if(diffMins<60)return diffMins+'m ago';
+        var diffHrs=Math.floor(diffMins/60);
+        if(diffHrs<24)return diffHrs+'h ago';
+        return Math.floor(diffHrs/24)+'d ago';
+    }
+
+    /* Initials from name */
+    function initials(name){
+        if(!name)return '?';
+        var parts=name.trim().split(' ');
+        return(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
+    }
+
+    /* Avatar colours keyed by first char */
+    var AVATAR_COLORS=['#065f46','#065f46','#185fa5','#0f6e56','#854f0b','#712b13','#534ab7','#3b6d11'];
+    function avatarColor(name){
+        var c=(name||'?').charCodeAt(0)%AVATAR_COLORS.length;
+        return AVATAR_COLORS[c];
+    }
+
+    /* ── Build list row ── */
+    function buildListRow(t){
+        var sc=stateCssClass(t.state);
+        var sd=stateLabel(t.state);
+        var pc=prioClass(t.priority);
+        var pl=prioLabel(t.priority);
+        var prioAccent='tr-'+(t.priority||'low');
+        var av=t.customer_id?'/web/image/res.partner/'+t.customer_id+'/avatar_128':'';
+        var initStr=initials(t.customer_name);
+        var bgColor=avatarColor(t.customer_name);
+
+        /* Split date into date + time parts if possible */
+        var dateParts=String(t.create_date||'').split(' ');
+        var datePart=dateParts[0]||'';
+        var timePart=dateParts[1]?dateParts[1].substring(0,5):'';
+
+        var avatarHtml=av
+            ?'<img class="cust-img" src="'+escHtml(av)+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\';" /><div class="cust-initials" style="display:none;background:'+bgColor+';">'+escHtml(initStr)+'</div>'
+            :'<div class="cust-initials" style="background:'+bgColor+';">'+escHtml(initStr)+'</div>';
+
+        return '<tr class="ticket-row '+prioAccent+'" data-ticket-id="'+t.id+'" data-state="'+escHtml(t.state)+'" data-priority="'+escHtml(t.priority||'low')+'"'
+            +' data-subject="'+escHtml(t.subject||'')+'" data-customer="'+escHtml(t.customer_name||'')+'" data-date="'+escHtml(t.create_date||'')+'">'
+            +'<td class="col-ticket"><div class="tkt-ref">'+escHtml(t.name)+'</div><div class="tkt-subject">'+escHtml(t.subject||'No description')+'</div></td>'
+            +'<td class="col-customer"><div class="cust-cell">'+avatarHtml+'<span class="cust-name-text">'+escHtml(t.customer_name)+'</span></div></td>'
+            +'<td class="col-status"><span class="table-status-badge '+sc+'">'+sd+'</span></td>'
+            +'<td class="col-priority"><span class="table-priority-badge '+pc+'">'+pl+'</span></td>'
+            +'<td class="col-created"><div class="created-date-main">'+escHtml(datePart)+'</div><div class="created-date-time">'+escHtml(timePart)+'</div></td>'
+            +'<td class="col-project"><span class="project-tag"><i class="bi bi-folder2"></i> Support</span></td>'
+            +'</tr>';
+    }
+
+    /* ── Build kanban card ── */
+    function buildKanbanCard(t){
+        var av=t.customer_id?'/web/image/res.partner/'+t.customer_id+'/avatar_128':'/web/static/img/avatar_gray.svg';
+        var pc=prioClass(t.priority);
+        var pl=prioLabel(t.priority);
+        return '<div class="kanban-card" data-ticket-id="'+t.id+'" data-state="'+toColState(t.state)+'" draggable="true">'
+            +'<div class="kanban-card-id">'+escHtml(t.name)+'</div>'
+            +'<div class="kanban-card-subject">'+escHtml(t.subject||'')+'</div>'
+            +'<div class="kanban-card-footer"><div class="kanban-card-customer"><img src="'+escHtml(av)+'" onerror="this.src=\'/web/static/img/avatar_gray.svg\'"/><span>'+escHtml(t.customer_name)+'</span></div>'
+            +'<span class="kanban-priority '+pc+'">'+pl+'</span></div></div>';
+    }
+
+    /* ── Tooltip ── */
+    var tooltip=document.getElementById('ticketTooltip');
+    var tooltipTimer;
+
+    function showTooltip(row,e){
+        var subject=row.getAttribute('data-subject')||'';
+        var customer=row.getAttribute('data-customer')||'';
+        var state=row.getAttribute('data-state')||'';
+        var priority=row.getAttribute('data-priority')||'';
+        var date=row.getAttribute('data-date')||'';
+        var ref=row.querySelector('.tkt-ref');
+        var refTxt=ref?ref.textContent:'';
+        tooltip.innerHTML=
+            '<div class="tt-ref">'+escHtml(refTxt)+'</div>'
+            +'<div class="tt-subject">'+escHtml(subject)+'</div>'
+            +'<div class="tt-row"><span class="tt-key">Customer</span><span class="tt-val">'+escHtml(customer)+'</span></div>'
+            +'<div class="tt-row"><span class="tt-key">Status</span><span class="tt-val">'+escHtml(stateLabel(state))+'</span></div>'
+            +'<div class="tt-row"><span class="tt-key">Priority</span><span class="tt-val">'+escHtml(prioLabel(priority))+'</span></div>'
+            +'<div class="tt-row"><span class="tt-key">Age</span><span class="tt-val">'+escHtml(ticketAge(date))+'</span></div>';
+
+        var rect=row.getBoundingClientRect();
+        var tipTop=rect.top+window.scrollY+(rect.height/2)-60;
+        var tipLeft=rect.right+12;
+        if(tipLeft+270>window.innerWidth)tipLeft=rect.left-282;
+        tooltip.style.top=tipTop+'px';
+        tooltip.style.left=tipLeft+'px';
+        tooltip.classList.add('visible');
+    }
+
+    function hideTooltip(){tooltip.classList.remove('visible');}
+
+    function bindRowEvents(){
+        document.querySelectorAll('.ticket-row').forEach(function(row){
+            row.addEventListener('click',function(){
+                var id=this.getAttribute('data-ticket-id');
+                if(id)window.location.href='/customer_support/ticket/'+id;
+            });
+            row.addEventListener('mouseenter',function(e){
+                clearTimeout(tooltipTimer);
+                var r=this;
+                tooltipTimer=setTimeout(function(){showTooltip(r,e);},320);
+            });
+            row.addEventListener('mouseleave',function(){
+                clearTimeout(tooltipTimer);
+                hideTooltip();
+            });
+        });
+    }
+
+    /* ── Ticket polling ── */
+    var _renderedIds={};
+    var _firstLoad=true;
+
+    function renderTickets(tickets){
+        var newIds={};
+        tickets.forEach(function(t){newIds[t.id]=true;});
+        var addedIds=[];
+        if(!_firstLoad){tickets.forEach(function(t){if(!_renderedIds[t.id])addedIds.push(t.id);});}
+        _renderedIds=newIds;
+        _firstLoad=false;
+
+        var tbody=document.getElementById('ticketTableBody');
+        var table=document.getElementById('ticketTable');
+        var emptyState=document.getElementById('ticketsEmptyState');
+        var loading=document.getElementById('ticketsLoadingState');
+        loading.style.display='none';
+
+        if(tickets.length===0){
+            table.style.display='none';
+            emptyState.style.display='block';
+        } else {
+            emptyState.style.display='none';
+            table.style.display='';
+            tbody.innerHTML=tickets.map(buildListRow).join('');
+            bindRowEvents();
+        }
+
+        /* Kanban */
+        var cols={new:[],in_progress:[],resolved:[],closed:[]};
+        tickets.forEach(function(t){var s=toColState(t.state);if(cols[s])cols[s].push(t);});
+        ['new','in_progress','resolved','closed'].forEach(function(state){
+            var colEl=document.getElementById('col-'+state);
+            if(!colEl)return;
+            var existingIds={};
+            colEl.querySelectorAll('.kanban-card').forEach(function(card){existingIds[card.getAttribute('data-ticket-id')]=card;});
+            cols[state].forEach(function(t){
+                var tid=String(t.id);
+                if(!existingIds[tid]){
+                    var tmp=document.createElement('div');
+                    tmp.innerHTML=buildKanbanCard(t);
+                    var newCard=tmp.firstChild;
+                    colEl.appendChild(newCard);
+                    if(addedIds.indexOf(t.id)!==-1){
+                        newCard.classList.add('ticket-new-flash');
+                        showToast('\uD83D\uDCCB New ticket assigned: '+t.name,'success');
+                    }
+                }
+            });
+            var incomingIds={};
+            cols[state].forEach(function(t){incomingIds[String(t.id)]=true;});
+            Object.keys(existingIds).forEach(function(tid){if(!incomingIds[tid])existingIds[tid].remove();});
+        });
+
+        updateCounts();
+        applyFilters();
+        bindDragDrop();
+    }
+
+    function loadTickets(){
+        fetch('/customer_support/dashboard/tickets',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json'}})
+        .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+        .then(function(data){renderTickets(data.tickets||[]);})
+        .catch(function(e){console.warn('Ticket refresh failed:',e);});
+    }
+
+    loadTickets();
+    setInterval(loadTickets,20000);
+
+    /* ── Drag and drop ── */
+    var draggedCard=null;
+    function bindDragDrop(){}
+
+    document.addEventListener('dragstart',function(e){
+        var card=e.target.closest('.kanban-card');
+        if(!card)return;
+        draggedCard=card;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed='move';
+        e.dataTransfer.setData('text/plain',card.getAttribute('data-ticket-id'));
+    });
+    document.addEventListener('dragend',function(e){
+        var card=e.target.closest('.kanban-card');
+        if(card)card.classList.remove('dragging');
+        document.querySelectorAll('.kanban-col').forEach(function(col){col.classList.remove('drag-over');});
+        draggedCard=null;
+    });
+    document.querySelectorAll('.kanban-col').forEach(function(col){
+        col.addEventListener('dragover',function(e){e.preventDefault();e.dataTransfer.dropEffect='move';this.classList.add('drag-over');});
+        col.addEventListener('dragleave',function(e){if(!this.contains(e.relatedTarget))this.classList.remove('drag-over');});
+        col.addEventListener('drop',function(e){
+            e.preventDefault();this.classList.remove('drag-over');
+            if(!draggedCard)return;
+            var newState=this.getAttribute('data-state');
+            var ticketId=draggedCard.getAttribute('data-ticket-id');
+            var oldState=draggedCard.getAttribute('data-state');
+            if(oldState===newState)return;
+            this.querySelector('.kanban-cards').appendChild(draggedCard);
+            draggedCard.setAttribute('data-state',newState);
+            _renderedIds[ticketId]=true;
+            updateCounts();
+            saveTicketStatus(ticketId,newState);
+        });
+    });
+
+    function saveTicketStatus(ticketId,newState){
+        var fd=new FormData();
+        fd.append('status',newState);
+        var csrfToken=(window.odoo && window.odoo.csrf_token) ? window.odoo.csrf_token : '';
+        if(csrfToken){fd.append('csrf_token',csrfToken);}
+        fetch('/customer_support/ticket/'+ticketId+'/update_status',{method:'POST',body:fd,credentials:'same-origin',headers:{'Accept':'application/json'}})
+        .then(function(r){return r.json();})
+        .then(function(data){
+            if(data.success)showToast('\u2713 Saved \u2014 '+newState.replace(/_/g,' '),'success');
+            else showToast('\u2717 '+(data.error||'Save failed'),'error');
+        })
+        .catch(function(e){console.warn('Status update error:',e);showToast('\u2717 Network error','error');});
+    }
+
+    /* Kanban card click to open */
+    document.addEventListener('click',function(e){
+        var card=e.target.closest('.kanban-card');
+        if(!card||card.classList.contains('dragging'))return;
+        var id=card.getAttribute('data-ticket-id');
+        if(id)window.location.href='/customer_support/ticket/'+id;
+    });
+
+    /* Hide tooltip on scroll */
+    document.addEventListener('scroll',hideTooltip,true);
+
+});
+//]]>
+            </script>
+
+            <!-- ═══ 4. MOBILE HAMBURGER DRAWER ═══ -->
+            <script type="text/javascript">
+                //<![CDATA[
+(function(){
+'use strict';
+var hamburger=document.getElementById('mobileHamburgerBtn');
+var overlay=document.getElementById('mobileNavOverlay');
+var drawer=document.getElementById('mobileNavDrawer');
+var closeBtn=document.getElementById('mobileNavClose');
+function openDrawer(){drawer.classList.add('open');overlay.classList.add('open');document.body.style.overflow='hidden';}
+function closeDrawer(){drawer.classList.remove('open');overlay.classList.remove('open');document.body.style.overflow='';}
+if(hamburger)hamburger.addEventListener('click',openDrawer);
+if(closeBtn)closeBtn.addEventListener('click',closeDrawer);
+if(overlay)overlay.addEventListener('click',closeDrawer);
+if(drawer){
+    drawer.querySelectorAll('.mobile-nav-item').forEach(function(item){
+        item.addEventListener('click',function(){
+            var viewId=this.getAttribute('data-view');
+            drawer.querySelectorAll('.mobile-nav-item').forEach(function(i){i.classList.remove('active');});
+            this.classList.add('active');
+            if(window.switchView)window.switchView(viewId);
+            closeDrawer();
+        });
+    });
+}
+})();
+//]]>
+            </script>
+
+            <script type="text/javascript">
+                //<![CDATA[
+// ── BACK BUTTON TRAP (focal dashboard) ───────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+    var modal     = document.getElementById('focalLogoutWarningModal');
+    var stayBtn   = document.getElementById('focalModalStayBtn');
+    var logoutBtn = document.getElementById('focalModalLogoutBtn');
+    if (!modal) return;
+
+    // Push 3 buffer entries so rapid back presses can't skip past the trap
+    history.pushState({ focalTrap: true }, '', window.location.href);
+    history.pushState({ focalTrap: true }, '', window.location.href);
+    history.pushState({ focalTrap: true }, '', window.location.href);
+
+    window.addEventListener('popstate', function () {
+        // Re-arm immediately — push 3 entries to rebuild the buffer
+        history.pushState({ focalTrap: true }, '', window.location.href);
+        history.pushState({ focalTrap: true }, '', window.location.href);
+        history.pushState({ focalTrap: true }, '', window.location.href);
+        modal.classList.add('show');
+    });
+
+    // Re-arm after bfcache restore (use pushState, not reload, to keep trap alive)
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+            history.pushState({ focalTrap: true }, '', window.location.href);
+            history.pushState({ focalTrap: true }, '', window.location.href);
+            history.pushState({ focalTrap: true }, '', window.location.href);
+        }
+    });
+
+    stayBtn.addEventListener('click', function () { modal.classList.remove('show'); });
+    logoutBtn.addEventListener('click', function () {
+        window.location.replace('/customer_support/logout_manual');
+    });
+
+    // Make all dashboard logout links history-safe as well.
+    document.addEventListener('click', function (e) {
+        var logoutLink = e.target.closest('a[href="/customer_support/logout_manual"]');
+        if (!logoutLink) return;
+        e.preventDefault();
+        window.location.replace('/customer_support/logout_manual');
+    });
+    // Click outside modal to dismiss
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) modal.classList.remove('show');
+    });
+});
+//]]>
+            </script>
+
+            <!-- Session timeout tracker -->
+            <script type="text/javascript" src="/customer_support/static/src/js/session_timeout.js"></script>
+        </t>
+    </template>
+</odoo>

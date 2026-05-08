@@ -1,0 +1,758 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Customer Tickets Template -->
+    <template id="customer_tickets" name="Customer Tickets">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <!-- Bootstrap 5 CSS -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+
+                <!-- Custom Dashboard CSS -->
+                <link rel="stylesheet"
+                    href="/customer_support/static/src/css/portal_dashboard.css?v=4" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/portal_tickets.css" />
+                <link rel="stylesheet"
+                    href="/customer_support/static/src/css/portal_dashboard_mobile.css?v=5" />
+                <style>
+                    .notif-item {
+                    display: flex; align-items: flex-start; gap: 0.75rem;
+                    padding: 0.75rem 1rem; border-bottom: 1px solid rgba(5,150,105,0.07);
+                    cursor: default;
+                    }
+                    .notif-item:last-child { border-bottom: none; }
+                    .notif-icon-wrap {
+                    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+                    display: flex; align-items: center; justify-content: center; font-size: .9rem;
+                    }
+                    .notif-icon-wrap.status { background: rgba(5,150,105,.12); color: #059669; }
+                    .notif-icon-wrap.assigned { background: rgba(22,163,74,.12); color: #16a34a; }
+                    .notif-icon-wrap.breach { background: rgba(239,68,68,.12); color: #ef4444; }
+                    .notif-body { flex: 1; min-width: 0; }
+                    .notif-title {
+                    font-size: .8rem; font-weight: 700; color: #065f46;
+                    margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow:
+                    ellipsis;
+                    }
+                    .notif-sub {
+                    font-size: .78rem; color: #475569; line-height: 1.4;
+                    word-break: break-word; white-space: normal;
+                    }
+                    .notif-time-text { font-size: .7rem; color: #94a3b8; margin-top: 3px; }
+                    .notif-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+                    margin-top: 6px; }
+                    .notif-dot.status { background: #0284c7; }
+                    .notif-dot.assigned { background: #16a34a; }
+                    .notif-dot.breach { background: #ef4444; }
+
+                    /* Premium palette alignment */
+                    .notif-title { color: #065f46; }
+                    .notif-sub { color: #5b6f83; }
+                    .notif-icon-wrap.status {
+                    background: rgba(31,110,140,.14);
+                    color: #059669;
+                    }
+                    .notif-dot.status { background: #059669; }
+                </style>
+            </t>
+
+            <div class="dashboard-wrapper">
+                <!-- Top Navigation Header -->
+                <header class="dashboard-header">
+                    <div class="header-content">
+                        <!-- ↓ MOBILE NAV COMPONENT (hamburger + drawer) -->
+                        <t t-set="mobile_active_page" t-value="'overview'" />
+                        <t t-call="customer_support.portal_mobile_nav_component" />
+
+                        <div class="header-nav">
+                            <a href="/customer_support/dashboard" class="nav-link">
+                                <i class="bi bi-speedometer2 me-2"></i>Overview </a>
+                            <a href="/customer_support/tickets" class="nav-link active">
+                                <i class="bi bi-ticket-detailed me-2"></i>Tickets </a>
+                            <a href="/customer_support/dashboard#reporting" class="nav-link">
+                                <i class="bi bi-folder-fill me-2"></i>Reports </a>
+                            <a href="/customer_support/chatbot" class="nav-link">
+                                <i class="bi bi-question-circle me-2"></i>FAQ </a>
+                        </div>
+                        <div class="header-right">
+                            <!-- New Ticket Button -->
+                            <div class="header-actions">
+                                <a href="/customer_support/create_ticket" class="btn-new-ticket">
+                                    <i class="bi bi-plus-circle me-2"></i>New Ticket </a>
+                            </div>
+
+                            <!-- User Profile -->
+                            <div class="user-profile dropdown">
+                                <!-- NOTIFICATION BELL -->
+                                <div class="notif-wrap me-3">
+                                    <button class="notif-btn" id="ticketsNotifBell"
+                                        title="Notifications">
+                                        <i class="bi bi-bell-fill"></i>
+                                        <span class="notif-badge d-none" id="ticketsNotifBadge">0</span>
+                                    </button>
+                                    <div class="notif-dropdown" id="ticketsNotifDropdown">
+                                        <div class="notif-header">
+                                            <h6><i class="bi bi-bell me-2" style="color:#059669;"></i>
+                                                Notifications</h6>
+                                            <button class="notif-mark-read" id="ticketsMarkRead">Mark
+                                                all read</button>
+                                        </div>
+                                        <div class="notif-list" id="ticketsNotifList">
+                                            <div class="notif-empty">
+                                                <i class="bi bi-arrow-repeat"
+                                                    style="font-size:1.5rem;display:block;margin-bottom:.5rem;"></i>
+                                                Loading... </div>
+                                        </div>
+                                        <div class="notif-footer">
+                                            <a href="/customer_support/tickets">View my tickets
+                                                &#8594;</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Clickable Profile -->
+                                <a class="d-flex align-items-center text-white dropdown-toggle"
+                                    href="#"
+                                    id="userProfileDropdown"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    style="text-decoration: none;">
+
+                                    <span class="user-name me-3">
+                                        <t t-esc="user.name" />
+                                    </span>
+
+                                    <img t-att-src="'/web/image/res.users/%s/avatar_128' % user.id"
+                                        alt="User Avatar"
+                                        class="user-avatar"
+                                        onerror="this.src='/web/static/img/avatar_gray.svg'" />
+                                </a>
+
+                                <!-- Dropdown Menu -->
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    aria-labelledby="userProfileDropdown">
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="/customer_support/profile">
+                                            <i class="bi bi-person me-2"></i> Edit Profile </a>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="/customer_support/logout_manual">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Logout </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Tickets Content -->
+                <div class="dashboard-content">
+                    <!-- Page Header -->
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="bi bi-ticket-detailed me-2"></i>My Tickets </h1>
+                        <div class="page-stats">
+                            <span class="stat-badge">
+                                <i class="bi bi-folder-plus me-1"></i>
+                                <t t-esc="ticket_count" />
+                                Total </span>
+                            <span class="stat-badge">
+                                <i class="bi bi-clock-history me-1"></i>
+                                <t t-esc="len(open_tickets)" />
+                                Open </span>
+                            <span class="stat-badge">
+                                <i class="bi bi-check-circle me-1"></i>
+                                <t
+                                    t-esc="len(resolved_tickets)" /> Resolved </span>
+                        </div>
+                        <!-- View Toggle -->
+                        <div class="view-toggle">
+                            <button class="view-btn active" id="listViewBtn" type="button" title="Switch to list view">
+                                <i class="bi bi-list me-1"></i>List </button>
+                            <button class="view-btn" id="kanbanViewBtn" type="button" title="Switch to kanban view">
+                                <i class="bi bi-grid-3x3-gap me-1"></i>Kanban </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control"
+                                placeholder="Search tickets..." id="ticket-search" />
+                            <button class="btn btn-outline-secondary" type="button"
+                                id="clear-search">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Bar -->
+                    <div class="filter-container">
+                        <span class="filter-label">Filter by:</span>
+                        <select class="form-select" id="status-filter" style="width: 150px;">
+                            <option value="">All Status</option>
+                            <option value="new">New</option>
+                            <option value="assigned">Assigned</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                        <select class="form-select" id="priority-filter" style="width: 150px;">
+                            <option value="">All Priority</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+
+                    <!-- Tickets List -->
+                    <div class="tickets-container">
+                        <t t-if="tickets">
+                            <!-- Table header -->
+                            <div class="tl-header-row">
+                                <span class="tl-col-id">Ticket</span>
+                                <span class="tl-col-subject">Subject</span>
+                                <span class="tl-col-status">Status</span>
+                                <span class="tl-col-priority">Priority</span>
+                                <span class="tl-col-assigned">Assigned To</span>
+                                <span class="tl-col-date">Date</span>
+                            </div>
+                            <div class="tickets-list" id="tickets-list">
+                                <t t-foreach="tickets" t-as="ticket">
+                                    <div class="ticket-card" t-att-data-ticket-id="ticket.id"
+                                        t-att-data-state="ticket.state"
+                                        t-att-data-priority="ticket.priority">
+                                        <!-- ID + overdue indicator -->
+                                        <div class="tl-col-id">
+                                            <span class="tl-ticket-id">
+                                                <t t-esc="ticket.name" />
+                                            </span>
+                                            <t t-if="ticket.is_overdue">
+                                                <span class="tl-overdue-dot" title="Overdue"></span>
+                                            </t>
+                                        </div>
+                                        <!-- Subject -->
+                                        <div class="tl-col-subject">
+                                            <span class="tl-subject">
+                                                <t t-esc="ticket.subject" />
+                                            </span>
+                                        </div>
+                                        <!-- Status -->
+                                        <div class="tl-col-status">
+                                            <span
+                                                t-att-class="'tl-status-badge status-' + ticket.state">
+                                                <t t-esc="ticket.state.replace('_', ' ').title()" />
+                                            </span>
+                                        </div>
+                                        <!-- Priority -->
+                                        <div class="tl-col-priority">
+                                            <span
+                                                t-att-class="'tl-pri-badge priority-' + ticket.priority">
+                                                <t t-esc="ticket.priority.title()" />
+                                            </span>
+                                        </div>
+                                        <!-- Assigned to -->
+                                        <div class="tl-col-assigned">
+                                            <span class="tl-assigned">
+                                                <t
+                                                    t-esc="ticket.assigned_to.name if ticket.assigned_to else 'Unassigned'" />
+                                            </span>
+                                        </div>
+                                        <!-- Date -->
+                                        <div class="tl-col-date">
+                                            <t t-if="ticket.state in ['resolved', 'closed']">
+                                                <span class="tl-date tl-date-closed">
+                                                    <i class="bi bi-check-circle me-1"></i>
+                                                    <t t-if="ticket.closed_date">
+                                                        <t
+                                                            t-esc="ticket.closed_date.strftime('%b %d, %Y')" />
+                                                    </t>
+                                                    <t t-else="">Recently</t>
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="tl-date">
+                                                    <i class="bi bi-calendar3 me-1"></i>
+                                                    <t
+                                                        t-esc="ticket.create_date.strftime('%b %d, %Y') if ticket.create_date else 'N/A'" />
+                                                </span>
+                                                <span class="tl-days-open">
+                                                    <t t-esc="ticket.days_open" />d open </span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-if="not tickets">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="bi bi-ticket"></i>
+                                </div>
+                                <h3 class="mb-3">No Tickets Yet</h3>
+                                <p class="text-muted mb-4">You haven't created any support tickets
+                                    yet.</p>
+                                <a href="/customer_support/create_ticket" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-2"></i>Create Your First Ticket </a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bootstrap JS -->
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+            <!-- Tickets JavaScript -->
+            <script>
+                //<![CDATA[
+document.addEventListener('DOMContentLoaded', function() {
+    // View toggle
+    const kanbanBtn = document.getElementById('kanbanViewBtn');
+    if (kanbanBtn) {
+        kanbanBtn.addEventListener('click', function () {
+            window.location.href = '/customer_support/tickets/kanban';
+        });
+    }
+
+    // Search functionality
+    const searchInput = document.getElementById('ticket-search');
+    const statusFilter = document.getElementById('status-filter');
+    const priorityFilter = document.getElementById('priority-filter');
+    const ticketsList = document.getElementById('tickets-list');
+    const clearSearchBtn = document.getElementById('clear-search');
+
+    function filterTickets() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value;
+        const priorityValue = priorityFilter.value;
+
+        if (ticketsList) {
+            const ticketCards = ticketsList.querySelectorAll('.ticket-card');
+            let visibleCount = 0;
+
+            ticketCards.forEach(card => {
+                const subjectEl = card.querySelector('.tl-subject');
+                const title = subjectEl ? subjectEl.textContent.toLowerCase() : '';
+                const ticketState = card.getAttribute('data-state') || '';
+                const ticketPriority = card.getAttribute('data-priority') || '';
+
+                const matchesSearch = searchTerm === '' || title.includes(searchTerm);
+                const matchesStatus = statusValue === '' || ticketState === statusValue;
+                const matchesPriority = priorityValue === '' || ticketPriority === priorityValue;
+
+                const visible = matchesSearch && matchesStatus && matchesPriority;
+                // Use class toggling — never touch inline display so CSS grid/flex is preserved
+                card.classList.toggle('tl-filtered-out', !visible);
+                if (visible) visibleCount++;
+            });
+
+            // Show / remove the empty state message
+            const existingMsg = ticketsList.querySelector('.no-results-message');
+            if (visibleCount === 0) {
+                if (!existingMsg) {
+                    const noResults = document.createElement('div');
+                    noResults.className = 'empty-state no-results-message';
+                    noResults.innerHTML = `
+                        <div class="empty-state-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h3 class="mb-3">No Tickets Found</h3>
+                        <p class="text-muted mb-4">Try adjusting your search or filters</p>
+                        <button class="btn btn-outline-primary" id="clear-filters">
+                            Clear All Filters
+                        </button>
+                    `;
+                    ticketsList.appendChild(noResults);
+                    document.getElementById('clear-filters').addEventListener('click', function() {
+                        searchInput.value = '';
+                        statusFilter.value = '';
+                        priorityFilter.value = '';
+                        filterTickets();
+                    });
+                }
+            } else {
+                if (existingMsg) existingMsg.remove();
+            }
+        }
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', filterTickets);
+    statusFilter.addEventListener('change', filterTickets);
+    priorityFilter.addEventListener('change', filterTickets);
+    
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        statusFilter.value = '';
+        priorityFilter.value = '';
+        filterTickets();
+    });
+
+    // Make ticket cards open modal
+    document.querySelectorAll('.ticket-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('a') && !e.target.closest('button')) {
+                const ticketId = this.getAttribute('data-ticket-id');
+                if (ticketId) openTicketModal(ticketId);
+            }
+        });
+    });
+
+});
+//]]>
+            </script>
+
+            <!-- Shared modal markup (same as kanban view) -->
+            <div id="ticketModal" class="tdm-overlay" style="display:none;" role="dialog"
+                aria-modal="true">
+                <div class="tdm-panel">
+                    <div class="tdm-header">
+                        <div class="tdm-header-left">
+                            <span class="tdm-ticket-num" id="tdmTicketNum"></span>
+                            <span class="tdm-state-badge" id="tdmStateBadge"></span>
+                            <span class="tdm-pri-badge" id="tdmPriBadge"></span>
+                        </div>
+                        <button class="tdm-close" id="tdmClose" aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="tdm-body" id="tdmBody">
+                        <div class="tdm-loading" id="tdmLoading">
+                            <div class="tdm-spinner"></div>
+                            <span>Loading ticket…</span>
+                        </div>
+                        <div id="tdmContent" style="display:none;">
+                            <h2 class="tdm-subject" id="tdmSubject"></h2>
+                            <div class="tdm-meta-row">
+                                <div class="tdm-meta-item">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span id="tdmAssigned"></span>
+                                </div>
+                                <div class="tdm-meta-item">
+                                    <i class="bi bi-calendar3"></i>
+                                    <span id="tdmCreated"></span>
+                                </div>
+                                <div class="tdm-meta-item tdm-sla-wrap" id="tdmSlaWrap"
+                                    style="display:none;">
+                                    <i class="bi bi-clock-fill"></i>
+                                    <span id="tdmSla"></span>
+                                </div>
+                            </div>
+                            <div class="tdm-section">
+                                <div class="tdm-section-title"><i class="bi bi-file-text me-1"></i>
+                                    Description</div>
+                                <div class="tdm-description" id="tdmDescription"></div>
+                            </div>
+                            <div class="tdm-section" id="tdmBoardSection">
+                                <div class="tdm-section-title"><i class="bi bi-kanban me-1"></i>Work
+                                    Progress<span class="tdm-progress-pct" id="tdmProgressPct"></span></div>
+                                <div class="tdm-progress-bg">
+                                    <div class="tdm-progress-fill" id="tdmProgressFill"></div>
+                                </div>
+                                <div class="tdm-cols-row" id="tdmCols"></div>
+                            </div>
+
+                            <div class="tdm-section" id="tdmCommSection">
+                                <div class="tdm-section-title"><i class="bi bi-chat-left-text me-1"></i>Communication</div>
+                                <div class="tdm-msg-list" id="tdmMessages"></div>
+                                <div class="tdm-reply-box">
+                                    <textarea id="tdmReplyInput" class="tdm-reply-input" rows="3"
+                                        placeholder="Type a message to support team..."></textarea>
+                                    <button type="button" class="tdm-reply-send" id="tdmReplySend">
+                                        <i class="bi bi-send-fill"></i><span class="tdm-reply-send-label">Send</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tdm-footer">
+                        <button class="tdm-close-btn" id="tdmCloseBtn">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .tdm-overlay{position:fixed;inset:0;z-index:9000;background:rgba(10,25,47,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:1rem;animation:tdmFadeIn
+                .2s ease}
+                @keyframes tdmFadeIn{from{opacity:0}to{opacity:1}}
+                .tdm-panel{background:#fff;border-radius:16px;box-shadow:0 24px 80px
+                rgba(10,25,47,.35);width:100%;max-width:720px;max-height:88vh;display:flex;flex-direction:column;animation:tdmSlideUp
+                .22s ease;overflow:hidden}
+                @keyframes
+                tdmSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+                .tdm-header{display:flex;align-items:center;justify-content:space-between;padding:1rem
+                1.4rem .85rem;border-bottom:1px solid
+                #e2e8f0;background:#f8fafc;flex-shrink:0;gap:.75rem}
+                .tdm-header-left{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;min-width:0}
+                .tdm-ticket-num{font-family:'Courier
+                New',monospace;font-size:.78rem;font-weight:700;color:#059669;background:#e0f2fe;padding:.18rem
+                .6rem;border-radius:6px;white-space:nowrap}
+                .tdm-state-badge,.tdm-pri-badge{font-size:.72rem;font-weight:700;padding:.18rem
+                .6rem;border-radius:999px;white-space:nowrap}
+                .tdm-state-new{background:#dbeafe;color:#1d4ed8}.tdm-state-assigned{background:#ede9fe;color:#6d28d9}.tdm-state-in_progress{background:#fef3c7;color:#b45309}.tdm-state-pending{background:#fee2e2;color:#b91c1c}.tdm-state-resolved{background:#dcfce7;color:#15803d}.tdm-state-closed{background:#f1f5f9;color:#475569}
+                .tdm-pri-low{background:#f0fdf4;color:#166534}.tdm-pri-medium{background:#eff6ff;color:#1e40af}.tdm-pri-high{background:#fff7ed;color:#9a3412}.tdm-pri-urgent{background:#fef2f2;color:#991b1b}
+                .tdm-close{width:32px;height:32px;border-radius:8px;background:transparent;border:1px
+                solid
+                #e2e8f0;color:#64748b;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all
+                .15s}
+                .tdm-close:hover{background:#fee2e2;border-color:#fca5a5;color:#dc2626}
+                .tdm-body{flex:1;overflow-y:auto;padding:1.4rem;scrollbar-width:thin;scrollbar-color:#cbd5e1
+                transparent}
+                .tdm-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.85rem;padding:3rem
+                1rem;color:#64748b;font-size:.9rem}
+                .tdm-spinner{width:32px;height:32px;border-radius:50%;border:3px solid
+                #e2e8f0;border-top-color:#059669;animation:tdmSpin .7s linear infinite}
+                @keyframes tdmSpin{to{transform:rotate(360deg)}}
+                .tdm-subject{font-size:1.15rem;font-weight:700;color:#065f46;margin:0 0
+                .85rem;line-height:1.35}
+                .tdm-meta-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px
+                solid #f1f5f9}
+                .tdm-meta-item{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:#475569}
+                .tdm-meta-item i{color:#94a3b8;font-size:.85rem}
+                .tdm-sla-on_track{color:#15803d!important}.tdm-sla-at_risk{color:#b45309!important}.tdm-sla-breached{color:#b91c1c!important}
+                .tdm-section{margin-bottom:1.4rem}.tdm-section:last-child{margin-bottom:0}
+                .tdm-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem}
+                .tdm-progress-pct{margin-left:auto;font-size:.8rem;font-weight:700;color:#059669}
+                .tdm-description{font-size:.875rem;color:#334155;line-height:1.65;background:#f8fafc;border:1px
+                solid #e2e8f0;border-radius:10px;padding:.85rem
+                1rem;white-space:pre-wrap;word-break:break-word}
+                .tdm-progress-bg{height:7px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-bottom:1rem}
+                .tdm-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#38bdf8,#0ea5e9);transition:width
+                .5s ease}
+                .tdm-progress-fill.done{background:linear-gradient(90deg,#34d399,#10b981)}
+                .tdm-cols-row{display:flex;gap:.65rem;overflow-x:auto;padding-bottom:.25rem;scrollbar-width:thin}
+                .tdm-col{flex:0 0 auto;min-width:160px;max-width:200px;background:#f8fafc;border:1px
+                solid #e2e8f0;border-radius:10px;overflow:hidden}
+                .tdm-col-head{padding:.4rem
+                .65rem;display:flex;justify-content:space-between;align-items:center;background:#f1f5f9;border-bottom:1px
+                solid #e2e8f0}
+                .tdm-col-name{font-size:.75rem;font-weight:700;color:#334155}.tdm-col-count{font-size:.7rem;color:#94a3b8}
+                .tdm-col-tasks{padding:.35rem .5rem;display:flex;flex-direction:column;gap:.25rem}
+                .tdm-task{display:flex;align-items:flex-start;gap:.4rem;padding:.3rem
+                .35rem;border-radius:6px;font-size:.77rem}
+                .tdm-task-done{opacity:.6}.tdm-task-done
+                .tdm-task-name{text-decoration:line-through;color:#94a3b8}
+                .tdm-task i{font-size:.8rem;flex-shrink:0;margin-top:1px}
+                .tdm-task .bi-check-circle-fill{color:#10b981}.tdm-task .bi-circle{color:#cbd5e1}
+                .tdm-task-name{color:#475569;line-height:1.3}
+                .tdm-col-empty{padding:.5rem
+                .65rem;font-size:.75rem;color:#94a3b8;font-style:italic}
+                .tdm-msg-list{max-height:260px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;padding:.65rem;display:flex;flex-direction:column;gap:.55rem}
+                .tdm-msg-row{display:flex;align-items:flex-start;gap:.45rem}
+                .tdm-msg-row.mine{justify-content:flex-end}
+                .tdm-msg-bubble{max-width:82%;padding:.52rem .62rem;border-radius:10px;border:1px solid #e5e7eb;background:#fff}
+                .tdm-msg-row.mine .tdm-msg-bubble{background:#e0f2fe;border-color:#7dd3fc}
+                .tdm-msg-head{display:flex;justify-content:space-between;gap:.5rem;margin-bottom:.23rem}
+                .tdm-msg-author{font-size:.73rem;font-weight:700;color:#065f46}
+                .tdm-msg-time{font-size:.68rem;color:#94a3b8;white-space:nowrap}
+                .tdm-msg-body{font-size:.8rem;color:#334155;white-space:pre-wrap;word-break:break-word;line-height:1.45}
+                .tdm-msg-empty{font-size:.78rem;color:#94a3b8;font-style:italic;padding:.25rem 0}
+                .tdm-reply-box{margin-top:.65rem;position:relative}
+                .tdm-reply-input{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:.55rem .7rem 2.4rem .7rem;font-size:.82rem;resize:vertical;min-height:86px;background:#fff;color:#334155}
+                .tdm-reply-input:focus{outline:none;border-color:#38bdf8;box-shadow:0 0 0 3px rgba(14,165,233,.12)}
+                .tdm-reply-send{position:absolute;right:.45rem;bottom:.45rem;padding:.38rem .7rem;border:0;border-radius:7px;background:#0c4a6e;color:#fff;font-size:.74rem;font-weight:700;cursor:pointer;line-height:1;display:flex;align-items:center;gap:.34rem}
+                .tdm-reply-send:disabled{opacity:.6;cursor:not-allowed}
+
+                @media (max-width: 576px){
+                    .tdm-reply-send{padding:.44rem .5rem;min-width:34px;justify-content:center;gap:0}
+                    .tdm-reply-send-label{display:none}
+                }
+                .tdm-footer{display:flex;align-items:center;justify-content:flex-end;padding:.85rem
+                1.4rem;border-top:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0}
+                .tdm-close-btn{padding:.45rem
+                1.2rem;border-radius:8px;background:#0c4a6e;border:none;color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;transition:background
+                .15s}
+                .tdm-close-btn:hover{background:#075985}
+            </style>
+
+            <script type="text/javascript">
+                //<![CDATA[
+            (function () {
+                var overlay = document.getElementById('ticketModal');
+                var loading = document.getElementById('tdmLoading');
+                var content = document.getElementById('tdmContent');
+                var currentTicketId = null;
+                function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+                function stripHtml(s){var d=document.createElement('div');d.innerHTML=String(s||'');return (d.textContent||d.innerText||'').trim();}
+                function renderMessages(items){
+                    var host=document.getElementById('tdmMessages');
+                    if(!host) return;
+                    if(!items||!items.length){host.innerHTML='<div class="tdm-msg-empty">No messages yet.</div>';return;}
+                    host.innerHTML=items.map(function(m){
+                        var mine = m.is_me ? ' mine' : '';
+                        return '<div class="tdm-msg-row'+mine+'">'
+                            + '<div class="tdm-msg-bubble">'
+                            + '<div class="tdm-msg-head"><span class="tdm-msg-author">'+escHtml(m.is_me ? 'You' : (m.author||'Support'))+'</span><span class="tdm-msg-time">'+escHtml(m.date||'')+'</span></div>'
+                            + '<div class="tdm-msg-body">'+escHtml(stripHtml(m.body||''))+'</div>'
+                            + '</div>'
+                            + '</div>';
+                    }).join('');
+                    host.scrollTop = host.scrollHeight;
+                }
+                function closeModal(){overlay.style.display='none';document.body.style.overflow='';}
+                function fillModal(data){
+                    var t=data.ticket;
+                    document.getElementById('tdmTicketNum').textContent=t.name;
+                    var sb=document.getElementById('tdmStateBadge');sb.textContent=t.state_label;sb.className='tdm-state-badge tdm-state-'+t.state;
+                    var pb=document.getElementById('tdmPriBadge');pb.textContent=t.priority.charAt(0).toUpperCase()+t.priority.slice(1);pb.className='tdm-pri-badge tdm-pri-'+t.priority;
+                    document.getElementById('tdmSubject').textContent=t.subject;
+                    document.getElementById('tdmAssigned').textContent=t.assigned_to;
+                    document.getElementById('tdmCreated').textContent=t.created;
+                    var sw=document.getElementById('tdmSlaWrap');
+                    if(t.sla_deadline){sw.style.display='flex';sw.className='tdm-meta-item tdm-sla-'+t.sla_status;document.getElementById('tdmSla').textContent='SLA: '+t.sla_deadline;}else{sw.style.display='none';}
+                    document.getElementById('tdmDescription').textContent=t.description||'No description provided.';
+                    var bs=document.getElementById('tdmBoardSection');
+                    if(data.board_total>0){
+                        bs.style.display='';
+                        var pct=data.board_progress;
+                        document.getElementById('tdmProgressPct').textContent=data.board_done+'/'+data.board_total+' · '+pct+'%';
+                        var fill=document.getElementById('tdmProgressFill');fill.style.width=pct+'%';fill.className='tdm-progress-fill'+(pct===100?' done':'');
+                        var ch='';
+                        (data.board_columns||[]).forEach(function(col){
+                            ch+='<div class="tdm-col"><div class="tdm-col-head" style="border-left:3px solid '+escHtml(col.color)+'">';
+                            ch+='<span class="tdm-col-name">'+escHtml(col.name)+'</span><span class="tdm-col-count">'+col.done_count+'/'+col.task_count+'</span></div>';
+                            if(col.tasks&&col.tasks.length){ch+='<div class="tdm-col-tasks">';col.tasks.forEach(function(task){ch+='<div class="tdm-task'+(task.is_done?' tdm-task-done':'')+'"><i class="bi '+(task.is_done?'bi-check-circle-fill':'bi-circle')+'"></i><span class="tdm-task-name">'+escHtml(task.name)+'</span></div>';});ch+='</div>';}
+                            else{ch+='<div class="tdm-col-empty">No tasks</div>';}
+                            ch+='</div>';
+                        });
+                        document.getElementById('tdmCols').innerHTML=ch;
+                    }else{bs.style.display='none';}
+
+                    renderMessages(data.messages || []);
+                }
+                window.openTicketModal=function(ticketId){
+                    currentTicketId = ticketId;
+                    overlay.style.display='flex';document.body.style.overflow='hidden';
+                    loading.style.display='flex';content.style.display='none';
+                    var ri = document.getElementById('tdmReplyInput');
+                    if (ri) ri.value = '';
+                    fetch('/customer_support/customer/ticket/'+ticketId+'/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'call',id:1,params:{}})})
+                    .then(function(r){return r.json();}).then(function(resp){
+                        var d=resp.result||{};
+                        if(!d.success){loading.innerHTML='<i class="bi bi-exclamation-circle" style="font-size:1.5rem;color:#ef4444"></i><span>'+escHtml(d.error||'Failed to load')+'</span>';return;}
+                        fillModal(d);loading.style.display='none';content.style.display='';
+                    }).catch(function(){loading.innerHTML='<i class="bi bi-wifi-off" style="font-size:1.5rem;color:#ef4444"></i><span>Network error</span>';});
+                };
+
+                var sendBtn = document.getElementById('tdmReplySend');
+                var replyInput = document.getElementById('tdmReplyInput');
+                if (sendBtn && replyInput) {
+                    sendBtn.addEventListener('click', function(){
+                        var msg = (replyInput.value || '').trim();
+                        if (!currentTicketId || !msg) return;
+                        sendBtn.disabled = true;
+                        fetch('/customer_support/customer/ticket/' + currentTicketId + '/message/add', {
+                            method:'POST',
+                            headers:{'Content-Type':'application/json'},
+                            body:JSON.stringify({jsonrpc:'2.0',method:'call',id:1,params:{message:msg}})
+                        })
+                        .then(function(r){ return r.json(); })
+                        .then(function(resp){
+                            var d = resp.result || {};
+                            if (!d.success) return;
+                            replyInput.value = '';
+                            // Refresh ticket modal data to keep message list and board state in sync.
+                            return fetch('/customer_support/customer/ticket/' + currentTicketId + '/data', {
+                                method:'POST',
+                                headers:{'Content-Type':'application/json'},
+                                body:JSON.stringify({jsonrpc:'2.0',method:'call',id:1,params:{}})
+                            }).then(function(r){ return r.json(); }).then(function(ref){
+                                var rd = ref.result || {};
+                                if (rd.success) fillModal(rd);
+                            });
+                        })
+                        .finally(function(){ sendBtn.disabled = false; });
+                    });
+                }
+                document.getElementById('tdmClose').addEventListener('click',closeModal);
+                document.getElementById('tdmCloseBtn').addEventListener('click',closeModal);
+                overlay.addEventListener('click',function(e){if(e.target===overlay)closeModal();});
+                document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+            })();
+            //]]>
+            </script>
+
+            <!-- Notification Bell JS -->
+            <script type="text/javascript">
+                //<![CDATA[
+            (function () {
+                var bell      = document.getElementById('ticketsNotifBell');
+                var dropdown  = document.getElementById('ticketsNotifDropdown');
+                var badge     = document.getElementById('ticketsNotifBadge');
+                var notifList = document.getElementById('ticketsNotifList');
+                if (bell && dropdown) {
+                    bell.addEventListener('click', function (e) { e.stopPropagation(); dropdown.classList.toggle('open'); });
+                    document.addEventListener('click', function () { dropdown.classList.remove('open'); });
+                    dropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+                }
+                var markReadBtn = document.getElementById('ticketsMarkRead');
+                if (markReadBtn) {
+                    markReadBtn.addEventListener('click', function () {
+                        fetch('/customer_support/customer/notifications/mark_read', { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                        .then(function () {
+                            if (badge) { badge.classList.add('d-none'); badge.textContent = '0'; }
+                            if (notifList) { notifList.innerHTML = '<div class="notif-empty"><i class="bi bi-check-circle-fill" style="font-size:2rem;color:#22c55e;display:block;margin-bottom:.5rem;"></i>All caught up!</div>'; }
+                        });
+                    });
+                }
+                function sanitise(str) { var d = document.createElement('div'); d.textContent = String(str || ''); return d.innerHTML; }
+                function renderNotifications(items) {
+                    if (!notifList) return;
+                    if (!items || !items.length) {
+                        notifList.innerHTML = '<div class="notif-empty"><i class="bi bi-check-circle-fill" style="font-size:2rem;color:#22c55e;display:block;margin-bottom:.5rem;"></i>No new notifications</div>';
+                        if (badge) badge.classList.add('d-none');
+                        return;
+                    }
+                    if (badge) { badge.textContent = items.length; badge.classList.remove('d-none'); }
+                    var typeLabels = { status_change: 'Status Update', assigned: 'Assigned', sla_breach: 'SLA Breach' };
+                    notifList.innerHTML = items.map(function (n) {
+                        var cls        = sanitise(n.cls   || 'status');
+                        var icon       = sanitise(n.icon  || 'bi-bell-fill');
+                        var ticketName = sanitise(n.ticket_name || (n.ticket_id ? '#' + n.ticket_id : ''));
+                        var typeLabel  = sanitise(typeLabels[n.type] || 'Notification');
+                        var msg        = sanitise(n.message || '');
+                        var time       = sanitise(n.time   || '');
+                        var title      = ticketName ? ticketName + ' \u00b7 ' + typeLabel : typeLabel;
+                        return '<div class="notif-item">'
+                            + '<div class="notif-icon-wrap ' + cls + '"><i class="bi ' + icon + '"></i></div>'
+                            + '<div class="notif-body">'
+                            + '<div class="notif-title">' + title + '</div>'
+                            + '<div class="notif-sub">' + msg + '</div>'
+                            + '<div class="notif-time-text">' + time + '</div>'
+                            + '</div>'
+                            + '<div class="notif-dot ' + cls + '"></div>'
+                            + '</div>';
+                    }).join('');
+                }
+                function loadNotifications() {
+                    fetch('/customer_support/customer/notifications', { method: 'GET', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) { renderNotifications(data.notifications || []); })
+                    .catch(function () { renderNotifications([]); });
+                }
+                loadNotifications();
+                setInterval(loadNotifications, 30000);
+            })();
+            //]]>
+            </script>
+        </t>
+    </template>
+</odoo>

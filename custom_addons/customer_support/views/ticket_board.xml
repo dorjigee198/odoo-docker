@@ -1,0 +1,985 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         TICKET BOARD — Trello-like view per ticket
+         Route: /customer_support/ticket/<ticket_id>/board
+         ================================================================ -->
+    <template id="ticket_board_page" name="Ticket Board">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link rel="stylesheet" href="/customer_support/static/src/vendor/bootstrap.min.css" />
+                <link rel="stylesheet" href="/customer_support/static/src/vendor/bootstrap-icons.css" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/ticket_board.css?v=4" />
+            </t>
+
+            <!-- Inject board data as escaped data attributes, then hydrate via JSON.parse -->
+            <div id="boardDataPayload" class="d-none"
+                t-att-data-project-members-json="project_members_json"
+                t-att-data-board-columns-json="board_columns_json"
+                t-att-data-customer-conversation-json="customer_conversation_json"
+                t-att-data-board-bg-json="board_bg_json"></div>
+            <script type="text/javascript">
+                const _boardPayload = document.getElementById('boardDataPayload');
+                const _safeParse = (value, fallback) => {
+                    try {
+                        return JSON.parse(value);
+                    } catch (e) {
+                        return fallback;
+                    }
+                };
+                window.BOARD_DATA = { ticketId: <t t-esc="ticket.id" />,
+                projectId: <t t-if="ticket.project_id">
+                    <t t-esc="ticket.project_id.id" />
+                </t><t
+                    t-if="not ticket.project_id">null</t>, csrfToken: "<t
+                    t-esc="request.csrf_token()" />", projectMembers: _safeParse(_boardPayload ? _boardPayload.dataset.projectMembersJson : null, []), currentUserId: <t t-if="user">
+                    <t t-esc="user.id" />
+                </t><t t-if="not user">null</t>,
+                publicBoard: <t t-if="public_board">true</t><t t-if="not public_board">false</t>,
+                boardToken: <t t-if="public_board">"<t t-esc="board_token"/>"</t><t t-if="not public_board">null</t>,
+                boardColumns: _safeParse(_boardPayload ? _boardPayload.dataset.boardColumnsJson : null, []),
+                customerConversation: _safeParse(_boardPayload ? _boardPayload.dataset.customerConversationJson : null, []),
+                boardBg: _safeParse(_boardPayload ? _boardPayload.dataset.boardBgJson : null, '') }; </script>
+
+            <div id="wrap" class="tb-wrap">
+
+                <!-- ── NAVBAR ── -->
+                <nav class="tb-navbar">
+                    <div class="tb-navbar-left">
+                        <t t-if="not public_board">
+                            <a
+                                t-attf-href="/customer_support/my_projects/{{ ticket.project_id.id if ticket.project_id else '' }}/tickets"
+                                class="tb-back-btn" title="Back to tickets">
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+                        </t>
+                        <div class="tb-ticket-info">
+                            <t t-if="not public_board">
+                                <span class="tb-breadcrumb">
+                                    <a href="/customer_support/my_projects"
+                                        class="tb-breadcrumb-link">My Projects</a>
+                                    <t t-if="ticket.project_id">
+                                        <i class="bi bi-chevron-right tb-breadcrumb-sep"></i>
+                                        <a
+                                            t-attf-href="/customer_support/my_projects/{{ ticket.project_id.id }}/tickets"
+                                            class="tb-breadcrumb-link">
+                                            <t t-esc="ticket.project_id.name" />
+                                        </a>
+                                    </t>
+                                    <i class="bi bi-chevron-right tb-breadcrumb-sep"></i>
+                                </span>
+                            </t>
+                            <t t-if="public_board and ticket.project_id">
+                                <span class="tb-breadcrumb">
+                                    <span class="tb-breadcrumb-link" style="color:#94a3b8;">
+                                        <t t-esc="ticket.project_id.name" />
+                                    </span>
+                                    <i class="bi bi-chevron-right tb-breadcrumb-sep"></i>
+                                </span>
+                            </t>
+                            <span class="tb-ticket-number">
+                                <t t-esc="ticket.name" />
+                            </span>
+                            <span class="tb-ticket-sep">·</span>
+                            <span class="tb-ticket-subject">
+                                <t t-esc="ticket.subject" />
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="tb-navbar-right">
+                        <!-- Quick status change (focal/admin only) -->
+                        <t t-if="not public_board">
+                            <div class="tb-status-wrap" id="statusWrap">
+                                <button class="tb-status-current" id="statusToggle"
+                                    t-attf-data-state="{{ ticket.state }}">
+                                    <span t-attf-class="tb-sdot tb-sdot-{{ ticket.state }}"></span>
+                                    <span class="tb-status-label" id="statusLabel">
+                                        <t t-if="ticket.state == 'new'">New</t>
+                                        <t t-if="ticket.state == 'assigned'">Assigned</t>
+                                        <t t-if="ticket.state == 'in_progress'">In Progress</t>
+                                        <t t-if="ticket.state == 'pending'">Pending</t>
+                                        <t t-if="ticket.state == 'resolved'">Resolved</t>
+                                        <t t-if="ticket.state == 'closed'">Closed</t>
+                                    </span>
+                                    <i class="bi bi-chevron-down ms-1" style="font-size:0.7rem;"></i>
+                                </button>
+                                <div class="tb-status-dropdown" id="statusDropdown">
+                                    <div class="tb-status-option" data-state="new"><span
+                                            class="tb-sdot tb-sdot-new"></span>New</div>
+                                    <div class="tb-status-option" data-state="assigned"><span
+                                            class="tb-sdot tb-sdot-assigned"></span>Assigned</div>
+                                    <div class="tb-status-option" data-state="in_progress"><span
+                                            class="tb-sdot tb-sdot-in_progress"></span>In Progress</div>
+                                    <div class="tb-status-option" data-state="pending"><span
+                                            class="tb-sdot tb-sdot-pending"></span>Pending</div>
+                                    <div class="tb-status-option" data-state="resolved"><span
+                                            class="tb-sdot tb-sdot-resolved"></span>Resolved</div>
+                                    <div class="tb-status-option" data-state="closed"><span
+                                            class="tb-sdot tb-sdot-closed"></span>Closed</div>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Status badge (read-only for public board) -->
+                        <t t-if="public_board">
+                            <span t-attf-class="tb-priority-badge tb-pri-{{ ticket.state }}"
+                                style="text-transform:capitalize;">
+                                <span t-attf-class="tb-sdot tb-sdot-{{ ticket.state }}"
+                                    style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;"></span>
+                                <t t-esc="ticket.state.replace('_',' ').title()" />
+                            </span>
+                        </t>
+
+                        <!-- Priority badge -->
+                        <span t-attf-class="tb-priority-badge tb-pri-{{ ticket.priority }}">
+                            <t t-esc="ticket.priority.title()" />
+                        </span>
+
+                        <!-- Add column button (focal/admin only) -->
+                        <t t-if="not public_board">
+                            <button class="tb-add-col-btn" id="addColumnBtn">
+                                <i class="bi bi-plus-lg me-1"></i>Add Column </button>
+                            <button class="tb-invite-btn" id="inviteMemberBtn"
+                                title="Invite team member">
+                                <i class="bi bi-person-plus me-1"></i>Invite </button>
+                        </t>
+
+                        <!-- Background customize (focal/admin only) -->
+                        <t t-if="not public_board">
+                            <button class="tb-bg-btn" id="bgCustomizeBtn" title="Customize background">
+                                <i class="bi bi-palette"></i>
+                            </button>
+                        </t>
+
+                        <!-- Sidebar toggle -->
+                        <button class="tb-sidebar-toggle" id="sidebarToggle"
+                            title="Toggle Info Panel">
+                            <i class="bi bi-layout-sidebar-reverse"></i>
+                        </button>
+
+                        <t t-if="not public_board">
+                            <a href="/customer_support/logout_manual" class="tb-logout-btn"
+                                title="Logout">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </a>
+                        </t>
+                        <t t-if="public_board and not board_token">
+                            <span class="tb-guest-badge">
+                                <i class="bi bi-eye me-1"></i>View Only </span>
+                        </t>
+                    </div>
+                </nav>
+
+                <!-- ── BACKGROUND CUSTOMIZE PANEL (focal/admin only) ── -->
+                <t t-if="not public_board">
+                    <div class="tb-bg-panel" id="tbBgPanel">
+                        <div class="tb-bg-panel-header">
+                            <span>Board Background</span>
+                            <button class="tb-bg-panel-close" id="tbBgPanelClose">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="tb-bg-grid" id="tbBgGrid"></div>
+                        <div class="tb-bg-custom-row">
+                            <span class="tb-bg-custom-label">Custom color</span>
+                            <input type="color" id="bgCustomColorInput" value="#0f172a" />
+                        </div>
+                        <button class="tb-bg-reset-btn" id="tbBgReset">Reset to default</button>
+                    </div>
+                </t>
+
+                <!-- ── META BAR ── -->
+                <div class="tb-meta-bar">
+                    <div class="tb-meta-item">
+                        <i class="bi bi-person-circle"></i>
+                        <span class="tb-meta-label">Customer:</span>
+                        <span>
+                            <t t-esc="ticket.customer_id.name if ticket.customer_id else 'N/A'" />
+                        </span>
+                    </div>
+                    <t t-if="ticket.project_id">
+                        <div class="tb-meta-sep">|</div>
+                        <div class="tb-meta-item">
+                            <i class="bi bi-folder2"></i>
+                            <span class="tb-meta-label">Project:</span>
+                            <span>
+                                <t t-esc="ticket.project_id.name" />
+                            </span>
+                        </div>
+                    </t>
+                    <t t-if="ticket.sla_deadline">
+                        <div class="tb-meta-sep">|</div>
+                        <div t-attf-class="tb-meta-item tb-sla-{{ ticket.sla_status }}">
+                            <i class="bi bi-clock-fill"></i>
+                            <span class="tb-meta-label">SLA:</span>
+                            <span>
+                                <t t-esc="ticket.sla_deadline.strftime('%b %d, %Y')" />
+                            </span>
+                        </div>
+                    </t>
+                    <div class="tb-meta-sep">|</div>
+                    <!-- Team avatars — JS renders stacked circles + opens panel -->
+                    <div class="tb-team-avatars-wrap" id="teamAvatarsWrap" title="View team">
+                        <div class="tb-team-av-stack" id="teamAvStack"></div>
+                        <span class="tb-team-av-label" id="teamAvLabel"></span>
+                        <!-- ── TEAM PANEL: inside avatars-wrap so it drops directly below ── -->
+                        <div class="tb-team-panel" id="tbTeamPanel">
+                            <div class="tb-team-panel-header">
+                                <span>Team Members</span>
+                                <button class="tb-team-panel-close" id="tbTeamPanelClose">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <div class="tb-team-panel-list" id="tbTeamPanelList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── STATUS REMINDER NUDGE (focal/admin only, when ticket is still new/pending)
+                ── -->
+                <t t-if="not public_board and ticket.state in ['new', 'pending']">
+                    <div class="tb-status-nudge" id="statusNudge">
+                        <div class="tb-nudge-inner">
+                            <span class="tb-nudge-icon">👋</span>
+                            <div class="tb-nudge-text">
+                                <strong>Heads up!</strong> This ticket is still marked as <span
+                                    class="tb-nudge-state">
+                                    <t t-esc="ticket.state.replace('_',' ').title()" />
+                                </span>
+                                — update the status to keep your customer informed. </div>
+                            <button class="tb-nudge-action" id="nudgeUpdateBtn">
+                                <i class="bi bi-arrow-repeat me-1"></i>Update Status </button>
+                            <button class="tb-nudge-dismiss" id="nudgeDismiss" title="Dismiss">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ── ALL-DONE BANNER (focal/admin only) ── -->
+                <t t-if="not public_board">
+                    <div class="tb-done-banner" id="allDoneBanner" style="display:none;">
+                        <div class="tb-done-banner-inner">
+                            <i class="bi bi-check-circle-fill tb-done-icon"></i>
+                            <div class="tb-done-text">
+                                <strong>All tasks are done!</strong>
+                                <span>Ready to close this ticket? Mark it as resolved.</span>
+                            </div>
+                            <button class="tb-done-resolve-btn" id="allDoneResolveBtn">
+                                <i class="bi bi-check2-all me-1"></i>Mark as Resolved </button>
+                            <button class="tb-done-dismiss" id="allDoneDismiss" title="Dismiss">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ── MAIN BODY: board + sidebar ── -->
+                <div class="tb-body" id="tbBody">
+
+                    <!-- Mobile sidebar overlay (closes sidebar when tapped) -->
+                    <div class="tb-sidebar-overlay" id="tbSidebarOverlay"
+                        onclick="document.getElementById('sidebarToggle').click()"></div>
+
+                    <!-- BOARD AREA -->
+                    <div class="tb-board" id="boardArea">
+
+                        <t t-foreach="board_columns" t-as="col">
+                            <div class="tb-column" t-att-data-col-id="col['id']">
+                                <div class="tb-col-header"
+                                    t-attf-style="border-top: 3px solid {{ col['color'] }}">
+                                    <t t-if="not public_board">
+                                        <i class="bi bi-grip-vertical tb-col-drag-handle"
+                                            title="Drag to reorder"></i>
+                                    </t>
+                                    <div class="tb-col-title-wrap">
+                                        <span class="tb-col-title" t-att-data-col-id="col['id']">
+                                            <t t-esc="col['name']" />
+                                        </span>
+                                        <span class="tb-col-count">
+                                            <t t-esc="col['done_count']" />/<t
+                                                t-esc="col['task_count']" />
+                                        </span>
+                                    </div>
+                                    <t t-if="not public_board">
+                                        <div class="tb-col-actions">
+                                            <button class="tb-col-edit-btn"
+                                                t-att-data-col-id="col['id']"
+                                                t-att-data-col-name="col['name']"
+                                                t-att-data-col-color="col['color']"
+                                                title="Rename column">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="tb-col-del-btn"
+                                                t-att-data-col-id="col['id']" title="Delete column">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <div class="tb-task-list" t-att-data-col-id="col['id']">
+                                    <t t-foreach="col['tasks']" t-as="task">
+                                        <div
+                                            t-attf-class="tb-task{{ ' tb-task-done' if task['is_done'] else '' }}"
+                                            t-att-data-task-id="task['id']"
+                                            t-att-draggable="'false' if (public_board and not board_token) else 'true'">
+
+                                            <!-- Task header -->
+                                            <div class="tb-task-header">
+                                                <label class="tb-task-check-wrap">
+                                                    <input type="checkbox"
+                                                        t-att-checked="task['is_done']"
+                                                        class="tb-task-check"
+                                                        t-att-data-task-id="task['id']"
+                                                        t-att-disabled="'disabled' if (public_board and not board_token) else None" />
+                                                    <span class="tb-task-name">
+                                                        <t t-esc="task['name']" />
+                                                    </span>
+                                                </label>
+                                                <t t-if="not public_board or board_token">
+                                                    <div class="tb-task-actions">
+                                                        <button class="tb-task-edit-btn"
+                                                            t-att-data-task-id="task['id']"
+                                                            title="Edit task">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <button class="tb-task-del-btn"
+                                                            t-att-data-task-id="task['id']"
+                                                            title="Delete task">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                    </div>
+                                                </t>
+                                            </div>
+
+                                            <!-- Description -->
+                                            <t t-if="task['description']">
+                                                <p class="tb-task-desc">
+                                                    <t t-esc="task['description']" />
+                                                </p>
+                                            </t>
+
+                                            <!-- Due date + priority footer -->
+                                            <t
+                                                t-if="task['due_date'] or task['task_priority'] != 'none'">
+                                                <div class="tb-task-footer">
+                                                    <t t-if="task['task_priority'] != 'none'">
+                                                        <span
+                                                            t-attf-class="tb-task-pri tb-tpri-{{ task['task_priority'] }}">
+                                                            <t
+                                                                t-if="task['task_priority'] == 'urgent'">
+                                                                <i
+                                                                    class="bi bi-exclamation-triangle-fill"></i>
+                                                            </t>
+                                                            <t
+                                                                t-if="task['task_priority'] == 'high'">
+                                                                <i class="bi bi-arrow-up"></i>
+                                                            </t>
+                                                            <t
+                                                                t-if="task['task_priority'] == 'medium'">
+                                                                <i class="bi bi-minus"></i>
+                                                            </t>
+                                                            <t t-if="task['task_priority'] == 'low'">
+                                                                <i class="bi bi-arrow-down"></i>
+                                                            </t>
+                                                            <t t-esc="task['task_priority'].title()" />
+                                                        </span>
+                                                    </t>
+                                                    <t t-if="task['due_date']">
+                                                        <span class="tb-task-due"
+                                                            t-att-data-due="task['due_date']">
+                                                            <i class="bi bi-calendar3"></i>
+                                                            <t t-esc="task['due_date']" />
+                                                        </span>
+                                                    </t>
+                                                </div>
+                                            </t>
+
+                                            <!-- Checklist progress -->
+                                            <t t-if="task.get('checklist')">
+                                                <div class="tb-task-checklist-bar">
+                                                    <div class="tb-cl-progress">
+                                                        <div class="tb-cl-bar-fill"
+                                                            t-attf-style="width:{{ (100 * len([c for c in task['checklist'] if c['is_done']])) // len(task['checklist']) if task['checklist'] else 0 }}%"></div>
+                                                    </div>
+                                                    <span class="tb-cl-count">
+                                                        <t
+                                                            t-esc="len([c for c in task['checklist'] if c['is_done']])" />
+                                                        /<t t-esc="len(task['checklist'])" />
+                                                    </span>
+                                                </div>
+                                            </t>
+
+                                            <!-- Assigned members -->
+                                            <t t-if="task['members']">
+                                                <div class="tb-task-members">
+                                                    <t t-foreach="task['members']" t-as="m">
+                                                        <span class="tb-avatar"
+                                                            t-att-title="m['name']"
+                                                            t-att-data-member-id="m['member_id']">
+                                                            <t t-esc="m['initials']" />
+                                                        </span>
+                                                    </t>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <t t-if="not public_board or board_token">
+                                    <button class="tb-add-task-btn" t-att-data-col-id="col['id']">
+                                        <i class="bi bi-plus me-1"></i>Add Task </button>
+                                </t>
+                            </div>
+                        </t>
+
+                        <t t-if="not board_columns">
+                            <div class="tb-empty-board" id="emptyBoard">
+                                <div class="tb-empty-icon">
+                                    <i class="bi bi-kanban"></i>
+                                </div>
+                                <h3>No columns yet</h3>
+                                <p>Click <strong>+ Add another list</strong> to create your first stage.</p>
+                            </div>
+                        </t>
+
+                        <!-- ── "ADD ANOTHER LIST" ghost (focal/admin only, Trello-style) ── -->
+                        <t t-if="not public_board">
+                            <div class="tb-add-list-ghost" id="addListGhost">
+                                <div id="addListBtnWrap">
+                                    <button class="tb-add-list-btn" id="addListBtn">
+                                        <i class="bi bi-plus"></i> Add another list
+                                    </button>
+                                </div>
+                                <div class="tb-add-list-form" id="addListForm" style="display:none;">
+                                    <input type="text" id="addListInput"
+                                        placeholder="Enter list title..." autocomplete="off" />
+                                    <div class="tb-al-color-row" id="addListColors"></div>
+                                    <div class="tb-add-list-footer">
+                                        <button class="tb-add-list-save" id="addListSave">Add list</button>
+                                        <button class="tb-add-list-cancel" id="addListCancel">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- ── SIDEBAR ── -->
+                    <aside class="tb-sidebar" id="tbSidebar">
+
+                        <!-- Sidebar tab bar -->
+                        <div class="tb-sidebar-tabs">
+                            <button class="tb-stab active" data-tab="info">
+                                <i class="bi bi-info-circle"></i> Ticket </button>
+                            <button class="tb-stab" data-tab="docs">
+                                <i class="bi bi-file-earmark-text"></i> Docs <t t-if="project_docs">
+                                    <span class="tb-stab-badge">
+                                        <t t-esc="len(project_docs)" />
+                                    </span>
+                                </t>
+                            </button>
+                            <t t-if="not public_board or board_token">
+                                <button class="tb-stab" data-tab="comments">
+                                    <i class="bi bi-chat-dots"></i> Notes <t t-if="comments">
+                                        <span class="tb-stab-badge">
+                                            <t t-esc="len(comments)" />
+                                        </span>
+                                    </t>
+                                </button>
+                            </t>
+                            <t t-if="not public_board">
+                                <button class="tb-stab" data-tab="reply">
+                                    <i class="bi bi-reply"></i> Reply </button>
+                            </t>
+                            <button class="tb-stab" data-tab="log">
+                                <i class="bi bi-clock-history"></i> Log </button>
+                        </div>
+
+                        <!-- TAB: Ticket Info -->
+                        <div class="tb-stab-panel active" id="tab-info">
+                            <div class="tb-sidebar-section">
+                                <h6 class="tb-sidebar-label">
+                                    <i class="bi bi-file-text me-1"></i>Customer Description </h6>
+                                <t t-if="ticket.description"><div class="tb-description-box"><t t-esc="ticket.description.strip()" /></div></t>
+                                <t t-if="not ticket.description"><div class="tb-description-box"><span class="tb-empty-text">No description provided.</span></div></t>
+                            </div>
+
+                            <div class="tb-sidebar-section">
+                                <h6 class="tb-sidebar-label">
+                                    <i class="bi bi-paperclip me-1"></i>Attachments <t
+                                        t-if="attachments">
+                                        <span class="tb-count-pill">
+                                            <t t-esc="len(attachments)" />
+                                        </span>
+                                    </t>
+                                </h6>
+                                <t t-if="not attachments">
+                                    <div class="tb-empty-text">No attachments on this ticket.</div>
+                                </t>
+                                <t t-if="attachments">
+                                    <div class="tb-attachment-list">
+                                        <t t-foreach="attachments" t-as="att">
+                                            <a t-att-href="att['url']" class="tb-attachment-item"
+                                                target="_blank">
+                                                <div class="tb-att-icon">
+                                                    <t t-if="'image' in att['mimetype']">
+                                                        <i class="bi bi-file-image"></i>
+                                                    </t>
+                                                    <t t-if="'pdf' in att['mimetype']">
+                                                        <i class="bi bi-file-pdf"></i>
+                                                    </t>
+                                                    <t
+                                                        t-if="'word' in att['mimetype'] or 'docx' in att['mimetype']">
+                                                        <i class="bi bi-file-word"></i>
+                                                    </t>
+                                                    <t
+                                                        t-if="'sheet' in att['mimetype'] or 'xlsx' in att['mimetype']">
+                                                        <i class="bi bi-file-excel"></i>
+                                                    </t>
+                                                    <t
+                                                        t-if="'image' not in att['mimetype'] and 'pdf' not in att['mimetype'] and 'word' not in att['mimetype'] and 'docx' not in att['mimetype'] and 'sheet' not in att['mimetype'] and 'xlsx' not in att['mimetype']">
+                                                        <i class="bi bi-file-earmark"></i>
+                                                    </t>
+                                                </div>
+                                                <span class="tb-att-name">
+                                                    <t t-esc="att['name']" />
+                                                </span>
+                                                <i class="bi bi-download tb-att-dl"></i>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Project Docs -->
+                        <div class="tb-stab-panel" id="tab-docs">
+                            <div class="tb-sidebar-section">
+                                <h6 class="tb-sidebar-label">
+                                    <i class="bi bi-folder2-open me-1"></i>Project Documents </h6>
+                                <t t-if="not project_docs">
+                                    <div class="tb-empty-text">
+                                        <i class="bi bi-folder-x"
+                                            style="font-size:2rem;display:block;margin-bottom:.5rem;color:#334155;"></i>
+                                        No documents linked to this project yet. Admins can attach
+                                        docs during project configuration. </div>
+                                </t>
+                                <t t-if="project_docs">
+                                    <div class="tb-doc-list">
+                                        <t t-foreach="project_docs" t-as="doc">
+                                            <a t-att-href="doc['url']" class="tb-doc-item"
+                                                target="_blank">
+                                                <div
+                                                    t-attf-class="tb-doc-icon tb-doc-{{ doc['file_type'] }}">
+                                                    <t t-if="doc['file_type'] == 'pdf'">
+                                                        <i class="bi bi-file-pdf-fill"></i>
+                                                    </t>
+                                                    <t t-if="doc['file_type'] == 'docx'">
+                                                        <i class="bi bi-file-word-fill"></i>
+                                                    </t>
+                                                    <t t-if="doc['file_type'] == 'xlsx'">
+                                                        <i class="bi bi-file-excel-fill"></i>
+                                                    </t>
+                                                    <t t-if="doc['file_type'] == 'txt'">
+                                                        <i class="bi bi-file-text-fill"></i>
+                                                    </t>
+                                                    <t
+                                                        t-if="doc['file_type'] not in ['pdf','docx','xlsx','txt']">
+                                                        <i class="bi bi-file-earmark-fill"></i>
+                                                    </t>
+                                                </div>
+                                                <div class="tb-doc-info">
+                                                    <div class="tb-doc-name">
+                                                        <t t-esc="doc['name']" />
+                                                    </div>
+                                                    <t t-if="doc['description']">
+                                                        <div class="tb-doc-desc">
+                                                            <t t-esc="doc['description']" />
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                                <i class="bi bi-download tb-att-dl"></i>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Internal Comments -->
+                        <div class="tb-stab-panel" id="tab-comments">
+                            <div class="tb-sidebar-section tb-comment-section">
+                                <h6 class="tb-sidebar-label">
+                                    <i class="bi bi-shield-lock me-1"></i>Internal Team Notes <span
+                                        class="tb-label-sub">— not visible to customer</span>
+                                </h6>
+
+                                <div class="tb-comment-list" id="commentList">
+                                    <t t-if="not comments">
+                                        <div class="tb-empty-text" id="commentsEmpty">
+                                            <i class="bi bi-chat-square-dots"
+                                                style="font-size:1.8rem;display:block;margin-bottom:.4rem;color:#334155;"></i>
+                                            No notes yet. Add the first one below. </div>
+                                    </t>
+                                    <t t-foreach="comments" t-as="c">
+                                        <div class="tb-comment" t-att-data-comment-id="c['id']">
+                                            <div class="tb-comment-avatar">
+                                                <t t-esc="c['initials']" />
+                                            </div>
+                                            <div class="tb-comment-body">
+                                                <div class="tb-comment-meta">
+                                                    <span class="tb-comment-author">
+                                                        <t t-esc="c['author']" />
+                                                    </span>
+                                                    <span class="tb-comment-time">
+                                                        <t t-esc="c['created']" />
+                                                    </span>
+                                                </div>
+                                                <div class="tb-comment-msg">
+                                                    <t t-esc="c['message']" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <t t-if="not public_board or board_token">
+                                    <div class="tb-comment-form">
+                                        <!-- Identity banner — only shown for token-board users via JS -->
+                                        <div class="tb-poster-row" id="posterRow" style="display:none;">
+                                            <i class="bi bi-person-circle"></i>
+                                            <span class="tb-poster-label">Posting as</span>
+                                            <span class="tb-poster-name" id="posterDisplayName"></span>
+                                            <button class="tb-poster-change" id="posterChange">change</button>
+                                        </div>
+                                        <div class="tb-poster-setup" id="posterSetup" style="display:none;">
+                                            <input type="text" class="tb-form-input" id="posterNameInput"
+                                                placeholder="Your name or email…" maxlength="80" autocomplete="off"/>
+                                            <button class="tb-btn-primary tb-poster-save-btn" id="posterNameSave">Set Name</button>
+                                        </div>
+                                        <textarea class="tb-comment-input" id="commentInput"
+                                            placeholder="Write an internal note…" rows="2"></textarea>
+                                        <button class="tb-comment-send" id="commentSend">
+                                            <i class="bi bi-send-fill me-1"></i>Post </button>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Reply to Customer -->
+                        <t t-if="not public_board">
+                            <div class="tb-stab-panel" id="tab-reply">
+                                <div class="tb-sidebar-section">
+                                    <h6 class="tb-sidebar-label">
+                                        <i class="bi bi-reply me-1"></i>Reply to Customer <span
+                                            class="tb-label-sub">— shared conversation</span>
+                                    </h6>
+                                    <div class="tb-reply-customer-info">
+                                        <i class="bi bi-person-circle"></i>
+                                        <span>
+                                            <t
+                                                t-esc="ticket.customer_id.name if ticket.customer_id else 'N/A'" />
+                                            <t
+                                                t-if="ticket.customer_id and ticket.customer_id.email">
+                                                <span class="tb-reply-email">(<t
+                                                        t-esc="ticket.customer_id.email" />)</span>
+                                            </t>
+                                        </span>
+                                    </div>
+
+                                    <div class="tb-conversation-list" id="customerConversationList">
+                                        <div class="tb-empty-text" id="customerConversationEmpty">No customer conversation yet.</div>
+                                    </div>
+
+                                    <textarea class="tb-comment-input" id="customerReplyInput"
+                                        placeholder="Type your reply to the customer…" rows="4"></textarea>
+                                    <button class="tb-comment-send" id="customerReplySend"
+                                        style="margin-top:8px;width:100%;justify-content:center;">
+                                        <i class="bi bi-send-fill me-1"></i>Send to Customer </button>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- TAB: Activity Log -->
+                        <div class="tb-stab-panel" id="tab-log">
+                            <div class="tb-sidebar-section">
+                                <h6 class="tb-sidebar-label"
+                                    style="display:flex;align-items:center;justify-content:space-between;">
+                                    <span><i class="bi bi-clock-history me-1"></i>Activity Log</span>
+                                    <button class="tb-log-refresh-btn" id="logRefreshBtn"
+                                        title="Refresh">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </h6>
+                                <div class="tb-log-list" id="activityLogList">
+                                    <t t-if="not activity_log">
+                                        <div class="tb-empty-text" id="logEmpty">No activity
+                                            recorded yet.</div>
+                                    </t>
+                                    <t t-foreach="activity_log" t-as="entry">
+                                        <div
+                                            t-attf-class="tb-log-item tb-log-{{ entry['event_type'] }}">
+                                            <div class="tb-log-dot"></div>
+                                            <div class="tb-log-content">
+                                                <div class="tb-log-msg">
+                                                    <t t-esc="entry['message']" />
+                                                </div>
+                                                <t t-if="entry.get('detail')">
+                                                    <div class="tb-log-detail">
+                                                        <t t-esc="entry['detail']" />
+                                                    </div>
+                                                </t>
+                                                <div class="tb-log-time">
+                                                    <t t-esc="entry['timestamp']" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                    </aside>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 MODAL: ADD / EDIT COLUMN
+                 ========================================================= -->
+            <div class="tb-modal-overlay" id="colModal">
+                <div class="tb-modal">
+                    <div class="tb-modal-header">
+                        <h5 class="tb-modal-title" id="colModalTitle">Add Column</h5>
+                        <button class="tb-modal-close" id="colModalClose">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="tb-modal-body">
+                        <input type="hidden" id="colModalColId" value="" />
+                        <div class="tb-form-group">
+                            <label class="tb-form-label">Column Name *</label>
+                            <input type="text" class="tb-form-input" id="colModalName"
+                                placeholder="e.g. To Do, In Progress, Review…" maxlength="60" />
+                        </div>
+                        <div class="tb-form-group">
+                            <label class="tb-form-label">Color</label>
+                            <div class="tb-color-picker">
+                                <t
+                                    t-foreach="['#6366f1','#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#64748b','#e2e8f0']"
+                                    t-as="col_color">
+                                    <span class="tb-color-dot" t-att-data-color="col_color"
+                                        t-attf-style="background:{{ col_color }}"></span>
+                                </t>
+                            </div>
+                            <input type="hidden" id="colModalColor" value="#6366f1" />
+                        </div>
+                    </div>
+                    <div class="tb-modal-footer">
+                        <button class="tb-btn-secondary" id="colModalCancel">Cancel</button>
+                        <button class="tb-btn-primary" id="colModalSave">Save Column</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 MODAL: ADD / EDIT TASK
+                 ========================================================= -->
+            <div class="tb-modal-overlay" id="taskModal">
+                <div class="tb-modal tb-modal-wide">
+                    <div class="tb-modal-header">
+                        <h5 class="tb-modal-title" id="taskModalTitle">Add Task</h5>
+                        <button class="tb-modal-close" id="taskModalClose">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="tb-modal-body">
+                        <input type="hidden" id="taskModalColId" value="" />
+                        <input type="hidden" id="taskModalTaskId" value="" />
+
+                        <div class="tb-form-group">
+                            <label class="tb-form-label">Task Title *</label>
+                            <input type="text" class="tb-form-input" id="taskModalName"
+                                placeholder="What needs to be done?" maxlength="120" />
+                        </div>
+
+                        <div class="tb-form-group">
+                            <label class="tb-form-label">Description</label>
+                            <textarea class="tb-form-textarea" id="taskModalDesc" rows="2"
+                                placeholder="Optional details…"></textarea>
+                        </div>
+
+                        <div class="tb-form-row">
+                            <div class="tb-form-group">
+                                <label class="tb-form-label">Due Date</label>
+                                <input type="date" class="tb-form-input" id="taskModalDue" />
+                            </div>
+                            <div class="tb-form-group">
+                                <label class="tb-form-label">Priority</label>
+                                <select class="tb-form-input" id="taskModalPriority">
+                                    <option value="none">— None —</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="tb-form-group">
+                            <label class="tb-form-label">Assign Team Members</label>
+                            <div class="tb-member-picker" id="memberPicker"></div>
+                        </div>
+
+                        <!-- Resolving notes (available to team members and focal users) -->
+                        <div class="tb-form-group" id="taskNotesGroup" style="display:none;">
+                            <label class="tb-form-label">
+                                <i class="bi bi-chat-square-text me-1"></i>Resolving Notes </label>
+                            <div id="taskNotesSection"></div>
+                        </div>
+
+                        <!-- Checklist section (focal only) -->
+                        <div class="tb-form-group" id="checklistGroup" style="display:none;">
+                            <label class="tb-form-label">
+                                <i class="bi bi-check2-square me-1"></i>Checklist </label>
+                            <div id="checklistSection"></div>
+                        </div>
+                    </div>
+                    <div class="tb-modal-footer">
+                        <button class="tb-btn-secondary" id="taskModalCancel">Cancel</button>
+                        <button class="tb-btn-primary" id="taskModalSave">Save Task</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 CONFIRM DELETE MODAL
+                 ========================================================= -->
+            <div class="tb-modal-overlay" id="confirmModal">
+                <div class="tb-modal tb-modal-sm">
+                    <div class="tb-modal-header">
+                        <h5 class="tb-modal-title">Confirm Delete</h5>
+                        <button class="tb-modal-close" id="confirmModalClose">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="tb-modal-body">
+                        <p id="confirmModalMsg">Are you sure? This action cannot be undone.</p>
+                    </div>
+                    <div class="tb-modal-footer">
+                        <button class="tb-btn-secondary" id="confirmModalCancel">Cancel</button>
+                        <button class="tb-btn-danger" id="confirmModalOk">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 MODAL: INVITE TEAM MEMBER
+                 ========================================================= -->
+            <t t-if="not public_board">
+                <div class="tb-modal-overlay" id="inviteModal">
+                    <div class="tb-modal">
+                        <div class="tb-modal-header">
+                            <h5 class="tb-modal-title">
+                                <i class="bi bi-person-plus me-2"></i>Invite Team Member </h5>
+                            <button class="tb-modal-close" id="inviteModalClose">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="tb-modal-body">
+                            <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:1.25rem;">
+                                They'll receive an email with a link to view this board.
+                            </p>
+                            <div class="tb-form-group">
+                                <label class="tb-form-label">Full Name *</label>
+                                <input type="text" class="tb-form-input" id="inviteModalName"
+                                    placeholder="e.g. Dorji Wangchuk" maxlength="100" />
+                            </div>
+                            <div class="tb-form-group">
+                                <label class="tb-form-label">Email Address *</label>
+                                <input type="email" class="tb-form-input" id="inviteModalEmail"
+                                    placeholder="e.g. dorjigee1997@gmail.com" />
+                            </div>
+                            <div class="tb-form-group">
+                                <label class="tb-form-label">Role *</label>
+                                <select class="tb-form-input" id="inviteModalRole">
+                                    <option value="focal_person">Focal Person</option>
+                                    <option value="frontend_dev">Frontend Developer</option>
+                                    <option value="backend_dev">Backend Developer</option>
+                                    <option value="network_manager">Network Manager</option>
+                                    <option value="designer">UI/UX Designer</option>
+                                    <option value="qa_engineer">QA Engineer</option>
+                                    <option value="other" selected="selected">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="tb-modal-footer">
+                            <button class="tb-btn-secondary" id="inviteModalCancel">Cancel</button>
+                            <button class="tb-btn-primary" id="inviteModalSend">
+                                <i class="bi bi-send me-1"></i>Send Invite </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Toast -->
+            <div class="tb-toast" id="tbToast"></div>
+
+            <!-- Board JS -->
+            <script src="/customer_support/static/src/js/ticket_board.js"></script>
+            <!-- Session timeout tracker (focal/admin only — not public board) -->
+            <t t-if="not public_board">
+                <script type="text/javascript" src="/customer_support/static/src/js/session_timeout.js"></script>
+            </t>
+        </t>
+    </template>
+
+    <!-- ================================================================
+         INVALID / EXPIRED BOARD TOKEN PAGE
+         ================================================================ -->
+    <template id="board_token_invalid" name="Board Access Invalid">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <style>
+                    body { background: #0f172a; display: flex; align-items: center; justify-content:
+                    center; min-height: 100vh; margin: 0; font-family: 'Inter', system-ui,
+                    sans-serif; }
+                    .inv-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px;
+                    padding: 3rem 2.5rem; text-align: center; max-width: 420px; width: 90%; }
+                    .inv-icon { font-size: 3.5rem; color: #ef4444; margin-bottom: 1.25rem; }
+                    .inv-title { color: #f1f5f9; font-size: 1.4rem; font-weight: 700; margin-bottom:
+                    0.5rem; }
+                    .inv-desc { color: #94a3b8; font-size: 0.92rem; line-height: 1.6; margin-bottom:
+                    1.75rem; }
+                    .inv-note { background: rgba(239,68,68,0.08); border: 1px solid
+                    rgba(239,68,68,0.2); border-radius: 8px; padding: 0.75rem 1rem; color: #fca5a5;
+                    font-size: 0.82rem; margin-bottom: 1.5rem; }
+                    .inv-help { color: #64748b; font-size: 0.8rem; }
+                    .inv-help a { color: #065f46; text-decoration: none; }
+                </style>
+            </t>
+            <div class="inv-card">
+                <div class="inv-icon">
+                    <i class="bi bi-shield-x"></i>
+                </div>
+                <h1 class="inv-title">Access Link Invalid</h1>
+                <p class="inv-desc">This board link is no longer valid or has expired. Board access
+                    links are tied to specific tickets and may have been revoked.</p>
+                <div class="inv-note">
+                    <i class="bi bi-info-circle me-1"></i> Please ask your project admin or focal
+                    person to resend your board access link. </div>
+                <p class="inv-help">Need help? Contact your support team.</p>
+            </div>
+        </t>
+    </template>
+</odoo>

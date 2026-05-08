@@ -1,0 +1,72 @@
+{
+    "name": "Customer Support",
+    "version": "19.0.1.0.0",
+    "category": "Services",
+    "summary": "Customer Support Management System",
+    "description": """
+        Custom Customer Support Module
+        ================================
+        Manage customer support tickets and requests.
+    """,
+    "author": "Dragon Coders",
+    "website": "https://www.yourwebsite.com",
+    "depends": ["base", "mail", "web", "portal", "auth_signup"],
+    "external_dependencies": {
+        "python": ["openai"],
+    },
+    "data": [
+        "security/ir.model.access.csv",
+        "data/sequence.xml",
+        "data/session_config.xml",
+        "data/knowledge_processing_cron.xml",
+        "data/scheduled_actions.xml",
+        "views/customer_support_views.xml",
+        "views/templates/landing_page.xml",
+        "views/templates/portal_login.xml",
+        "views/templates/password_recovery.xml",
+        "views/portal_dashboard.xml",
+        "views/portal_tickets.xml",
+        "views/support_dashboard.xml",
+        "views/create_ticket.xml",
+        "views/edit_profile.xml",
+        "views/chatbot_page.xml",
+        "views/landing_chat.xml",
+        "views/admin_dashboard.xml",
+        "views/user_management.xml",
+        "views/system_configuration.xml",
+        "views/report_templates.xml",
+        "views/templates/ticket_detail.xml",
+        "views/templates/customer_ticket_detail.xml",
+        "views/portal_ticket_kanban.xml",
+        "views/portal_mobile_nav_component.xml",
+        "views/focal_projects.xml",
+        "views/focal_project_tickets.xml",
+        "views/ticket_board.xml",
+        "data/password_reset_email_template.xml",
+    ],
+    "assets": {
+        "web.assets_backend": [
+            "customer_support/static/src/css/customer_support.css",
+            "customer_support/static/src/js/customer_support.js",
+        ],
+        "web.assets_frontend": [
+            "customer_support/static/src/css/portal_login.css",
+            "customer_support/static/src/js/portal_login.js",
+            "customer_support/static/src/css/portal_dashboard.css",
+            "customer_support/static/src/css/support_dashboard.css",
+            "customer_support/static/src/js/chatbot.js",
+            "customer_support/static/src/css/chatbot.css",
+            "customer_support/static/src/css/ticket_details.css",
+            "customer_support/static/src/css/project_configuration.css",
+            "customer_support/static/src/js/project_configuration.js",
+            "customer_support/static/src/css/portal_dashboard_mobile.css",
+            "customer_support/static/src/css/focal_projects.css",
+            # ticket_board.css and ticket_board.js are loaded directly
+            # in ticket_board.xml <head> to avoid double-loading from the bundle
+        ],
+    },
+    "installable": True,
+    "application": True,
+    "auto_install": False,
+    "license": "LGPL-3",
+}

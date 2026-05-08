@@ -1,0 +1,1011 @@
+/* ============================================
+   PREMIUM LANDING PAGE - DRAGON ELITE
+   Customer Support Portal
+   FULLY VISIBLE HERO | CINEMATIC ZOOM | PERFECT POSITION
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Premium Color Palette - Dragon Edition */
+    --primary-blue: #0C4A6E;
+    --secondary-blue: #0A3A5A;
+    --accent-blue: #1E88C7;
+    --white: #FFF;
+    --off-white: #F8FAFC;
+    --light-gray: #E2E8F0;
+    --text-light: #94A3B8;
+    --shadow-color: rgb(12, 74, 110, 0.1);
+    --gradient-primary: linear-gradient(135deg, #0C4A6E 0%, #0A3A5A 50%, #08304D 100%);
+    --gradient-secondary: linear-gradient(135deg, #FFF 0%, #F8FAFC 50%, #F1F5F9 100%);
+
+    /* Extended Premium Palette */
+    --blue-light: rgb(30, 136, 199, 0.15);
+    --blue-soft: rgb(12, 74, 110, 0.08);
+    --blue-mist: rgb(30, 136, 199, 0.05);
+    --white-glass: rgb(255, 255, 255, 0.08);
+    --white-glass-medium: rgb(255, 255, 255, 0.12);
+    --shadow-deep: rgb(10, 58, 90, 0.2);
+    --shadow-rich: rgb(8, 48, 77, 0.25);
+}
+
+body {
+    font-family: Inter, 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    background: var(--secondary-blue);
+    height: 100vh;
+}
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+.minimal-landing {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--gradient-primary);
+}
+
+/* ============================================
+   HERO BACKGROUND - FULLY VISIBLE | CINEMATIC ZOOM
+   ============================================ */
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/customer_support/static/src/img/2.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    animation: cinematicZoom 18s ease-in-out infinite alternate;
+
+    /* FULLY VISIBLE - increased opacity and adjusted blend */
+    opacity: 0.95;
+    filter: brightness(0.9) contrast(1.15) saturate(1.2);
+    mix-blend-mode: normal;
+
+    /* Dragon Elite presence */
+    box-shadow: inset 0 0 100px rgb(12, 74, 110, 0.3);
+}
+
+@keyframes cinematicZoom {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1.08);
+    }
+}
+
+/* ============================================
+   GRADIENT OVERLAY - REFINED | DEPTH
+   ============================================ */
+.fade-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 20% 30%, rgb(30, 136, 199, 0.25) 0%, transparent 60%),
+        radial-gradient(circle at 90% 70%, rgb(12, 74, 110, 0.2) 0%, transparent 60%),
+        linear-gradient(165deg,
+            rgb(12, 74, 110, 0.4) 0%,
+            rgb(10, 58, 90, 0.35) 40%,
+            rgb(8, 48, 77, 0.3) 80%,
+            rgb(30, 136, 199, 0.15) 100%);
+    z-index: 2;
+    animation: overlayBreathing 14s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes overlayBreathing {
+    0%,
+    100% {
+        opacity: 0.65;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ============================================
+   FLOATING PARTICLES - SUBTLE ELEGANCE
+   ============================================ */
+.minimal-landing::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image:
+        radial-gradient(2px 2px at 15% 25%, var(--white), transparent),
+        radial-gradient(2px 2px at 55% 65%, var(--accent-blue), transparent),
+        radial-gradient(1.5px 1.5px at 45% 55%, var(--white), transparent),
+        radial-gradient(1.5px 1.5px at 85% 15%, var(--white), transparent),
+        radial-gradient(2px 2px at 25% 85%, var(--accent-blue), transparent),
+        radial-gradient(1.5px 1.5px at 75% 45%, var(--white), transparent);
+    background-size: 200% 200%, 250% 250%, 300% 300%, 280% 280%, 220% 220%, 240% 240%;
+    opacity: 0.25;
+    z-index: 3;
+    animation: particleFloat 100s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(80px, 40px) rotate(360deg);
+    }
+}
+
+/* ============================================
+   PREMIUM NAVIGATION - GLASSMORPHISM
+   ============================================ */
+.top-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 2rem 0;
+    animation: navSlideDown 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes navSlideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-100px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nav-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 3rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* ============================================
+   ELEGANT LOGO - RIGHT CORNER | PREMIUM GLOW
+   ============================================ */
+.logo-circle {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    background: var(--gradient-secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow:
+        0 12px 28px var(--shadow-deep),
+        0 0 0 3px rgb(255, 255, 255, 0.25),
+        0 0 0 6px rgb(12, 74, 110, 0.15),
+        0 0 40px rgb(30, 136, 199, 0.4);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 2px solid rgb(255, 255, 255, 0.4);
+    animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+    0%,
+    100% {
+        box-shadow: 0 12px 28px var(--shadow-deep), 0 0 0 3px rgb(255, 255, 255, 0.25), 0 0 0 6px rgb(12, 74, 110, 0.15), 0 0 40px rgb(30, 136, 199, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 18px 36px var(--shadow-rich), 0 0 0 4px rgb(255, 255, 255, 0.35), 0 0 0 8px rgb(12, 74, 110, 0.2), 0 0 60px rgb(30, 136, 199, 0.6);
+    }
+}
+
+.logo-circle::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg,
+            transparent 0deg,
+            rgb(30, 136, 199, 0.3) 90deg,
+            rgb(12, 74, 110, 0.3) 180deg,
+            transparent 270deg,
+            transparent 360deg);
+    animation: logoRotate 8s linear infinite;
+}
+
+@keyframes logoRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.logo-circle:hover {
+    transform: scale(1.1);
+    box-shadow:
+        0 22px 44px var(--shadow-rich),
+        0 0 0 5px rgb(255, 255, 255, 0.4),
+        0 0 0 10px rgb(12, 74, 110, 0.2),
+        0 0 70px rgb(30, 136, 199, 0.7);
+}
+
+.logo-img {
+    width: 88%;
+    height: 88%;
+    object-fit: cover;
+    border-radius: 50%;
+    position: relative;
+    z-index: 2;
+    border: 2px solid rgb(255, 255, 255, 0.5);
+    transition: all 0.4s ease;
+}
+
+.logo-circle:hover .logo-img {
+    transform: scale(0.95);
+}
+
+/* ============================================
+   SOPHISTICATED FAQ BUTTON - GLASS PREMIUM
+   ============================================ */
+.faq-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.9rem 2.2rem;
+    background: rgb(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1.5px solid rgb(255, 255, 255, 0.3);
+    border-radius: 100px;
+    color: var(--white);
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 8px 20px var(--shadow-color),
+        inset 0 1px 2px rgb(255, 255, 255, 0.2);
+    overflow: hidden;
+    order: -1;
+}
+
+.faq-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgb(255, 255, 255, 0.2),
+            transparent);
+    transition: left 0.7s ease;
+}
+
+.faq-link:hover::before {
+    left: 100%;
+}
+
+.faq-link i {
+    font-size: 1.2rem;
+    color: var(--white);
+    filter: drop-shadow(0 2px 5px rgb(0, 0, 0, 0.3));
+    transition: all 0.3s ease;
+}
+
+.faq-link span {
+    color: var(--white);
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgb(0, 0, 0, 0.2);
+}
+
+.faq-link:hover {
+    background: rgb(255, 255, 255, 0.2);
+    border-color: rgb(255, 255, 255, 0.5);
+    transform: translateY(-3px);
+    box-shadow:
+        0 15px 30px var(--shadow-rich),
+        inset 0 1px 3px rgb(255, 255, 255, 0.3),
+        0 0 25px rgb(30, 136, 199, 0.3);
+}
+
+.faq-link:hover i {
+    transform: scale(1.15);
+    color: var(--white);
+}
+
+/* ============================================
+   CONTENT WRAPPER - CENTERED
+   ============================================ */
+.content-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* ============================================
+   WELCOME BOX - PERFECT POSITION (MOVED DOWN)
+   ============================================ */
+.welcome-box {
+    text-align: center;
+    max-width: 1000px;
+    animation: heroEntrance 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    position: relative;
+    padding: 2rem;
+
+    /* MOVED DOWN - perfect aesthetic position */
+    margin-top: 180px;
+    transform: translateY(0);
+}
+
+@keyframes heroEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(50px) scale(0.96);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ============================================
+   STUNNING TITLE - DRAGON ELITE
+   ============================================ */
+.welcome-title {
+    font-size: 5rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    animation: titleReveal 1.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+    opacity: 0;
+    color: var(--white);
+    text-shadow:
+        0 0 30px rgb(30, 136, 199, 0.5),
+        0 0 60px rgb(12, 74, 110, 0.4),
+        0 8px 20px rgb(0, 0, 0, 0.4);
+    position: relative;
+}
+
+.welcome-title span {
+    color: var(--white);
+    background: linear-gradient(135deg, var(--white) 0%, var(--off-white) 100%);
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+@keyframes titleReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Decorative lines - subtle elegance */
+.welcome-title::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg,
+            transparent,
+            var(--accent-blue),
+            var(--white),
+            var(--accent-blue),
+            transparent);
+    opacity: 0.7;
+    border-radius: 3px;
+}
+
+.welcome-title::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg,
+            transparent,
+            var(--accent-blue),
+            var(--white),
+            var(--accent-blue),
+            transparent);
+    opacity: 0.7;
+    border-radius: 3px;
+}
+
+/* ============================================
+   ELEGANT SUBTITLE
+   ============================================ */
+.welcome-subtitle {
+    font-size: 1.65rem;
+    color: var(--off-white);
+    font-weight: 300;
+    margin-bottom: 3rem;
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 15px rgb(0, 0, 0, 0.3);
+    animation: subtitleFadeIn 1.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
+    opacity: 0;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+}
+
+@keyframes subtitleFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.welcome-subtitle i {
+    color: var(--accent-blue);
+    font-style: normal;
+    font-weight: 500;
+    background: rgb(30, 136, 199, 0.2);
+    padding: 0.2rem 0.8rem;
+    border-radius: 30px;
+}
+
+/* ============================================
+   PREMIUM CTA BUTTON - MAGNETIC | SHIMMER
+   ============================================ */
+.get-started-btn {
+    display: inline-block;
+    padding: 1.5rem 4.5rem;
+    background: var(--gradient-secondary);
+    color: var(--primary-blue);
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-decoration: none;
+    border-radius: 100px;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow:
+        0 25px 45px var(--shadow-rich),
+        0 8px 20px rgb(0, 0, 0, 0.25),
+        inset 0 2px 4px rgb(255, 255, 255, 0.9);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    animation: buttonAppear 2s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+    opacity: 0;
+    border: none;
+    border: 1px solid rgb(255, 255, 255, 0.4);
+    z-index: 20;
+}
+
+@keyframes buttonAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Shimmer effect */
+.get-started-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgb(255, 255, 255, 0.6),
+            transparent);
+    transition: left 0.8s ease;
+}
+
+.get-started-btn:hover::before {
+    left: 100%;
+}
+
+/* Glow border */
+.get-started-btn::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg,
+            var(--primary-blue),
+            var(--accent-blue),
+            var(--white),
+            var(--accent-blue));
+    border-radius: 100px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.get-started-btn:hover {
+    transform: translateY(-6px) scale(1.05);
+    box-shadow:
+        0 32px 54px var(--shadow-rich),
+        0 10px 25px rgb(0, 0, 0, 0.3),
+        0 0 40px rgb(30, 136, 199, 0.4),
+        inset 0 2px 5px rgb(255, 255, 255, 1);
+    background: var(--white);
+    color: var(--secondary-blue);
+}
+
+.get-started-btn:hover::after {
+    opacity: 0.4;
+}
+
+.get-started-btn:active {
+    transform: translateY(-3px) scale(1.02);
+}
+
+/* Ripple effect for JS */
+.ripple {
+    position: absolute;
+    background: rgb(255, 255, 255, 0.7);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: rippleAnim 0.6s ease-out;
+    pointer-events: none;
+    z-index: 30;
+}
+
+@keyframes rippleAnim {
+    0% {
+        transform: scale(0);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   FLOATING ORBS - BRAND ATMOSPHERE
+   ============================================ */
+.welcome-box::before,
+.welcome-box::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.15;
+    animation: orbFloat 25s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.welcome-box::before {
+    width: 600px;
+    height: 600px;
+    top: -300px;
+    left: -300px;
+    background: radial-gradient(circle,
+            var(--accent-blue) 0%,
+            transparent 80%);
+}
+
+.welcome-box::after {
+    width: 700px;
+    height: 700px;
+    bottom: -350px;
+    right: -350px;
+    background: radial-gradient(circle,
+            var(--primary-blue) 0%,
+            transparent 80%);
+}
+
+@keyframes orbFloat {
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(40px, -30px) scale(1.15);
+    }
+}
+
+/* ============================================
+   SCROLL INDICATOR - SUBTLE
+   ============================================ */
+.scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 50px;
+    border: 2px solid rgb(255, 255, 255, 0.4);
+    border-radius: 50px;
+    z-index: 50;
+    opacity: 0.7;
+    animation: scrollPulse 2s ease-in-out infinite;
+}
+
+.scroll-indicator::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 10px;
+    background: var(--white);
+    border-radius: 2px;
+    animation: scrollMove 2s ease-in-out infinite;
+}
+
+@keyframes scrollMove {
+    0% {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+
+    80% {
+        transform: translateX(-50%) translateY(15px);
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: translateX(-50%) translateY(20px);
+        opacity: 0;
+    }
+}
+
+@keyframes scrollPulse {
+    0%,
+    100% {
+        border-color: rgb(255, 255, 255, 0.4);
+    }
+
+    50% {
+        border-color: rgb(255, 255, 255, 0.8);
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - BRAND CONSISTENT
+   ============================================ */
+
+/* 4K */
+@media (width >= 2560px) {
+    .nav-container {
+        padding: 0 5rem;
+    }
+
+    .welcome-title {
+        font-size: 7rem;
+        margin-top: 250px;
+    }
+
+    .welcome-subtitle {
+        font-size: 2.2rem;
+    }
+
+    .get-started-btn {
+        padding: 1.8rem 5.5rem;
+        font-size: 1.4rem;
+    }
+
+    .logo-circle {
+        width: 110px;
+        height: 110px;
+    }
+
+    .faq-link {
+        padding: 1.1rem 2.6rem;
+        font-size: 1.2rem;
+    }
+
+    .welcome-box {
+        margin-top: 220px;
+    }
+}
+
+/* Desktop */
+@media (width >= 1920px) {
+    .welcome-title {
+        font-size: 6rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.9rem;
+    }
+
+    .logo-circle {
+        width: 100px;
+        height: 100px;
+    }
+
+    .welcome-box {
+        margin-top: 200px;
+    }
+}
+
+/* Laptop */
+@media (width <= 1024px) {
+    .nav-container {
+        padding: 0 2rem;
+        gap: 1.5rem;
+    }
+
+    .welcome-title {
+        font-size: 4.2rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.45rem;
+    }
+
+    .logo-circle {
+        width: 80px;
+        height: 80px;
+    }
+
+    .faq-link {
+        padding: 0.8rem 1.8rem;
+    }
+
+    .welcome-box {
+        margin-top: 160px;
+    }
+}
+
+/* Tablet */
+@media (width <= 768px) {
+    .nav-container {
+        padding: 0 1.5rem;
+        gap: 1.2rem;
+    }
+
+    .welcome-title {
+        font-size: 3.2rem;
+    }
+
+    .welcome-title::before,
+    .welcome-title::after {
+        width: 70px;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.25rem;
+        padding: 0 1rem;
+    }
+
+    .get-started-btn {
+        padding: 1.2rem 3.2rem;
+        font-size: 1rem;
+    }
+
+    .logo-circle {
+        width: 70px;
+        height: 70px;
+    }
+
+    .faq-link {
+        padding: 0.7rem 1.5rem;
+    }
+
+    .welcome-box {
+        margin-top: 140px;
+    }
+}
+
+/* Mobile */
+@media (width <= 480px) {
+    .nav-container {
+        padding: 0 1rem;
+        gap: 0.8rem;
+    }
+
+    .welcome-title {
+        font-size: 2.4rem;
+    }
+
+    .welcome-title::before,
+    .welcome-title::after {
+        width: 50px;
+        height: 2px;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2.2rem;
+    }
+
+    .get-started-btn {
+        padding: 1rem 2.5rem;
+        font-size: 0.9rem;
+    }
+
+    .logo-circle {
+        width: 60px;
+        height: 60px;
+    }
+
+    .faq-link {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    .faq-link i {
+        font-size: 1rem;
+    }
+
+    .welcome-box {
+        margin-top: 120px;
+    }
+
+    .scroll-indicator {
+        display: none;
+    }
+}
+
+/* Small Mobile */
+@media (width <= 375px) {
+    .welcome-title {
+        font-size: 2rem;
+    }
+
+    .logo-circle {
+        width: 50px;
+        height: 50px;
+    }
+
+    .faq-link span {
+        display: none;
+    }
+
+    .faq-link i {
+        font-size: 1.2rem;
+    }
+
+    .welcome-box {
+        margin-top: 100px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY & REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-contrast: more) {
+    .welcome-title {
+        -webkit-text-fill-color: var(--white);
+        background: none;
+        text-shadow: none;
+    }
+
+    .faq-link {
+        border: 3px solid var(--white);
+        background: var(--primary-blue);
+    }
+
+    .get-started-btn {
+        border: 3px solid var(--primary-blue);
+        color: var(--primary-blue);
+        background: var(--white);
+    }
+}
+
+.get-started-btn:focus-visible,
+.faq-link:focus-visible {
+    outline: 3px solid var(--accent-blue);
+    outline-offset: 5px;
+}
+
+/* ============================================
+   LOADED STATE - SMOOTH ENTRANCE
+   ============================================ */
+.minimal-landing.loaded .background-image {
+    opacity: 0.98;
+    transition: opacity 1.5s ease;
+}
+
+/* ============================================
+   MOBILE FIXES — NO ZOOM, BIGGER NAV
+   ============================================ */
+@media (width <= 768px) {
+    /* Disable ONLY the cinematic zoom — keep all other animations */
+    .background-image {
+        animation: none !important;
+        transform: scale(1) !important;
+    }
+
+    /* Bigger logo */
+    .logo-circle {
+        width: 75px !important;
+        height: 75px !important;
+    }
+
+    /* Bigger FAQ button */
+    .faq-link {
+        padding: 0.85rem 1.6rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* Always show FAQ text on mobile */
+    .faq-link span {
+        display: inline !important;
+    }
+
+    .faq-link i {
+        font-size: 1.1rem !important;
+    }
+
+    /* Better nav spacing */
+    .nav-container {
+        gap: 1rem !important;
+        padding: 0 1.2rem !important;
+    }
+
+    .top-nav {
+        padding: 1.2rem 0 !important;
+    }
+}

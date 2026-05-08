@@ -1,0 +1,702 @@
+/* ============================================
+   CUSTOMER PROFILE PAGE STYLES - EXACT MATCH
+   Color Scheme: #0c4a6e, #f0f9ff, #e0f2fe
+   ALL ORIGINAL CLASSES PRESERVED
+   ============================================ */
+
+/* ========== COLOR VARIABLES ========== */
+:root {
+    --primary-dark: #065f46;
+    --light-bg: #f0fdf4;
+    --hover-blue: #d1fae5;
+    --border-blue: #a7f3d0;
+    --text-muted: #64748b;
+    --white: #fff;
+    --text-dark: #1e293b;
+    --cyan-blue: #059669;
+}
+
+/* ========== BASE STYLES ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #f0fdf4;
+    ;
+    color: var(--text-dark);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* ========== MAIN CONTAINER ========== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.py-4 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+}
+
+/* ========== NEW GRID LAYOUT ========== */
+.profile-layout-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1.25rem;
+    align-items: stretch;
+}
+
+/* ========== CARD HEADERS (NEW) ========== */
+.card-header-custom {
+    background-color: var(--primary-dark);
+    color: var(--white);
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* ========== PROFILE SECTION (UPDATED) ========== */
+.profile-section {
+    background-color: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgb(0, 0, 0, 0.1);
+
+    /* Removed old padding and border */
+    padding: 0;
+    margin-bottom: 0;
+    border: none;
+}
+
+.profile-content {
+    padding: 1.5rem;
+}
+
+/* ========== AVATAR & USER INFO (PRESERVED) ========== */
+.avatar-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.avatar-text {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #065f46, #059669);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.user-role {
+    display: inline-block;
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    font-weight: 400;
+
+    /* Removed old background and padding */
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+/* ========== BUTTONS (PRESERVED) ========== */
+.button-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-profile {
+    background-color: var(--primary-dark);
+    color: var(--white);
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 5px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.btn-profile:hover {
+    background-color: #047857;
+    transform: translateY(-1px);
+    color: var(--white);
+}
+
+.btn-outline-profile {
+    background-color: transparent;
+    color: var(--primary-dark);
+    border: 1px solid var(--primary-dark);
+    padding: 0.375rem 1rem;
+    border-radius: 5px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.btn-outline-profile:hover {
+    background-color: var(--primary-dark);
+    color: var(--white);
+}
+
+/* ========== PROFILE DETAILS (UPDATED TO GRID) ========== */
+.profile-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Old detail-row class - kept for compatibility but overridden */
+.detail-row {
+    display: contents;
+}
+
+.detail-item {
+    background-color: var(--light-bg);
+    padding: 1.5rem 1.25rem;
+    border-radius: 6px;
+
+    /* Removed old border-bottom */
+    border-bottom: none;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: 0.375rem;
+    font-weight: 500;
+}
+
+.detail-value {
+    font-size: 0.9375rem;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+/* ========== ACTIVITY SECTION (UPDATED) ========== */
+.activity-section {
+    background-color: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgb(0, 0, 0, 0.1);
+
+    /* Removed old padding and border */
+    padding: 0;
+    border: none;
+}
+
+.activity-content {
+    padding: 1.5rem;
+}
+
+/* Old section-title - kept for compatibility */
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 1.5rem;
+    display: none;
+
+    /* Hidden as we use card header now */
+}
+
+/* ========== ACTIVITY STATS (NEW DESIGN) ========== */
+.activity-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background-color: var(--light-bg);
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+}
+
+.stat-label {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: 0.375rem;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stat-subtext {
+    font-size: 0.8125rem;
+    color: var(--cyan-blue);
+    font-weight: 500;
+}
+
+/* Old activity-item classes - kept for compatibility but hidden */
+.activity-item {
+    display: none;
+}
+
+.activity-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.activity-value {
+    font-size: 1rem;
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.highlight-value {
+    color: var(--primary-dark);
+}
+
+/* ========== PROGRESS BAR SECTION (UPDATED) ========== */
+.resolution-card {
+    background-color: var(--light-bg);
+    padding: 1.25rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+
+.resolution-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.resolution-label {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.resolution-percentage {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+/* Old progress section classes - kept for compatibility */
+.progress-section {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.progress-title {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.progress-percent {
+    font-size: 1rem;
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+/* Progress Bar */
+.progress-bar-wrapper,
+.progress-bar-custom {
+    height: 8px;
+    background-color: #d1fae5;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill,
+.progress-fill {
+    height: 100%;
+    background-color: #059669;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* ========== LOG OUT BUTTON (NEW) ========== */
+.btn-logout {
+    width: 100%;
+    background-color: #059669;
+    color: var(--white);
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+    background-color: #047857;
+    transform: translateY(-1px);
+}
+
+/* ========== PAGE HEADER WITH BACK BUTTON (PRESERVED) ========== */
+.page-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.back-to-dashboard {
+    color: var(--primary-dark);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--primary-dark);
+    border-radius: 5px;
+    background-color: var(--white);
+    transition: all 0.2s;
+}
+
+.back-to-dashboard:hover {
+    background-color: var(--primary-dark);
+    color: var(--white);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+/* ========== UTILITY CLASSES (PRESERVED) ========== */
+.text-primary-dark {
+    color: var(--primary-dark) !important;
+}
+
+.bg-primary-light {
+    background-color: var(--light-bg) !important;
+}
+
+.border-light-blue {
+    border-color: var(--border-blue) !important;
+}
+
+.fw-bold {
+    font-weight: 700 !important;
+}
+
+.h2 {
+    font-size: 1.875rem;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+
+.my-3 {
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.me-1 {
+    margin-right: 0.25rem !important;
+}
+
+.me-2 {
+    margin-right: 0.5rem !important;
+}
+
+.g-4 {
+    gap: 1.5rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -0.75rem;
+    margin-left: -0.75rem;
+}
+
+.col-lg-8,
+.col-lg-4 {
+    position: relative;
+    width: 100%;
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+}
+
+@media (width >= 992px) {
+    .col-lg-8 {
+        flex: 0 0 66.6667%;
+        max-width: 66.6667%;
+    }
+
+    .col-lg-4 {
+        flex: 0 0 33.3333%;
+        max-width: 33.3333%;
+    }
+}
+
+hr {
+    margin: 1rem 0;
+    color: inherit;
+    background-color: currentcolor;
+    border: 0;
+    opacity: 0.25;
+    height: 1px;
+}
+
+/* ========== MODAL STYLES (PRESERVED) ========== */
+.modal-header.border-0 {
+    border-bottom: none;
+}
+
+.modal-title.text-primary-dark {
+    color: var(--primary-dark) !important;
+    font-weight: 600;
+}
+
+.modal-header {
+    background-color: var(--primary-dark);
+    color: var(--white);
+    padding: 1.25rem 1.5rem;
+}
+
+.modal-title {
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-body.pt-0 {
+    padding-top: 0 !important;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--hover-blue);
+    padding: 1rem 1.5rem;
+}
+
+.modal-footer.border-0 {
+    border-top: none;
+}
+
+.modal-footer.pt-0 {
+    padding-top: 0 !important;
+}
+
+.modal-content {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 4px 20px rgb(0, 0, 0, 0.15);
+}
+
+.form-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 1px solid var(--border-blue);
+    border-radius: 5px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    transition: all 0.2s ease;
+    display: block;
+    width: 100%;
+    line-height: 1.5;
+    color: var(--text-dark);
+    background-color: var(--white);
+}
+
+.form-control:focus {
+    border-color: var(--primary-dark);
+    box-shadow: 0 0 0 3px rgb(5,150,105,0.15);
+    outline: none;
+}
+
+.mb-3 {
+    margin-bottom: 1rem !important;
+}
+
+.pb-0 {
+    padding-bottom: 0 !important;
+}
+
+.btn {
+    display: inline-block;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background-color: #047857;
+    border-color: #0a3d57;
+    color: var(--white);
+}
+
+.btn-light {
+    background-color: var(--white);
+    border: 1px solid var(--border-blue);
+    color: var(--text-dark);
+}
+
+.btn-light:hover {
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+    background: transparent;
+    border: 0;
+    padding: 0.25rem;
+    opacity: 0.5;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+/* ========== RESPONSIVE STYLES (PRESERVED) ========== */
+@media (width <= 992px) {
+    .profile-layout-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .col-lg-8,
+    .col-lg-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+@media (width <= 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .profile-content,
+    .activity-content {
+        padding: 1rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .btn-profile,
+    .btn-outline-profile {
+        width: 100%;
+    }
+
+    .avatar-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .avatar-circle,
+    .avatar-text {
+        width: 60px;
+        height: 60px;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .user-name {
+        font-size: 1.25rem;
+    }
+
+    .page-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .back-to-dashboard {
+        width: 100%;
+        justify-content: center;
+    }
+}

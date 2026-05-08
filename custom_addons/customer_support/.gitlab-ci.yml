@@ -1,0 +1,151 @@
+stages:
+  - static
+  - security
+  - odoo_test
+  - build
+  - deploy
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: never
+
+variables:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_CACHE_DIR: "1"
+  ADDON_PATH: "custom_addons/customer_support"
+  IMAGE_NAME: "$CI_REGISTRY_IMAGE/customer_support"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+
+default:
+  image: python:3.11-slim
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends libxml2-utils ripgrep git nodejs
+    - pip install --upgrade pip
+    - pip install ruff
+
+manifest_sanity:
+  stage: static
+  script:
+    - python -m py_compile __manifest__.py
+
+python_compile:
+  stage: static
+  script:
+    - find . -name "*.py" -print0 | xargs -0 -n1 python -m py_compile
+
+xml_parse_validation:
+  stage: static
+  script:
+    - xml_files=$(find . -name "*.xml")
+    - |
+      if [ -n "$xml_files" ]; then
+        xmllint --noout $xml_files
+      else
+        echo "No XML files found."
+      fi
+
+ruff_lint:
+  stage: static
+  script:
+    - ruff check .
+
+js_syntax_check:
+  stage: static
+  script:
+    - |
+      find . -name "*.js" -not -path "./.git/*" | while read f; do
+        node --check "$f" || exit 1
+      done
+
+csrf_disabled_scan:
+  stage: security
+  script:
+    - rg -n "csrf=False" controllers || true
+
+controller_sudo_scan:
+  stage: security
+  script:
+    - rg -n "\\.sudo\\(" controllers || true
+
+redirect_logic_scan:
+  stage: security
+  script:
+    - rg -n "redirect_to|safe_redirect|startswith\\(" controllers || true
+
+odoo_functional_tests:
+  stage: odoo_test
+  image: odoo:19.0
+  rules:
+    - if: '$RUN_ODOO_TESTS == "1"'
+    - when: never
+  services:
+    - name: postgres:16
+      alias: db
+  variables:
+    POSTGRES_DB: postgres
+    POSTGRES_USER: odoo
+    POSTGRES_PASSWORD: odoo
+    HOST: db
+    PORT: "5432"
+    USER: odoo
+    PASSWORD: odoo
+    CI_TEST_DB: ci_cs_functional
+  script:
+    - odoo --addons-path=/mnt/extra-addons -d "$CI_TEST_DB" -i customer_support --stop-after-init
+    - >
+      odoo
+      --addons-path=/mnt/extra-addons
+      -d "$CI_TEST_DB"
+      --test-enable
+      --test-tags customer_support
+      --stop-after-init
+      --log-level=test
+
+build_docker_image:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+  script:
+    - docker build -t "$IMAGE_NAME:$IMAGE_TAG" -t "$IMAGE_NAME:latest" .
+    - docker push "$IMAGE_NAME:$IMAGE_TAG"
+    - docker push "$IMAGE_NAME:latest"
+
+deploy_docker_production:
+  stage: deploy
+  image: alpine:3.20
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$DEPLOY_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+  script:
+    - test -n "$DEPLOY_HOST"
+    - test -n "$DEPLOY_USER"
+    - ssh "$DEPLOY_USER@$DEPLOY_HOST" "
+        docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD &&
+        docker pull $IMAGE_NAME:latest &&
+        docker stop customer_support_odoo || true &&
+        docker rm customer_support_odoo || true &&
+        docker run -d
+          --name customer_support_odoo
+          --restart always
+          -p 8069:8069
+          --network odoo_network
+          $IMAGE_NAME:latest
+      "
+  environment:
+    name: production

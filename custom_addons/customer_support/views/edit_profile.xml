@@ -1,0 +1,641 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_profile_page" name="User Profile Page">
+        <t t-call="web.layout">
+            <t t-set="profile_route_base"
+                t-value="profile_route_base or '/customer_support/profile'" />
+            <t t-set="back_url" t-value="back_url or '/customer_support/dashboard'" />
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <style>
+                    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+                    body {
+                    min-height: 100vh;
+                    background: linear-gradient(135deg, #022c22 0%, #064e3b 52%, #065f46 100%);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 2rem 1rem;
+                    font-family: 'Manrope', 'Segoe UI', sans-serif;
+                    }
+
+                    /* ── CLOSE BUTTON ── */
+                    .ep-close {
+                    position: fixed;
+                    top: 1.25rem;
+                    right: 1.25rem;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: rgba(255,255,255,0.18);
+                    border: 1px solid rgba(255,255,255,0.3);
+                    color: #fff;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background .15s, transform .15s;
+                    z-index: 100;
+                    }
+                    .ep-close:hover {
+                    background: rgba(255,255,255,0.28);
+                    transform: scale(1.08);
+                    }
+
+                    /* ── CARD ── */
+                    .ep-card {
+                    background: rgba(255, 255, 255, 0.95);
+                    border-radius: 24px;
+                    box-shadow: 0 28px 70px rgba(5,150,105,0.15);
+                    width: 100%;
+                    max-width: 480px;
+                    overflow: hidden;
+                    animation: epSlideUp .3s cubic-bezier(.34,1.56,.64,1) both;
+                    border: 1px solid rgba(5,150,105,0.18);
+                    }
+                    @keyframes epSlideUp {
+                    from { opacity: 0; transform: translateY(30px) scale(.97); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
+                    }
+
+                    /* ── CARD HEADER ── */
+                    .ep-header {
+                    background: linear-gradient(135deg, #047857, #059669);
+                    padding: 1.75rem 1.75rem 1.5rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    }
+                    .ep-header-icon {
+                    width: 48px;
+                    height: 48px;
+                    background: rgba(255,255,255,0.18);
+                    border-radius: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.4rem;
+                    color: #fff;
+                    flex-shrink: 0;
+                    }
+                    .ep-header-text .ep-title {
+                    font-size: 1.15rem;
+                    font-weight: 700;
+                    color: #fff;
+                    margin-bottom: 2px;
+                    }
+                    .ep-header-text .ep-subtitle {
+                    font-size: .8rem;
+                    color: rgba(255,255,255,.72);
+                    }
+
+                    /* ── TOAST ── */
+                    .ep-toast {
+                    display: none;
+                    align-items: center;
+                    gap: .6rem;
+                    padding: .75rem 1.25rem;
+                    font-size: .85rem;
+                    font-weight: 600;
+                    border-bottom: 1px solid transparent;
+                    }
+                    .ep-toast.success {
+                    display: flex;
+                    background: #f0fdf4;
+                    color: #15803d;
+                    border-color: #bbf7d0;
+                    }
+                    .ep-toast.error {
+                    display: flex;
+                    background: #fef2f2;
+                    color: #b91c1c;
+                    border-color: #fecaca;
+                    }
+                    .ep-toast i { font-size: 1rem; flex-shrink: 0; }
+
+                    /* ── SECTION ── */
+                    .ep-section {
+                    padding: 1.5rem 1.75rem;
+                    }
+                    .ep-section + .ep-section {
+                    border-top: 1px solid #f1f5f9;
+                    }
+                    .ep-section-label {
+                    font-size: .72rem;
+                    font-weight: 700;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: .07em;
+                    margin-bottom: 1.1rem;
+                    display: flex;
+                    align-items: center;
+                    }
+                    .ep-section-label i { color: #059669; }
+                    .ep-section-label i { color: #059669; }
+
+                    /* ── AVATAR ── */
+                    .ep-avatar-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 1.25rem;
+                    }
+                    .ep-avatar-wrap {
+                    position: relative;
+                    width: 88px;
+                    height: 88px;
+                    border-radius: 50%;
+                    flex-shrink: 0;
+                    cursor: pointer;
+                    border: 3px solid #d1fae5;
+                    transition: border-color .15s;
+                    }
+                    .ep-avatar-wrap:hover { border-color: #059669; }
+                    .ep-avatar-wrap:hover { border-color: #059669; }
+                    .ep-avatar {
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    display: block;
+                    }
+                    .ep-avatar-overlay {
+                    position: absolute;
+                    inset: 0;
+                    border-radius: 50%;
+                    background: rgba(5,150,105,.55);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #fff;
+                    font-size: 1.25rem;
+                    opacity: 0;
+                    transition: opacity .15s;
+                    }
+                    .ep-avatar-wrap:hover .ep-avatar-overlay { opacity: 1; }
+
+                    .ep-avatar-name {
+                    font-size: .95rem;
+                    font-weight: 700;
+                    color: #065f46;
+                    margin-bottom: 3px;
+                    }
+                    .ep-avatar-hint {
+                    font-size: .78rem;
+                    color: #94a3b8;
+                    margin-bottom: .75rem;
+                    }
+
+                    /* ── BUTTONS ── */
+                    .ep-btn-save-photo {
+                    display: none;
+                    align-items: center;
+                    gap: .35rem;
+                    padding: .42rem .95rem;
+                    background: #059669;
+                    color: #fff;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: .82rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: background .15s;
+                    }
+                    .ep-btn-save-photo.visible { display: inline-flex; }
+                    .ep-btn-save-photo:hover { background: #047857; }
+                    .ep-btn-save-photo:hover { background: linear-gradient(140deg, #047857 0%,
+                    #065f46 100%); }
+
+                    .ep-btn-primary {
+                    width: 100%;
+                    padding: .65rem;
+                    background: linear-gradient(135deg, #047857, #059669);
+                    color: #fff;
+                    border: none;
+                    border-radius: 10px;
+                    font-size: .9rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: .4rem;
+                    margin-top: 1.25rem;
+                    transition: opacity .15s, transform .1s;
+                    }
+                    .ep-btn-primary:hover { opacity: .92; transform: translateY(-1px); }
+                    .ep-btn-primary:active { transform: translateY(0); }
+                    .ep-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+                    /* ── FORM FIELDS ── */
+                    .ep-field { margin-bottom: .9rem; }
+                    .ep-label {
+                    display: block;
+                    font-size: .78rem;
+                    font-weight: 600;
+                    color: #475569;
+                    margin-bottom: .35rem;
+                    }
+                    .ep-input-wrap {
+                    position: relative;
+                    }
+                    .ep-input {
+                    width: 100%;
+                    padding: .58rem .95rem;
+                    padding-right: 2.6rem;
+                    border: 1.5px solid #e2e8f0;
+                    border-radius: 9px;
+                    font-size: .875rem;
+                    color: #1e293b;
+                    background: #f8fafc;
+                    outline: none;
+                    transition: border-color .15s, box-shadow .15s;
+                    }
+                    .ep-input:focus {
+                    border-color: #059669;
+                    background: #fff;
+                    box-shadow: 0 0 0 3px rgba(5,150,105,.15);
+                    }
+                    .ep-input.error { border-color: #ef4444; }
+                    .ep-eye {
+                    position: absolute;
+                    right: .7rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: none;
+                    border: none;
+                    color: #94a3b8;
+                    cursor: pointer;
+                    font-size: .95rem;
+                    padding: .2rem;
+                    transition: color .15s;
+                    display: flex;
+                    align-items: center;
+                    }
+                    .ep-eye:hover { color: #065f46; }
+                    .ep-eye:hover { color: #059669; }
+
+                    /* ── STRENGTH BAR ── */
+                    .ep-strength {
+                    height: 4px;
+                    border-radius: 99px;
+                    background: #e2e8f0;
+                    margin-top: .4rem;
+                    overflow: hidden;
+                    }
+                    .ep-strength-fill {
+                    height: 100%;
+                    border-radius: 99px;
+                    width: 0;
+                    transition: width .3s, background .3s;
+                    }
+                    .ep-strength-text {
+                    font-size: .7rem;
+                    color: #94a3b8;
+                    margin-top: .2rem;
+                    }
+
+                    /* ── RESPONSIVE ── */
+                    @media (max-width: 520px) {
+                    .ep-card { border-radius: 18px; }
+                    .ep-section { padding: 1.25rem 1.25rem; }
+                    .ep-header { padding: 1.4rem 1.25rem 1.25rem; }
+                    }
+                </style>
+            </t>
+
+            <!-- CLOSE BUTTON -->
+            <button class="ep-close" t-attf-onclick="window.location.href='#{back_url}'"
+                title="Go back">
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+            <!-- CARD -->
+            <div class="ep-card">
+
+                <!-- HEADER -->
+                <div class="ep-header">
+                    <div class="ep-header-icon">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div class="ep-header-text">
+                        <p class="ep-title">Edit Profile</p>
+                        <p class="ep-subtitle">
+                            <t t-esc="user.email or user.name" />
+                        </p>
+                    </div>
+                </div>
+
+                <!-- TOAST -->
+                <div class="ep-toast" id="epToast">
+                    <i class="bi" id="epToastIcon"></i>
+                    <span id="epToastMsg"></span>
+                </div>
+
+                <!-- ── SECTION 1: PROFILE PICTURE ── -->
+                <div class="ep-section">
+                    <div class="ep-section-label">
+                        <i class="bi bi-camera-fill me-2"></i>Profile Picture </div>
+                    <div class="ep-avatar-row">
+                        <div class="ep-avatar-wrap" id="avatarWrap"
+                            onclick="document.getElementById('avatarInput').click()"
+                            title="Click to change photo">
+                            <img id="avatarPreview"
+                                t-att-src="'/web/image/res.users/%s/avatar_128' % user.id"
+                                class="ep-avatar" alt="Avatar"
+                                onerror="this.src='/web/static/img/avatar_gray.svg'" />
+                            <div class="ep-avatar-overlay">
+                                <i class="bi bi-camera-fill"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="ep-avatar-name">
+                                <t t-esc="user.name" />
+                            </p>
+                            <p class="ep-avatar-hint">Click photo to select a new image</p>
+                            <button type="button" class="ep-btn-save-photo" id="savePicBtn"
+                                onclick="submitPicture()">
+                                <i class="bi bi-check2 me-1"></i>Save Photo </button>
+                        </div>
+                    </div>
+                    <!-- hidden file input + hidden form -->
+                    <input type="file" id="avatarInput" name="avatar"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        style="display:none" />
+                </div>
+
+                <!-- ── SECTION 2: CHANGE PASSWORD ── -->
+                <div class="ep-section">
+                    <div class="ep-section-label">
+                        <i class="bi bi-shield-lock-fill me-2"></i>Change Password </div>
+
+                    <div class="ep-field">
+                        <label class="ep-label" for="oldPwd">Current Password</label>
+                        <div class="ep-input-wrap">
+                            <input type="password" id="oldPwd" class="ep-input"
+                                placeholder="Enter current password" autocomplete="current-password" />
+                            <button type="button" class="ep-eye" onclick="togglePwd('oldPwd',this)"
+                                tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ep-field">
+                        <label class="ep-label" for="newPwd">New Password</label>
+                        <div class="ep-input-wrap">
+                            <input type="password" id="newPwd" class="ep-input"
+                                placeholder="At least 8 characters"
+                                autocomplete="new-password"
+                                oninput="checkStrength(this.value)" />
+                            <button type="button" class="ep-eye" onclick="togglePwd('newPwd',this)"
+                                tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="ep-strength">
+                            <div class="ep-strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="ep-strength-text" id="strengthText"></div>
+                    </div>
+
+                    <div class="ep-field">
+                        <label class="ep-label" for="confirmPwd">Confirm New Password</label>
+                        <div class="ep-input-wrap">
+                            <input type="password" id="confirmPwd" class="ep-input"
+                                placeholder="Re-enter new password"
+                                autocomplete="new-password" />
+                            <button type="button" class="ep-eye"
+                                onclick="togglePwd('confirmPwd',this)" tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="ep-btn-primary" id="updatePwdBtn" onclick="submitPassword()">
+                        <i class="bi bi-lock-fill"></i>Update Password </button>
+                </div>
+
+            </div><!--
+            /ep-card -->
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script type="text/javascript" id="epProfileScript"
+                t-att-data-profile-route-base="profile_route_base">
+                //<![CDATA[
+            var profileScriptEl = document.getElementById('epProfileScript');
+            var profileRouteBase = (profileScriptEl && profileScriptEl.dataset.profileRouteBase) || '/customer_support/profile';
+            var csrfToken = (window.odoo && window.odoo.csrf_token) || '';
+
+            function parseJsonOrRedirect(response) {
+                return response.text().then(function (raw) {
+                    var contentType = response.headers.get('content-type') || '';
+                    if (contentType.indexOf('application/json') !== -1) {
+                        return JSON.parse(raw || '{}');
+                    }
+                    if (response.status >= 300 || response.status === 418) {
+                        window.location.href = '/customer_support/login';
+                        throw new Error('AUTH_REDIRECT');
+                    }
+                    throw new Error('INVALID_RESPONSE');
+                });
+            }
+
+            // ── TOAST ──────────────────────────────────────────────────────
+            function showToast(msg, type) {
+                var t  = document.getElementById('epToast');
+                var ic = document.getElementById('epToastIcon');
+                var ms = document.getElementById('epToastMsg');
+                ic.className = 'bi ' + (type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill');
+                ms.textContent = msg;
+                t.className = 'ep-toast ' + type;
+                clearTimeout(t._timer);
+                t._timer = setTimeout(function () { t.className = 'ep-toast'; }, 4000);
+                t.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // ── PASSWORD VISIBILITY ────────────────────────────────────────
+            function togglePwd(fieldId, btn) {
+                var inp = document.getElementById(fieldId);
+                var ico = btn.querySelector('i');
+                if (inp.type === 'password') {
+                    inp.type = 'text';
+                    ico.className = 'bi bi-eye-slash';
+                } else {
+                    inp.type = 'password';
+                    ico.className = 'bi bi-eye';
+                }
+            }
+
+            // ── PASSWORD STRENGTH ──────────────────────────────────────────
+            function checkStrength(val) {
+                var fill = document.getElementById('strengthFill');
+                var text = document.getElementById('strengthText');
+                if (!val) { fill.style.width = '0'; text.textContent = ''; return; }
+                var score = 0;
+                if (val.length >= 8)  score++;
+                if (val.length >= 12) score++;
+                if (/[A-Z]/.test(val)) score++;
+                if (/[0-9]/.test(val)) score++;
+                if (/[^A-Za-z0-9]/.test(val)) score++;
+                var levels = [
+                    { w: '20%', bg: '#ef4444', label: 'Very weak' },
+                    { w: '40%', bg: '#f97316', label: 'Weak'      },
+                    { w: '60%', bg: '#eab308', label: 'Fair'      },
+                    { w: '80%', bg: '#22c55e', label: 'Strong'    },
+                    { w: '100%',bg: '#16a34a', label: 'Very strong'}
+                ];
+                var lv = levels[Math.min(score, 4)];
+                fill.style.width      = lv.w;
+                fill.style.background = lv.bg;
+                text.textContent      = lv.label;
+                text.style.color      = lv.bg;
+            }
+
+            // ── AVATAR PREVIEW ─────────────────────────────────────────────
+            document.getElementById('avatarInput').addEventListener('change', function () {
+                var file = this.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                    var btn = document.getElementById('savePicBtn');
+                    btn.classList.add('visible');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // ── SUBMIT PICTURE ─────────────────────────────────────────────
+            function submitPicture() {
+                var file = document.getElementById('avatarInput').files[0];
+                if (!file) return;
+
+                var btn = document.getElementById('savePicBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bi bi-arrow-repeat me-1" style="animation:spin .6s linear infinite"></i>Saving...';
+
+                var fd = new FormData();
+                fd.append('avatar', file);
+                if (csrfToken) {
+                    fd.append('csrf_token', csrfToken);
+                }
+
+                fetch(profileRouteBase + '/update_picture', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: fd
+                })
+                .then(parseJsonOrRedirect)
+                .then(function (data) {
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                        return;
+                    }
+                    if (data.success) {
+                        showToast('Profile picture updated successfully!', 'success');
+                        if (data.avatar_url) {
+                            document.getElementById('avatarPreview').src = data.avatar_url;
+                        }
+                        btn.classList.remove('visible');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Save Photo';
+                        document.getElementById('avatarInput').value = '';
+                    } else {
+                        showToast(data.error || 'Failed to update picture.', 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Save Photo';
+                    }
+                })
+                .catch(function () {
+                    showToast('Network error. Please try again.', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Save Photo';
+                });
+            }
+
+            // ── SUBMIT PASSWORD ────────────────────────────────────────────
+            function submitPassword() {
+                var oldPwd     = document.getElementById('oldPwd').value.trim();
+                var newPwd     = document.getElementById('newPwd').value.trim();
+                var confirmPwd = document.getElementById('confirmPwd').value.trim();
+
+                // Clear field errors
+                ['oldPwd','newPwd','confirmPwd'].forEach(function (id) {
+                    document.getElementById(id).classList.remove('error');
+                });
+
+                if (!oldPwd || !newPwd || !confirmPwd) {
+                    showToast('All password fields are required.', 'error');
+                    if (!oldPwd)     document.getElementById('oldPwd').classList.add('error');
+                    if (!newPwd)     document.getElementById('newPwd').classList.add('error');
+                    if (!confirmPwd) document.getElementById('confirmPwd').classList.add('error');
+                    return;
+                }
+
+                var btn = document.getElementById('updatePwdBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bi bi-arrow-repeat" style="animation:spin .6s linear infinite"></i>&nbsp;Updating...';
+
+                var params = new URLSearchParams();
+                params.append('old_pwd',     oldPwd);
+                params.append('new_pwd',     newPwd);
+                params.append('confirm_pwd', confirmPwd);
+                if (csrfToken) {
+                    params.append('csrf_token', csrfToken);
+                }
+
+                fetch(profileRouteBase + '/update_password', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                })
+                .then(parseJsonOrRedirect)
+                .then(function (data) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-lock-fill"></i>&nbsp;Update Password';
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                        return;
+                    }
+                    if (data.success) {
+                        showToast('Password updated successfully!', 'success');
+                        document.getElementById('oldPwd').value     = '';
+                        document.getElementById('newPwd').value     = '';
+                        document.getElementById('confirmPwd').value = '';
+                        checkStrength('');
+                    } else {
+                        showToast(data.error || 'Update failed.', 'error');
+                        if (data.error && data.error.toLowerCase().includes('current')) {
+                            document.getElementById('oldPwd').classList.add('error');
+                        }
+                    }
+                })
+                .catch(function () {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-lock-fill"></i>&nbsp;Update Password';
+                    showToast('Network error. Please try again.', 'error');
+                });
+            }
+
+            // Enter key submits password form
+            ['oldPwd','newPwd','confirmPwd'].forEach(function (id) {
+                document.getElementById(id).addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') submitPassword();
+                });
+            });
+            //]]>
+            </script>
+
+            <style>
+                @keyframes spin { to { transform: rotate(360deg); } }
+            </style>
+        </t>
+    </template>
+</odoo>

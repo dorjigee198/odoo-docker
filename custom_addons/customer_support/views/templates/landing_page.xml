@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="landing_page" name="Premium Landing Page - Dragon Support">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+                <!-- Bootstrap Icons -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+                
+                <!-- Google Fonts - Premium Typography -->
+                <link rel="preconnect" href="https://fonts.googleapis.com"/>
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+                
+                <!-- Premium Landing Page CSS -->
+                <link rel="stylesheet" href="/customer_support/static/src/css/landing_page.css"/>
+            </t>
+            
+            <!-- Landing Page Content -->
+            <div class="minimal-landing">
+                <!-- Animated Background with Image -->
+                <div class="background-image"></div>
+                
+                <!-- Premium Gradient Overlay -->
+                <div class="fade-overlay"></div>
+                
+                <!-- Top Navigation Bar with Glassmorphism -->
+                <div class="top-nav">
+                    <div class="nav-container">
+                        <!-- FAQ Link (Left) with Premium Styling -->
+                        <a href="/dragon-chat" class="faq-link">
+
+                            <i class="bi bi-question-circle-fill"></i>
+                            <span>FAQ</span>
+                        </a>
+                        
+                        <!-- Logo Circle (Right) with Glow Effect -->
+                        <div class="logo-circle">
+                            <img src="/customer_support/static/src/img/images.png" alt="Dragon Support Logo" class="logo-img"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content Container -->
+                <div class="content-wrapper">
+                    <div class="welcome-box">
+                        <!-- Hero Title with Gradient Animation -->
+                        <h1 class="welcome-title">Welcome to Dragon Support</h1>
+                        
+                        <!-- Elegant Subtitle with Quote Marks -->
+                        <p class="welcome-subtitle">Your trusted partner for exceptional customer service</p>
+                        
+                        <!-- CTA: Dashboard if logged in, Login if not -->
+                        <t t-if="dashboard_url">
+                            <a t-att-href="dashboard_url" class="get-started-btn" id="getStartedBtn">
+                                Go to Dashboard
+                            </a>
+                        </t>
+                        <t t-else="">
+                            <a href="/customer_support/login" class="get-started-btn" id="getStartedBtn">
+                                Get Started
+                            </a>
+                        </t>
+                    </div>
+                </div>
+                
+                <!-- Scroll Indicator -->
+                
+            </div>
+            
+            <!-- Enhanced JavaScript for Interactive Effects -->
+            <script type="text/javascript">
+                //<![CDATA[
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Add ripple effect to button
+                    const button = document.getElementById('getStartedBtn');
+                    
+                    button.addEventListener('click', function(e) {
+                        const ripple = document.createElement('span');
+                        ripple.classList.add('ripple');
+                        
+                        const rect = this.getBoundingClientRect();
+                        const size = Math.max(rect.width, rect.height);
+                        const x = e.clientX - rect.left - size / 2;
+                        const y = e.clientY - rect.top - size / 2;
+                        
+                        ripple.style.width = ripple.style.height = size + 'px';
+                        ripple.style.left = x + 'px';
+                        ripple.style.top = y + 'px';
+                        
+                        this.appendChild(ripple);
+                        
+                        setTimeout(() => {
+                            ripple.remove();
+                        }, 600);
+                    });
+                    
+                    // Add loaded class for animations
+                    setTimeout(() => {
+                        document.querySelector('.minimal-landing').classList.add('loaded');
+                    }, 100);
+                    
+                    // Parallax effect on mouse move — desktop only
+const welcomeBox = document.querySelector('.welcome-box');
+
+if (window.innerWidth > 768) {
+    document.addEventListener('mousemove', function(e) {
+        const x = (e.clientX / window.innerWidth - 0.5) * 20;
+        const y = (e.clientY / window.innerHeight - 0.5) * 20;
+        welcomeBox.style.transform = `perspective(1000px) rotateY(${x * 0.1}deg) rotateX(${-y * 0.1}deg)`;
+    });
+}
+                    
+                    // Hide scroll indicator on scroll
+                    const scrollIndicator = document.querySelector('.scroll-indicator');
+                    if (scrollIndicator) {
+                        window.addEventListener('scroll', function() {
+                            if (window.scrollY > 50) {
+                                scrollIndicator.style.opacity = '0';
+                            } else {
+                                scrollIndicator.style.opacity = '0.7';
+                            }
+                        });
+                    }
+                    
+                    // Smooth reveal on page load
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.style.opacity = '1';
+                                entry.target.style.transform = 'translateY(0)';
+                            }
+                        });
+                    }, {
+                        threshold: 0.1
+                    });
+                    
+                    // Add subtle float animation to logo on hover
+                    const logoCircle = document.querySelector('.logo-circle');
+                    if (logoCircle) {
+                        logoCircle.addEventListener('mouseenter', function() {
+                            this.style.animation = 'logoGlow 3s ease-in-out infinite, logoFloat 2s ease-in-out infinite';
+                        });
+
+                        logoCircle.addEventListener('mouseleave', function() {
+                            this.style.animation = 'logoGlow 3s ease-in-out infinite';
+                        });
+                    }
+                });
+                
+                // Additional logo float animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes logoFloat {
+                        0%, 100% {
+                            transform: translateY(0) scale(1);
+                        }
+                        50% {
+                            transform: translateY(-10px) scale(1.12);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+                //]]>
+            </script>
+            <!-- bfcache guard: reload if browser restores this page while user is logged in,
+                 triggering the server-side redirect-if-authenticated check -->
+            <script>
+                window.addEventListener('pageshow', function (e) {
+                    if (e.persisted) { window.location.reload(); }
+                });
+            </script>
+        </t>
+    </template>
+</odoo>

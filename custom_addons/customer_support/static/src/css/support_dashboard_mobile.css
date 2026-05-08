@@ -1,0 +1,792 @@
+/* ============================================================
+   SUPPORT AGENT DASHBOARD — MOBILE OVERRIDES
+   File: support_dashboard_mobile.css
+
+   Place at:
+   /opt/odoo/custom_addons/customer_support/static/src/css/support_dashboard_mobile.css
+
+   DESKTOP SAFETY: Every rule is inside max-width media queries.
+   Zero impact on screens wider than 768px.
+   ============================================================ */
+
+
+/* ============================================================
+   HAMBURGER + DRAWER + OVERLAY — hidden by default (desktop safe)
+   ============================================================ */
+.mobile-hamburger-btn  { display: none; }
+.mobile-nav-overlay    { display: none; }
+.mobile-nav-drawer     { display: none; }
+.mobile-view-pill      { display: none; }
+.mobile-only           { display: none; }
+
+
+/* ============================================================
+   TABLET + MOBILE  (max-width: 768px)
+   ============================================================ */
+@media (width <= 768px) {
+    /* ── Base ── */
+    body { font-size: 15px; }
+
+    /* ════════════════════════════════════════
+       HEADER
+    ════════════════════════════════════════ */
+    .dashboard-header {
+        padding: 0 0.75rem;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .header-content {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    /* Hide desktop nav links on mobile */
+    .header-nav {
+        display: none !important;
+    }
+
+    /* Bell + avatar grouped on the right */
+    .header-right {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.45rem;
+        padding-right: 0;
+        margin-left: 0;
+        flex-shrink: 0;
+    }
+
+    /* notif-wrap: remove any extra margin that might push it left */
+    .notif-wrap {
+        margin-right: 0 !important;
+        position: relative;
+    }
+
+    /* Hide kanban toggle from header on mobile — pill toggle handles this */
+    #kanbanToggleBtn {
+        display: none !important;
+    }
+
+    .user-name { display: none; }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    /* user-profile dropdown anchor — keep it flex */
+    .user-profile > a {
+        display: flex !important;
+        align-items: center;
+    }
+
+    /* ════════════════════════════════════════
+       HAMBURGER BUTTON
+    ════════════════════════════════════════ */
+    .mobile-hamburger-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        background: rgb(255, 255, 255, 0.12);
+        border: 1.5px solid rgb(255, 255, 255, 0.2);
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.2s;
+        flex-shrink: 0;
+
+        /* NO margin-right: auto — space-between on header-content handles positioning */
+    }
+
+    .mobile-hamburger-btn:hover,
+    .mobile-hamburger-btn:active {
+        background: rgb(255, 255, 255, 0.22);
+    }
+
+    .mobile-hamburger-btn i {
+        font-size: 1.15rem;
+        color: #fff;
+        pointer-events: none;
+    }
+
+    /* ════════════════════════════════════════
+       OVERLAY (dark backdrop)
+    ════════════════════════════════════════ */
+    .mobile-nav-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgb(2, 44, 34, 0.65);
+        backdrop-filter: blur(3px);
+        z-index: 1998;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.28s ease;
+    }
+
+    .mobile-nav-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* ════════════════════════════════════════
+       DRAWER PANEL
+    ════════════════════════════════════════ */
+    .mobile-nav-drawer {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 78vw;
+        max-width: 300px;
+        background: #071410;
+        z-index: 1999;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 8px 0 48px rgb(0, 0, 0, 0.55);
+        overflow: hidden;
+    }
+
+    .mobile-nav-drawer.open {
+        transform: translateX(0);
+    }
+
+    /* ── Drawer: top branding strip ── */
+    .mobile-nav-drawer-header {
+        background: #0f2318;
+        padding: 1rem 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 1px solid rgb(255, 255, 255, 0.07);
+        flex-shrink: 0;
+    }
+
+    .drawer-brand-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #059669, #047857);
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: #fff;
+        box-shadow: 0 2px 10px rgb(5, 150, 105, 0.45);
+        flex-shrink: 0;
+    }
+
+    .drawer-brand-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .drawer-brand-text strong {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.02em;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .drawer-brand-text span {
+        font-size: 0.65rem;
+        color: rgb(255, 255, 255, 0.38);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        font-weight: 500;
+    }
+
+    .mobile-nav-drawer-close {
+        background: rgb(255, 255, 255, 0.07);
+        border: none;
+        color: rgb(255, 255, 255, 0.5);
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.15s;
+        flex-shrink: 0;
+    }
+
+    .mobile-nav-drawer-close:hover {
+        background: rgb(255, 255, 255, 0.15);
+        color: #fff;
+    }
+
+    /* ── Drawer: section label ── */
+    .mobile-nav-section-label {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgb(255, 255, 255, 0.28);
+        padding: 1rem 1.2rem 0.35rem;
+    }
+
+    /* ── Drawer: nav list ── */
+    .mobile-nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0.25rem 0.65rem;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .mobile-nav-list::-webkit-scrollbar { width: 3px; }
+
+    .mobile-nav-list::-webkit-scrollbar-thumb {
+        background: rgb(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+
+    .mobile-nav-list li { margin-bottom: 0.18rem; }
+
+    /* ── Drawer: each nav item ── */
+    .mobile-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.78rem 0.9rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        text-decoration: none !important;
+        border: 1.5px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mobile-nav-item:hover {
+        background: rgb(255, 255, 255, 0.05);
+        border-color: rgb(255, 255, 255, 0.06);
+    }
+
+    .mobile-nav-item.active {
+        background: linear-gradient(135deg,
+            rgb(5, 150, 105, 0.22),
+            rgb(5, 150, 105, 0.14));
+        border-color: rgb(5, 150, 105, 0.35);
+        box-shadow: 0 2px 14px rgb(5, 150, 105, 0.12);
+    }
+
+    /* Active: left accent bar */
+    .mobile-nav-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 18%;
+        bottom: 18%;
+        width: 3px;
+        background: #059669;
+        border-radius: 0 3px 3px 0;
+    }
+
+    /* ── Drawer: item icon box ── */
+    .mobile-nav-item-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+        transition: all 0.18s;
+        background: rgb(255, 255, 255, 0.06);
+        color: rgb(255, 255, 255, 0.5);
+    }
+
+    .mobile-nav-item.active .mobile-nav-item-icon {
+        background: linear-gradient(135deg, #059669, #047857);
+        color: #fff;
+        box-shadow: 0 2px 10px rgb(5, 150, 105, 0.45);
+    }
+
+    /* ── Drawer: item text ── */
+    .mobile-nav-item-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mobile-nav-item-text strong {
+        display: block;
+        font-size: 0.87rem;
+        font-weight: 600;
+        color: rgb(255, 255, 255, 0.78);
+        line-height: 1.25;
+        letter-spacing: 0.01em;
+    }
+
+    .mobile-nav-item.active .mobile-nav-item-text strong {
+        color: #fff;
+    }
+
+    .mobile-nav-item-text span {
+        font-size: 0.67rem;
+        color: rgb(255, 255, 255, 0.3);
+        line-height: 1.2;
+    }
+
+    /* ── Drawer: chevron arrow ── */
+    .mobile-nav-item-arrow {
+        font-size: 0.68rem;
+        color: rgb(255, 255, 255, 0.18);
+        transition: color 0.18s;
+    }
+
+    .mobile-nav-item.active .mobile-nav-item-arrow {
+        color: rgb(5, 150, 105, 0.6);
+    }
+
+    /* ── Drawer: footer ── */
+    .mobile-nav-drawer-footer {
+        padding: 0.8rem 1.2rem;
+        border-top: 1px solid rgb(255, 255, 255, 0.07);
+        background: rgb(0, 0, 0, 0.2);
+        flex-shrink: 0;
+    }
+
+    .mobile-nav-drawer-footer p {
+        font-size: 0.63rem;
+        color: rgb(255, 255, 255, 0.2);
+        margin: 0;
+        text-align: center;
+        letter-spacing: 0.04em;
+    }
+
+    /* ════════════════════════════════════════
+       NOTIFICATION DROPDOWN — full width on mobile
+    ════════════════════════════════════════ */
+    .notif-dropdown {
+        width: calc(100vw - 24px);
+        right: -70px;
+        border-radius: 12px;
+    }
+
+    /* ════════════════════════════════════════
+       MAIN CONTENT PADDING
+    ════════════════════════════════════════ */
+    .dashboard-content {
+        padding: 0.75rem;
+    }
+
+    .dashboard-grid {
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .dashboard-card,
+    .performance-card {
+        width: 100%;
+        flex: none;
+        padding: 0.9rem;
+        border-radius: 10px;
+    }
+
+    /* ── Card header ── */
+    .card-header {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.65rem;
+    }
+
+.card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+    .last-updated { font-size: 0.72rem; }
+    .performance-score { font-size: 0.78rem; }
+
+.score-badge {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+}
+
+    /* ── Analytics grid: 2-col ── */
+    .analytics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* ── Stat box ── */
+    .stat-box {
+        padding: 0.75rem;
+        gap: 0.6rem;
+        border-radius: 8px;
+        align-items: center;
+    }
+
+.stat-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+    flex-shrink: 0;
+    border-radius: 7px;
+}
+
+.stat-label {
+    font-size: 0.78rem;
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.stat-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-bottom: 0.1rem;
+    line-height: 1;
+}
+
+.stat-subtitle {
+    font-size: 0.68rem;
+    color: #8892a4;
+}
+
+    /* ── Performance grid: 2-col ── */
+    .performance-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+    }
+
+    .performance-stat {
+        padding: 0.75rem;
+        gap: 0.6rem;
+        border-radius: 8px;
+        align-items: center;
+    }
+
+.performance-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+    flex-shrink: 0;
+    border-radius: 7px;
+}
+
+.performance-label {
+    font-size: 0.78rem;
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.performance-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.1rem;
+}
+
+.performance-subtitle {
+    font-size: 0.68rem;
+    color: #8892a4;
+}
+
+    /* ── Progress bar ── */
+.performance-progress {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+}
+
+.progress-label {
+    font-size: 0.82rem;
+    margin-bottom: 0.5rem;
+}
+    .progress { height: 8px; }
+
+    /* ── Quick actions ── */
+    .quick-actions { margin-top: 0.75rem; }
+
+    .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+    }
+
+.action-card {
+    padding: 0.85rem;
+    gap: 0.65rem;
+    border-radius: 8px;
+}
+
+.action-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+    border-radius: 7px;
+    flex-shrink: 0;
+}
+
+.action-content h4 {
+    font-size: 0.85rem;
+    margin-bottom: 0.15rem;
+    font-weight: 700;
+}
+
+.action-content p {
+    font-size: 0.72rem;
+    line-height: 1.3;
+}
+
+    /* ════════════════════════════════════════
+       TICKETS PAGE
+    ════════════════════════════════════════ */
+    .tickets-header {
+        padding: 0.75rem 0.75rem 0;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+    }
+
+.search-container {
+    flex: 1;
+    min-width: 0;
+}
+    .search-input { font-size: 0.85rem; }
+
+    /* Hide desktop view toggle on mobile — pill replaces it */
+    .view-toggle { display: none !important; }
+
+    /* ════════════════════════════════════════
+       MOBILE VIEW PILL TOGGLE
+    ════════════════════════════════════════ */
+    .mobile-view-pill {
+        display: flex;
+        align-items: center;
+        background: rgb(255, 255, 255, 0.06);
+        border: 1px solid rgb(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 4px;
+        margin: 0.65rem 0.75rem 0.25rem;
+        gap: 4px;
+    }
+
+    .mobile-view-pill-btn {
+        flex: 1;
+        background: none;
+        border: none;
+        color: rgb(255, 255, 255, 0.5);
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.45rem 0.5rem;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        letter-spacing: 0.01em;
+    }
+
+    .mobile-view-pill-btn.active {
+        background: #059669;
+        color: #fff;
+        box-shadow: 0 2px 8px rgb(5, 150, 105, 0.4);
+    }
+
+    .mobile-view-pill-btn:not(.active):hover {
+        background: rgb(255, 255, 255, 0.08);
+        color: rgb(255, 255, 255, 0.8);
+    }
+
+    /* ── Show mobile-only elements ── */
+    .mobile-only { display: inline-flex !important; }
+
+    /* ════════════════════════════════════════
+       KANBAN: VERTICAL STACK on mobile
+    ════════════════════════════════════════ */
+    .kanban-board {
+        flex-direction: column;
+        padding: 0.75rem;
+        gap: 0.65rem;
+        overflow-x: visible;
+        min-height: unset;
+    }
+
+    .kanban-col {
+        flex: none;
+        width: 100%;
+        max-height: none;
+        border-radius: 12px;
+    }
+
+    /* ── Column header: make it tappable ── */
+    .kanban-col-header {
+        cursor: pointer;
+        user-select: none;
+        padding: 0.85rem 1rem;
+    }
+
+    .kanban-col-header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .kanban-col-chevron {
+        font-size: 0.75rem;
+        color: rgb(255, 255, 255, 0.35);
+        transition: transform 0.25s ease;
+    }
+
+    /* ── Collapsed state ── */
+    .kanban-col.collapsed .kanban-cards,
+    .kanban-col.collapsed .kanban-drop-zone {
+        display: none !important;
+    }
+
+    .kanban-col.collapsed .kanban-col-chevron {
+        transform: rotate(-90deg);
+    }
+
+    /* ── Cards inside mobile columns ── */
+    .kanban-card {
+        border-radius: 10px;
+        padding: 0.8rem;
+    }
+
+    .kanban-card-subject { font-size: 0.8rem; }
+    .kanban-card-id { font-size: 0.68rem; }
+
+    /* ── Disable drag-and-drop on mobile (touch doesn't support it natively) ── */
+    .kanban-card[draggable] { cursor: pointer; }
+
+    /* ════════════════════════════════════════
+       TICKET TABLE — horizontal scroll on mobile
+    ════════════════════════════════════════ */
+    .ticket-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ticket-table {
+        min-width: 600px;
+        font-size: 0.78rem;
+    }
+
+    /* ════════════════════════════════════════
+       TOAST — keep above mobile nav
+    ════════════════════════════════════════ */
+    #kanbanToast {
+        bottom: 1rem;
+        right: 0.75rem;
+        left: 0.75rem;
+        font-size: 0.8rem;
+        border-radius: 10px;
+        justify-content: center;
+    }
+
+}
+
+
+/* ============================================================
+   SMALL PHONES  (max-width: 576px)
+   ============================================================ */
+@media (width <= 576px) {
+    .dashboard-header {
+        padding: 0 0.5rem;
+        height: 52px;
+    }
+
+    .mobile-hamburger-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        margin-right: 0;
+    }
+
+    .mobile-hamburger-btn i { font-size: 1.05rem; }
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+}
+
+    .header-right { gap: 0.35rem; }
+
+    .mobile-nav-drawer { width: 85vw; }
+
+    .dashboard-content { padding: 0.5rem; }
+
+    .stat-box,
+    .performance-stat {
+        padding: 0.65rem;
+        gap: 0.5rem;
+    }
+
+    .stat-icon,
+    .performance-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+
+    .stat-value,
+    .performance-value { font-size: 1.2rem; }
+
+    .stat-label,
+    .performance-label { font-size: 0.72rem; }
+
+    .stat-subtitle,
+    .performance-subtitle { font-size: 0.62rem; }
+
+    .analytics-grid { gap: 0.5rem; }
+    .actions-grid { gap: 0.5rem; }
+
+.action-card {
+    padding: 0.7rem;
+    gap: 0.5rem;
+}
+
+.action-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.88rem;
+}
+    .action-content h4 { font-size: 0.78rem; }
+    .action-content p { font-size: 0.66rem; }
+
+    .card-title { font-size: 0.88rem; }
+
+    .mobile-view-pill {
+        margin: 0.5rem 0.5rem 0.25rem;
+    }
+
+.mobile-view-pill-btn {
+    font-size: 0.75rem;
+    padding: 0.4rem;
+}
+
+.kanban-board {
+    padding: 0.5rem;
+    gap: 0.5rem;
+}
+
+    .notif-dropdown {
+        width: calc(100vw - 16px);
+        right: -80px;
+    }
+
+}

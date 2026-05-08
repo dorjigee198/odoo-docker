@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         USER MANAGEMENT LIST
+         ============================================================ -->
+    <template id="admin_users_management" name="Admin User Management">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/user_management.css?v=2" />
+            </t>
+
+            <div class="um-wrapper">
+
+                <!-- ── Page Header ── -->
+                <div class="um-header">
+                    <div class="um-header-content">
+                        <div class="um-header-left">
+                            <a href="/customer_support/admin_dashboard" class="um-back-btn"
+                                title="Back to Dashboard">
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+                            <nav class="um-breadcrumb" aria-label="breadcrumb">
+                                <a href="/customer_support/admin_dashboard"
+                                    class="um-breadcrumb-link">
+                                    <i class="bi bi-speedometer2 me-1"></i>Dashboard </a>
+                                <i class="bi bi-chevron-right um-breadcrumb-sep"></i>
+                                <span class="um-breadcrumb-current">User Management</span>
+                            </nav>
+                        </div>
+                        <div class="um-header-right">
+                            <a href="/customer_support/admin_dashboard/create_user"
+                                class="um-btn-add">
+                                <i class="bi bi-person-plus"></i>
+                                <span class="um-btn-label">Add User</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Main Content ── -->
+                <div class="um-content">
+
+                    <!-- Alerts -->
+                    <t t-if="success">
+                        <div class="alert alert-success alert-dismissible fade show um-alert"
+                            role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <t t-esc="success" />
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </t>
+                    <t t-if="error">
+                        <div class="alert alert-danger alert-dismissible fade show um-alert"
+                            role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <t t-esc="error" />
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </t>
+
+                    <!-- ── Stats Row ── -->
+                    <div class="um-stats-grid">
+                        <div class="um-stat-box">
+                            <div class="um-stat-icon um-icon-blue">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <div class="um-stat-content">
+                                <span class="um-stat-label">Total Users</span>
+                                <span class="um-stat-value">
+                                    <t
+                                        t-esc="(len(focal_persons) if focal_persons else 0) + (len(customers) if customers else 0)" />
+                                </span>
+                            </div>
+                        </div>
+                        <div class="um-stat-box">
+                            <div class="um-stat-icon um-icon-indigo">
+                                <i class="bi bi-headset"></i>
+                            </div>
+                            <div class="um-stat-content">
+                                <span class="um-stat-label">Support Agents</span>
+                                <span class="um-stat-value">
+                                    <t t-esc="len(focal_persons) if focal_persons else 0" />
+                                </span>
+                            </div>
+                        </div>
+                        <div class="um-stat-box">
+                            <div class="um-stat-icon um-icon-teal">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <div class="um-stat-content">
+                                <span class="um-stat-label">Customers</span>
+                                <span class="um-stat-value">
+                                    <t t-esc="len(customers) if customers else 0" />
+                                </span>
+                            </div>
+                        </div>
+                        <div class="um-stat-box">
+                            <div class="um-stat-icon um-icon-green">
+                                <i class="bi bi-person-check-fill"></i>
+                            </div>
+                            <div class="um-stat-content">
+                                <span class="um-stat-label">Active Users</span>
+                                <span class="um-stat-value">
+                                    <t
+                                        t-esc="len([u for u in (focal_persons or []) if u.active]) + len([c for c in (customers or []) if c.active])" />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Main Card ── -->
+                    <div class="um-card">
+
+                        <!-- Toolbar: Search + Filter -->
+                        <div class="um-toolbar">
+                            <div class="um-search-wrap">
+                                <i class="bi bi-search um-search-icon"></i>
+                                <input type="text" id="um-search" class="um-search-input"
+                                    placeholder="Search by name or email…" autocomplete="off" />
+                            </div>
+                            <div class="um-toolbar-right">
+                                <select id="um-status-filter" class="um-filter-select">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="um-tabs-wrap">
+                            <ul class="um-tabs" id="um-tabs" role="tablist">
+                                <li role="presentation">
+                                    <button class="um-tab-btn active" id="tab-agents"
+                                        data-bs-toggle="tab" data-bs-target="#pane-agents"
+                                        type="button" role="tab" aria-selected="true">
+                                        <i class="bi bi-headset"></i> Support Agents <span
+                                            class="um-tab-badge">
+                                            <t t-esc="len(focal_persons) if focal_persons else 0" />
+                                        </span>
+                                    </button>
+                                </li>
+                                <li role="presentation">
+                                    <button class="um-tab-btn" id="tab-customers"
+                                        data-bs-toggle="tab" data-bs-target="#pane-customers"
+                                        type="button" role="tab" aria-selected="false">
+                                        <i class="bi bi-person"></i> Customers <span
+                                            class="um-tab-badge">
+                                            <t t-esc="len(customers) if customers else 0" />
+                                        </span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- ── Tab Content ── -->
+                        <div class="tab-content">
+
+                            <!-- Support Agents Pane -->
+                            <div class="tab-pane fade show active" id="pane-agents" role="tabpanel">
+                                <t t-if="focal_persons">
+
+                                    <!-- Desktop Table -->
+                                    <div class="um-table-wrap">
+                                        <table class="um-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="um-col-num">#</th>
+                                                    <th class="um-col-user">
+                                                        <i class="bi bi-person"></i> User </th>
+                                                    <th class="um-col-phone">
+                                                        <i class="bi bi-telephone"></i> Phone </th>
+                                                    <th class="um-col-status">
+                                                        <i class="bi bi-circle-half"></i> Status </th>
+                                                    <th class="um-col-joined">
+                                                        <i class="bi bi-calendar3"></i> Joined </th>
+                                                    <th class="um-col-actions">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="agents-tbody">
+                                                <t t-foreach="focal_persons" t-as="fp">
+                                                    <tr class="um-row"
+                                                        t-att-data-search="(fp.name or '') + ' ' + (fp.email or '') + ' ' + (fp.phone or '')"
+                                                        t-att-data-status="'active' if fp.active else 'inactive'">
+                                                        <td>
+                                                            <span class="um-row-num">
+                                                                <t t-esc="fp_index + 1" />
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <div class="um-user-cell">
+                                                                <div
+                                                                    class="um-avatar um-avatar-agent">
+                                                                    <t
+                                                                        t-esc="(fp.name or '?')[:1].upper()" />
+                                                                </div>
+                                                                <div class="um-user-info">
+                                                                    <span class="um-user-name">
+                                                                        <t t-esc="fp.name" />
+                                                                    </span>
+                                                                    <span class="um-user-email">
+                                                                        <t
+                                                                            t-esc="fp.email or 'No email'" />
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span class="um-phone">
+                                                                <t t-esc="fp.phone or '—'" />
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span
+                                                                t-att-class="'um-status-dot um-status-active' if fp.active else 'um-status-dot um-status-inactive'">
+                                                                <t t-if="fp.active">Active</t>
+                                                                <t t-else="">Inactive</t>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="um-date">
+                                                                <t t-if="fp.create_date">
+                                                                    <t
+                                                                        t-esc="fp.create_date.strftime('%b %d, %Y')" />
+                                                                </t>
+                                                                <t t-else="">—</t>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <a
+                                                                t-attf-href="/customer_support/admin_dashboard/user/#{fp.id}/edit"
+                                                                class="um-action-edit"
+                                                                title="Edit User">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                                <span>Edit</span>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Mobile Cards -->
+                                    <div class="um-mobile-cards" id="agents-cards">
+                                        <t t-foreach="focal_persons" t-as="fp">
+                                            <div class="um-mobile-card"
+                                                t-att-data-search="(fp.name or '') + ' ' + (fp.email or '') + ' ' + (fp.phone or '')"
+                                                t-att-data-status="'active' if fp.active else 'inactive'">
+                                                <div class="umc-top">
+                                                    <div class="um-avatar um-avatar-agent umc-av">
+                                                        <t t-esc="(fp.name or '?')[:1].upper()" />
+                                                    </div>
+                                                    <div class="umc-info">
+                                                        <span class="umc-name">
+                                                            <t t-esc="fp.name" />
+                                                        </span>
+                                                        <span class="umc-email">
+                                                            <t t-esc="fp.email or 'No email'" />
+                                                        </span>
+                                                    </div>
+                                                    <span
+                                                        t-att-class="'umc-status umc-active' if fp.active else 'umc-status umc-inactive'">
+                                                        <t t-if="fp.active">Active</t>
+                                                        <t t-else="">Inactive</t>
+                                                    </span>
+                                                </div>
+                                                <div class="umc-meta">
+                                                    <span class="umc-meta-item">
+                                                        <i class="bi bi-telephone"></i>
+                                                        <t t-esc="fp.phone or 'No phone'" />
+                                                    </span>
+                                                    <span class="um-role-pill um-role-agent">Support
+                                                        Agent</span>
+                                                </div>
+                                                <a
+                                                    t-attf-href="/customer_support/admin_dashboard/user/#{fp.id}/edit"
+                                                    class="umc-edit-btn">
+                                                    <i class="bi bi-pencil-square me-1"></i>Edit
+                                                    User </a>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                </t>
+                                <t t-else="">
+                                    <div class="um-empty-state">
+                                        <div class="um-empty-icon">
+                                            <i class="bi bi-people"></i>
+                                        </div>
+                                        <h5>No Support Agents Yet</h5>
+                                        <p>Add your first support agent to get started.</p>
+                                        <a href="/customer_support/admin_dashboard/create_user"
+                                            class="btn btn-primary btn-sm">
+                                            <i class="bi bi-person-plus me-1"></i>Add Support Agent </a>
+                                    </div>
+                                </t>
+                                <div class="um-no-results d-none" id="agents-no-results">
+                                    <i class="bi bi-search"></i>
+                                    <p>No users match your search.</p>
+                                </div>
+                            </div>
+
+                            <!-- Customers Pane -->
+                            <div class="tab-pane fade" id="pane-customers" role="tabpanel">
+                                <t t-if="customers">
+
+                                    <!-- Desktop Table -->
+                                    <div class="um-table-wrap">
+                                        <table class="um-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="um-col-num">#</th>
+                                                    <th class="um-col-user">
+                                                        <i class="bi bi-person"></i> User </th>
+                                                    <th class="um-col-status">
+                                                        <i class="bi bi-circle-half"></i> Status </th>
+                                                    <th class="um-col-joined">
+                                                        <i class="bi bi-calendar3"></i> Joined </th>
+                                                    <th class="um-col-actions">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="customers-tbody">
+                                                <t t-foreach="customers" t-as="cust">
+                                                    <tr class="um-row"
+                                                        t-att-data-search="(cust.name or '') + ' ' + (cust.email or '')"
+                                                        t-att-data-status="'active' if cust.active else 'inactive'">
+                                                        <td>
+                                                            <span class="um-row-num">
+                                                                <t t-esc="cust_index + 1" />
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <div class="um-user-cell">
+                                                                <div
+                                                                    class="um-avatar um-avatar-customer">
+                                                                    <t
+                                                                        t-esc="(cust.name or '?')[:1].upper()" />
+                                                                </div>
+                                                                <div class="um-user-info">
+                                                                    <span class="um-user-name">
+                                                                        <t t-esc="cust.name" />
+                                                                    </span>
+                                                                    <span class="um-user-email">
+                                                                        <t
+                                                                            t-esc="cust.email or 'No email'" />
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span
+                                                                t-att-class="'um-status-dot um-status-active' if cust.active else 'um-status-dot um-status-inactive'">
+                                                                <t t-if="cust.active">Active</t>
+                                                                <t t-else="">Inactive</t>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="um-date">
+                                                                <t t-if="cust.create_date">
+                                                                    <t
+                                                                        t-esc="cust.create_date.strftime('%b %d, %Y')" />
+                                                                </t>
+                                                                <t t-else="">—</t>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <a
+                                                                t-attf-href="/customer_support/admin_dashboard/user/#{cust.id}/edit"
+                                                                class="um-action-edit"
+                                                                title="Edit User">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                                <span>Edit</span>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Mobile Cards -->
+                                    <div class="um-mobile-cards" id="customers-cards">
+                                        <t t-foreach="customers" t-as="cust">
+                                            <div class="um-mobile-card"
+                                                t-att-data-search="(cust.name or '') + ' ' + (cust.email or '')"
+                                                t-att-data-status="'active' if cust.active else 'inactive'">
+                                                <div class="umc-top">
+                                                    <div class="um-avatar um-avatar-customer umc-av">
+                                                        <t t-esc="(cust.name or '?')[:1].upper()" />
+                                                    </div>
+                                                    <div class="umc-info">
+                                                        <span class="umc-name">
+                                                            <t t-esc="cust.name" />
+                                                        </span>
+                                                        <span class="umc-email">
+                                                            <t t-esc="cust.email or 'No email'" />
+                                                        </span>
+                                                    </div>
+                                                    <span
+                                                        t-att-class="'umc-status umc-active' if cust.active else 'umc-status umc-inactive'">
+                                                        <t t-if="cust.active">Active</t>
+                                                        <t t-else="">Inactive</t>
+                                                    </span>
+                                                </div>
+                                                <div class="umc-meta">
+                                                    <span class="um-role-pill um-role-customer">
+                                                        Customer</span>
+                                                </div>
+                                                <a
+                                                    t-attf-href="/customer_support/admin_dashboard/user/#{cust.id}/edit"
+                                                    class="umc-edit-btn">
+                                                    <i class="bi bi-pencil-square me-1"></i>Edit
+                                                    User </a>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                </t>
+                                <t t-else="">
+                                    <div class="um-empty-state">
+                                        <div class="um-empty-icon">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <h5>No Customers Yet</h5>
+                                        <p>Customers will appear here once they register.</p>
+                                    </div>
+                                </t>
+                                <div class="um-no-results d-none" id="customers-no-results">
+                                    <i class="bi bi-search"></i>
+                                    <p>No users match your search.</p>
+                                </div>
+                            </div>
+
+                        </div><!--
+                        /tab-content -->
+                    </div><!--
+                    /um-card -->
+                </div><!--
+                /um-content -->
+            </div><!--
+            /um-wrapper -->
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                (function () {
+                var searchInput = document.getElementById('um-search');
+                var statusSelect = document.getElementById('um-status-filter');
+
+                function applyFilters() {
+                var query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+                var status = (statusSelect ? statusSelect.value : '');
+                var activePane = document.querySelector('.tab-pane.active');
+                if (!activePane) return;
+
+                var rows = activePane.querySelectorAll('.um-row');
+                var cards = activePane.querySelectorAll('.um-mobile-card');
+                var noResults = activePane.querySelector('.um-no-results');
+                var visible = 0;
+
+                function filterSet(items) {
+                items.forEach(function (item) {
+                var text = (item.dataset.search || '').toLowerCase();
+                var iStatus = item.dataset.status || '';
+                var show = (!query || text.includes(query)) &amp;&amp; (!status || iStatus ===
+                status);
+                item.style.display = show ? '' : 'none';
+                if (show) visible++;
+                });
+                }
+
+                filterSet(rows);
+                filterSet(cards);
+                if (noResults) noResults.classList.toggle('d-none', visible > 0);
+                }
+
+                if (searchInput) searchInput.addEventListener('input', applyFilters);
+                if (statusSelect) statusSelect.addEventListener('change', applyFilters);
+                document.querySelectorAll('.um-tab-btn').forEach(function (btn) {
+                btn.addEventListener('shown.bs.tab', applyFilters);
+                });
+                })();
+            </script>
+        </t>
+    </template>
+
+
+    <!-- ============================================================
+         CREATE USER FORM
+         ============================================================ -->
+    <template id="admin_create_user_form" name="Create User Form">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/user_management.css?v=2" />
+            </t>
+
+            <div class="um-wrapper">
+
+                <!-- ── Content ── -->
+                <div class="um-content">
+                    <t t-if="error">
+                        <div class="alert alert-danger alert-dismissible fade show um-alert"
+                            role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <t t-esc="error" />
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </t>
+
+                    <div class="um-form-outer">
+                        <div class="um-card um-form-card">
+
+                            <!-- Form Header -->
+                            <div class="um-form-header">
+                                <div class="um-form-header-icon">
+                                    <i class="bi bi-person-plus-fill"></i>
+                                </div>
+                                <div>
+                                    <h4 class="um-form-title">Create New User</h4>
+                                    <p class="um-form-subtitle">Fill in the details to add a new
+                                        user to the system.</p>
+                                </div>
+                            </div>
+
+                            <form method="post"
+                                action="/customer_support/admin_dashboard/submit_user">
+                                <input type="hidden" name="csrf_token"
+                                    t-att-value="request.csrf_token()" />
+
+                                <div class="um-form-body">
+                                    <p class="um-section-label">Account Type</p>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label class="um-label">User Type <span class="um-req">*</span></label>
+                                            <select name="user_type" class="form-select"
+                                                required="required">
+                                                <option value="customer">Customer</option>
+                                                <option value="focal_person">Support Agent</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <hr class="um-divider" />
+
+                                    <p class="um-section-label">Personal Information</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="um-label">Full Name <span class="um-req">*</span></label>
+                                            <input type="text" name="name" class="form-control"
+                                                required="required" placeholder="Enter full name" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="um-label">Email Address <span
+                                                    class="um-req">*</span></label>
+                                            <input type="email" name="email" class="form-control"
+                                                required="required"
+                                                placeholder="Enter email address" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="um-label">Phone Number</label>
+                                            <input type="tel" name="phone" class="form-control"
+                                                placeholder="Enter phone number" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="um-label">Password <span class="um-req">*</span></label>
+                                            <input type="password" name="password"
+                                                class="form-control"
+                                                required="required" placeholder="Create a password" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="um-form-footer">
+                                    <button type="submit" class="um-btn-primary">
+                                        <i class="bi bi-person-check me-1"></i>Create User </button>
+                                    <a href="/customer_support/admin_dashboard?tab=user-management"
+                                        class="um-btn-secondary">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        </t>
+    </template>
+
+
+    <!-- ============================================================
+         EDIT USER FORM
+         ============================================================ -->
+    <template id="admin_edit_user_form" name="Edit User Form">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/user_management.css?v=2" />
+            </t>
+
+            <div class="um-wrapper">
+
+                <!-- ── Content ── -->
+                <div class="um-content">
+                    <t t-if="error">
+                        <div class="alert alert-danger alert-dismissible fade show um-alert"
+                            role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <t t-esc="error" />
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </t>
+
+                    <div class="um-form-outer">
+                        <div class="um-card um-form-card">
+
+                            <!-- User Identity Header -->
+                            <div class="um-edit-identity">
+                                <div class="um-avatar um-avatar-agent um-avatar-lg">
+                                    <t t-esc="(edit_user.name or '?')[:1].upper()" />
+                                </div>
+                                <div class="um-edit-identity-info">
+                                    <h4 class="um-edit-name">
+                                        <t t-esc="edit_user.name" />
+                                    </h4>
+                                    <div class="um-edit-meta">
+                                        <span>
+                                            <i class="bi bi-envelope me-1"></i>
+                                            <t t-esc="edit_user.email or 'No email'" />
+                                        </span>
+                                        <t t-if="edit_user.phone">
+                                            <span>
+                                                <i class="bi bi-telephone me-1"></i>
+                                                <t t-esc="edit_user.phone" />
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <span
+                                        t-att-class="'um-edit-status-pill active' if edit_user.active else 'um-edit-status-pill inactive'">
+                                        <t t-if="edit_user.active">Active</t>
+                                        <t t-else="">Inactive</t>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <form method="post"
+                                t-attf-action="/customer_support/admin_dashboard/user/#{edit_user.id}/update">
+                                <input type="hidden" name="csrf_token"
+                                    t-att-value="request.csrf_token()" />
+
+                                <div class="um-form-body">
+                                    <p class="um-section-label">Personal Information</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="um-label">Full Name <span class="um-req">*</span></label>
+                                            <input type="text" name="name" class="form-control"
+                                                t-att-value="edit_user.name" required="required" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="um-label">Email Address <span
+                                                    class="um-req">*</span></label>
+                                            <input type="email" name="email" class="form-control"
+                                                t-att-value="edit_user.email" required="required" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="um-label">Phone Number</label>
+                                            <input type="tel" name="phone" class="form-control"
+                                                t-att-value="edit_user.phone or ''"
+                                                placeholder="Enter phone number" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="um-label">New Password</label>
+                                            <input type="password" name="password"
+                                                class="form-control"
+                                                placeholder="Leave blank to keep current" />
+                                            <div class="um-hint">Leave blank to keep the current
+                                                password.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="um-form-footer">
+                                    <button type="submit" class="um-btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i>Save Changes </button>
+                                    <a href="/customer_support/admin_dashboard?tab=user-management"
+                                        class="um-btn-secondary">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,474 @@
+/* ============================================================
+   PORTAL DASHBOARD — MOBILE CSS
+   Slide-in navigation drawer + overlay + hamburger button
+   Design matches admin_dashboard_mobile.css
+   ============================================================ */
+
+/* ── HAMBURGER BUTTON ───────────────────────────────────────
+   Hidden on desktop; visible only on mobile breakpoints.
+   ──────────────────────────────────────────────────────────── */
+.portal-hamburger-btn {
+    display: none;
+    background: rgb(255, 255, 255, 0.12);
+    border: 1.5px solid rgb(255, 255, 255, 0.2);
+    color: #fff;
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    font-size: 1.15rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    z-index: 10;
+    order: -1;
+    margin-right: auto;
+}
+
+.portal-hamburger-btn:hover,
+.portal-hamburger-btn:active {
+    background: rgb(255, 255, 255, 0.22);
+}
+
+.portal-hamburger-btn i {
+    font-size: 1.15rem;
+    color: #fff;
+    pointer-events: none;
+}
+
+/* ── DARK BACKDROP OVERLAY ────────────────────────────────── */
+.portal-nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgb(10, 25, 47, 0.58);
+    z-index: 1040;
+    opacity: 0;
+    transition: opacity 0.28s ease;
+    backdrop-filter: blur(3px);
+}
+
+.portal-nav-overlay.open {
+    display: block;
+    opacity: 1;
+}
+
+/* ── SLIDE-IN DRAWER PANEL ────────────────────────────────── */
+.portal-nav-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 78vw;
+    max-width: 300px;
+    height: 100%;
+    background: linear-gradient(170deg, #022c22 0%, #064e3b 54%, #065f46 100%);
+    z-index: 1050;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 8px 0 48px rgb(0, 0, 0, 0.4);
+}
+
+.portal-nav-drawer.open {
+    transform: translateX(0);
+}
+
+.portal-nav-drawer::-webkit-scrollbar { width: 3px; }
+
+.portal-nav-drawer::-webkit-scrollbar-thumb {
+    background: rgb(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+/* ── DRAWER HEADER / BRANDING ─────────────────────────────── */
+.portal-nav-drawer-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(100deg, rgb(5,150,105, 0.28) 0%, rgb(5,150,105, 0.2) 100%);
+    border-bottom: 1px solid rgb(255, 255, 255, 0.07);
+    flex-shrink: 0;
+}
+
+.portal-drawer-brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(145deg, #059669 0%, #047857 100%);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 6px 14px rgb(6, 21, 35, 0.4);
+}
+
+.portal-drawer-brand-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.portal-drawer-brand-text strong {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.portal-drawer-brand-text span {
+    font-size: 0.65rem;
+    color: rgb(255, 255, 255, 0.42);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 500;
+}
+
+.portal-nav-drawer-close {
+    background: rgb(255, 255, 255, 0.07);
+    border: none;
+    color: rgb(255, 255, 255, 0.55);
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    line-height: 1;
+}
+
+.portal-nav-drawer-close:hover {
+    background: rgb(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+/* ── SECTION LABELS ───────────────────────────────────────── */
+.portal-nav-section-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgb(255, 255, 255, 0.28);
+    padding: 1rem 1.2rem 0.35rem;
+    margin: 0;
+}
+
+/* ── NAV LIST ─────────────────────────────────────────────── */
+.portal-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0.65rem;
+}
+
+.portal-nav-list::-webkit-scrollbar { width: 3px; }
+
+.portal-nav-list::-webkit-scrollbar-thumb {
+    background: rgb(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.portal-nav-list li {
+    margin-bottom: 0.18rem;
+}
+
+/* ── NAV ITEM ─────────────────────────────────────────────── */
+.portal-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.78rem 0.9rem;
+    border-radius: 10px;
+    text-decoration: none !important;
+    color: rgb(255, 255, 255, 0.8);
+    transition: all 0.18s ease;
+    border: 1.5px solid transparent;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.portal-nav-item:hover {
+    background: rgb(255, 255, 255, 0.06);
+    border-color: rgb(255, 255, 255, 0.07);
+    color: rgb(255, 255, 255, 0.9);
+    transform: none;
+    text-decoration: none;
+}
+
+.portal-nav-item.active {
+    background: linear-gradient(135deg,
+                rgb(5,150,105, 0.3),
+                rgb(5,150,105, 0.2));
+    border-color: rgb(5,150,105, 0.4);
+    box-shadow: 0 2px 14px rgb(6, 25, 40, 0.22);
+    color: #fff;
+}
+
+/* Active left accent bar */
+.portal-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 18%;
+    bottom: 18%;
+    width: 3px;
+    background: #059669;
+    border-radius: 0 3px 3px 0;
+}
+
+.portal-nav-item.active .portal-nav-item-icon {
+    background: linear-gradient(145deg, #059669 0%, #047857 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgb(6, 21, 35, 0.38);
+}
+
+/* Icon bubble */
+.portal-nav-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgb(255, 255, 255, 0.06);
+    color: rgb(255, 255, 255, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: all 0.18s;
+}
+
+.portal-nav-item:hover .portal-nav-item-icon {
+    background: rgb(255, 255, 255, 0.1);
+    color: rgb(255, 255, 255, 0.8);
+}
+
+/* Text block */
+.portal-nav-item-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.portal-nav-item-text strong {
+    font-size: 0.87rem;
+    font-weight: 600;
+    color: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.01em;
+}
+
+.portal-nav-item.active .portal-nav-item-text strong {
+    color: #fff;
+}
+
+.portal-nav-item-text span {
+    font-size: 0.67rem;
+    color: rgb(255, 255, 255, 0.32);
+    font-weight: 400;
+    margin-top: 1px;
+    line-height: 1.2;
+}
+
+/* Chevron arrow */
+.portal-nav-item-arrow {
+    font-size: 0.68rem;
+    color: rgb(255, 255, 255, 0.18);
+    flex-shrink: 0;
+    transition: color 0.18s;
+}
+
+.portal-nav-item.active .portal-nav-item-arrow {
+    color: rgb(233, 214, 172, 0.75);
+}
+
+/* ── DIVIDER ───────────────────────────────────────────────── */
+.portal-nav-divider {
+    border: none;
+    border-top: 1px solid rgb(255, 255, 255, 0.07);
+    margin: 0.75rem 1.25rem;
+}
+
+/* ── LOGOUT ITEM ───────────────────────────────────────────── */
+.portal-drawer-logout {
+    color: #f87171 !important;
+}
+
+.portal-drawer-logout .portal-nav-item-icon {
+    background: rgb(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+.portal-drawer-logout:hover {
+    background: rgb(239, 68, 68, 0.1) !important;
+    color: #fca5a5 !important;
+}
+
+.portal-drawer-logout:hover .portal-nav-item-icon {
+    background: rgb(239, 68, 68, 0.22);
+    color: #fca5a5;
+}
+
+/* ── MOBILE BREAKPOINTS ───────────────────────────────────── */
+@media (width <= 768px) {
+    /* Show the hamburger, vertically centered */
+    .portal-hamburger-btn {
+        display: flex !important;
+        flex-shrink: 0;
+        align-self: center;
+    }
+
+    /* Hide desktop nav — drawer replaces it */
+    .header-nav {
+        display: none !important;
+    }
+
+    /* Header bar — tall enough to breathe */
+    .dashboard-header {
+        padding: 0 0.85rem !important;
+        height: 60px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* Full-width row: hamburger | new ticket | [spacer] | bell + avatar */
+    .header-content {
+        display: flex !important;
+        flex-flow: row nowrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 0.6rem !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100% !important;
+    }
+
+    /* Show New Ticket button — compact pill */
+    .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        flex-shrink: 0;
+    }
+
+    .btn-new-ticket {
+        padding: 0.4rem 0.9rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 20px !important;
+        white-space: nowrap;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.3rem !important;
+    }
+
+    /* Push right items to far right */
+    .header-right {
+        margin-left: auto !important;
+        width: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 0.75rem !important;
+        padding: 0 !important;
+        height: 100% !important;
+    }
+
+    /* Hide username */
+    .user-name {
+        display: none !important;
+    }
+
+    /* Compact avatar, vertically centered */
+    .user-avatar {
+        width: 32px !important;
+        height: 32px !important;
+        display: block !important;
+    }
+
+    /* User profile wrapper centered */
+    .user-profile {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.3rem !important;
+        height: 100% !important;
+    }
+
+    /* Bell button centered */
+    .notif-btn {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 6px 8px !important;
+        font-size: 1.1rem !important;
+        height: auto !important;
+    }
+
+    /* notif-wrap centered */
+    .notif-wrap {
+        display: flex !important;
+        align-items: center !important;
+        margin-right: 0 !important;
+        height: 100% !important;
+    }
+}
+
+/* Very small phones */
+@media (width <= 576px) {
+    .dashboard-header {
+        padding: 0 0.5rem;
+        height: 52px;
+    }
+
+    .portal-hamburger-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+    }
+
+    .portal-hamburger-btn i {
+        font-size: 1.05rem;
+    }
+
+    .portal-nav-drawer {
+        width: 85vw;
+    }
+
+    .btn-new-ticket span {
+        display: none;
+    }
+
+    .btn-new-ticket .me-2 {
+        margin-right: 0 !important;
+    }
+}
+
+/* ── DESKTOP SAFETY ───────────────────────────────────────── */
+@media (width >= 769px) {
+    .portal-hamburger-btn {
+        display: none !important;
+    }
+
+    .portal-nav-drawer:not(.open),
+    .portal-nav-overlay:not(.open) {
+        display: none;
+    }
+}

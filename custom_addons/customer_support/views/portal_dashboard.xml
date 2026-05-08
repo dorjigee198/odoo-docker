@@ -1,0 +1,1114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_dashboard" name="Customer Support Dashboard">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link
+                    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+                    rel="stylesheet" />
+                <!-- ?v=3 busts Odoo asset cache — increment whenever you update the CSS -->
+                <link rel="stylesheet"
+                    href="/customer_support/static/src/css/portal_dashboard.css?v=4" />
+                <!-- Mobile nav drawer CSS (shared with all portal pages) -->
+                <link rel="stylesheet"
+                    href="/customer_support/static/src/css/portal_dashboard_mobile.css?v=5" />
+
+                <style>
+                    /* ── PAGE ── */
+                    .dashboard-wrapper { background: #f8fafc !important; }
+
+                    /* ── HEADER ── */
+                    .dashboard-header {
+                    background: linear-gradient(130deg, #022c22 0%, #064e3b 46%, #065f46 100%) !important;
+                    border-bottom: 1px solid rgba(110,231,183,0.2) !important;
+                    }
+                    .nav-link { color: rgba(255,255,255,0.8) !important; position: relative; }
+                    .nav-link:hover, .nav-link.active { color: #ffffff !important; }
+                    .nav-link.active::after {
+                    content: ''; position: absolute; bottom: 0; left: 0;
+                    width: 100%; height: 2px; background: #6ee7b7; border-radius: 2px;
+                    }
+                    .btn-new-ticket {
+                    background: #ffffff !important;
+                    color: #065f46 !important;
+                    box-shadow: 0 4px 12px rgba(5,150,105,0.2) !important;
+                    }
+                    .btn-new-ticket:hover { background: #f0fdf4 !important; color: #047857 !important; }
+
+                    /* ── DASHBOARD CARDS ── */
+                    .dashboard-card, .performance-card {
+                    background: #ffffff !important;
+                    border: 1px solid rgba(5,150,105,0.1) !important;
+                    border-radius: 12px !important;
+                    box-shadow: 0 2px 12px rgba(5,150,105,0.07) !important;
+                    }
+                    .card-title { color: #065f46 !important; }
+                    .card-title i { color: #059669 !important; }
+                    .stat-box, .performance-stat {
+                    background: #ffffff !important;
+                    border: 1px solid rgba(5,150,105,0.1) !important;
+                    }
+                    .stat-icon, .performance-icon {
+                    background: #d1fae5 !important;
+                    color: #059669 !important;
+                    }
+                    .stat-value, .performance-value { color: #065f46 !important; }
+                    .stat-label, .performance-label { color: #475569 !important; }
+                    .stat-subtitle, .performance-subtitle { color: #64748b !important; }
+                    .score-badge { background: #059669 !important; color: #fff !important; }
+                    .action-card { background: #ffffff !important; border: 1px solid rgba(5,150,105,0.1) !important; }
+                    .action-card:hover { border-color: #059669 !important; }
+                    .action-content h4 { color: #065f46 !important; }
+                    .action-content p { color: #64748b !important; }
+                    .action-icon { background: #059669 !important; color: #fff !important; }
+
+                    /* ── REPORTING TITLE ── */
+                    .reporting-title { color: #065f46 !important; font-weight: 700 !important; }
+                    .reporting-title i { color: #059669 !important; }
+
+                    /* ── KPI CARDS ── */
+                    .report-kpi {
+                    background: #ffffff !important;
+                    border: 1px solid rgba(5,150,105,0.1) !important;
+                    border-radius: 12px !important;
+                    box-shadow: 0 2px 8px rgba(5,150,105,0.06) !important;
+                    }
+                    .report-kpi-value { color: #065f46 !important; }
+                    .report-kpi-value.blue { color: #059669 !important; }
+                    .report-kpi-value.green { color: #059669 !important; }
+                    .report-kpi-value.amber { color: #d97706 !important; }
+                    .report-kpi-value.red { color: #dc2626 !important; }
+                    .report-kpi-label { color: #64748b !important; font-weight: 700 !important;
+                    text-transform: uppercase !important; letter-spacing: 0.06em !important;
+                    font-size: 0.72rem !important; }
+
+                    /* ── CHART CARDS ── */
+                    .report-chart-card {
+                    background: #ffffff !important;
+                    border: 1px solid rgba(5,150,105,0.1) !important;
+                    border-radius: 16px !important;
+                    box-shadow: 0 2px 8px rgba(5,150,105,0.06) !important;
+                    }
+                    .report-chart-title {
+                    color: #065f46 !important; font-weight: 700 !important;
+                    border-bottom: 1px solid rgba(5,150,105,0.08) !important;
+                    padding-bottom: 0.75rem !important; margin-bottom: 1.25rem !important;
+                    }
+                    .report-chart-title i { color: #059669 !important; }
+
+                    /* ── DAY FILTER BUTTONS ── */
+                    .day-btn {
+                    background: #ffffff !important; border: 1px solid rgba(5,150,105,0.2) !important;
+                    color: #475569 !important; border-radius: 8px !important; font-weight: 600 !important;
+                    }
+                    .day-btn:hover { background: #f0fdf4 !important; color: #065f46 !important; }
+                    .day-btn.active { background: #059669 !important; color: #ffffff !important;
+                    border-color: #059669 !important; }
+
+                    /* ── PRINT BUTTON ── */
+                    .print-btn { background: #d1fae5 !important; border: 1px solid #6ee7b7 !important;
+                    color: #065f46 !important; border-radius: 8px !important; font-weight: 600 !important; }
+                    .print-btn:hover { background: #a7f3d0 !important; }
+
+                    /* ── LOADING SPINNER ── */
+                    .report-loading { color: #64748b !important; }
+                    .spinner { border-color: rgba(5,150,105,0.12) !important; border-top-color: #059669 !important; }
+
+                    /* ── NOTIFICATION DROPDOWN ── */
+                    .notif-dropdown {
+                    background: #ffffff !important; border: 1px solid rgba(5,150,105,0.15) !important;
+                    border-radius: 16px !important; box-shadow: 0 12px 40px rgba(5,150,105,0.12) !important;
+                    }
+                    .notif-header { background: #f0fdf4 !important;
+                    border-bottom: 1px solid rgba(5,150,105,0.1) !important; }
+                    .notif-header h6 { color: #065f46 !important; }
+                    .notif-header h6 i { color: #059669 !important; }
+                    .notif-mark-read { color: #059669 !important; }
+                    .notif-mark-read:hover { color: #047857 !important; }
+                    .notif-empty { color: #64748b !important; }
+                    .notif-footer { background: #f0fdf4 !important;
+                    border-top: 1px solid rgba(5,150,105,0.08) !important; }
+                    .notif-footer a { color: #059669 !important; }
+                    .notif-footer a:hover { color: #047857 !important; }
+                    .notif-item { display: flex; align-items: flex-start; gap: 0.75rem;
+                    padding: 0.75rem 1rem; border-bottom: 1px solid rgba(5,150,105,0.07); cursor: default; }
+                    .notif-item:last-child { border-bottom: none; }
+                    .notif-icon-wrap { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+                    display: flex; align-items: center; justify-content: center; font-size: .9rem; }
+                    .notif-icon-wrap.status   { background: rgba(5,150,105,.12); color: #059669; }
+                    .notif-icon-wrap.assigned { background: rgba(22,163,74,.12); color: #16a34a; }
+                    .notif-icon-wrap.breach   { background: rgba(239,68,68,.12); color: #ef4444; }
+                    .notif-body { flex: 1; min-width: 0; }
+                    .notif-title { font-size: .8rem; font-weight: 700; color: #065f46 !important;
+                    margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                    .notif-sub { font-size: .78rem; color: #64748b; line-height: 1.4;
+                    word-break: break-word; white-space: normal; }
+                    .notif-time-text { font-size: .7rem; color: #94a3b8; margin-top: 3px; }
+                    .notif-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+                    .notif-dot.status   { background: #059669; }
+                    .notif-dot.assigned { background: #16a34a; }
+                    .notif-dot.breach   { background: #ef4444; }
+
+                    /* ── BACK BUTTON WARNING MODAL ── */
+                    #logoutWarningModal { display: none; position: fixed; top: 0; left: 0;
+                    width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999;
+                    align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+                    #logoutWarningModal.show { display: flex !important; }
+                    .logout-modal-box { background: #ffffff; border-radius: 20px; padding: 2.5rem 2rem;
+                    max-width: 420px; width: 90%; box-shadow: 0 24px 60px rgba(5,150,105,0.15);
+                    text-align: center; animation: modalPop 0.25s ease; }
+                    @keyframes modalPop { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+                    .logout-modal-icon { width: 68px; height: 68px; background: #fef3c7; border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;
+                    border: 3px solid #fde68a; }
+                    .logout-modal-icon i { font-size: 1.9rem; color: #d97706; }
+                    .logout-modal-box h5 { color: #065f46; font-weight: 700; font-size: 1.2rem; margin-bottom: 0.6rem; }
+                    .logout-modal-box p { color: #475569; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.75rem; }
+                    .logout-modal-box p strong { color: #065f46; }
+                    .logout-modal-btns { display: flex; gap: 0.85rem; justify-content: center; }
+                    .btn-stay { padding: 0.6rem 1.4rem; border-radius: 10px;
+                    border: 1.5px solid rgba(5,150,105,0.2); background: #f0fdf4; color: #065f46;
+                    font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+                    .btn-stay:hover { background: #d1fae5; border-color: #059669; }
+                    .btn-logout-now { padding: 0.6rem 1.4rem; border-radius: 10px; border: none;
+                    background: #059669; color: #ffffff; font-weight: 600; font-size: 0.9rem;
+                    cursor: pointer; transition: background 0.2s; }
+                    .btn-logout-now:hover { background: #047857; }
+                </style>
+            </t>
+
+            <div class="dashboard-wrapper">
+
+                <!-- ═══════════════════════════════════════════════════════════
+                     BACK BUTTON WARNING MODAL
+                     ═══════════════════════════════════════════════════════════ -->
+                <div id="logoutWarningModal" role="dialog" aria-modal="true"
+                    aria-labelledby="logoutModalTitle">
+                    <div class="logout-modal-box">
+                        <div class="logout-modal-icon">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <h5 id="logoutModalTitle">Hold On!</h5>
+                        <p> Please use the <strong>Logout</strong> button to exit safely.<br />
+                            Pressing the back button may leave your session unsecured and expose
+                            your account to unauthorised access. </p>
+                        <div class="logout-modal-btns">
+                            <button class="btn-stay" id="modalStayBtn">
+                                <i class="bi bi-arrow-left-circle me-1"></i> Stay on Page </button>
+                            <button class="btn-logout-now" id="modalLogoutBtn">
+                                <i class="bi bi-box-arrow-right me-1"></i> Logout Properly </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════
+                     HEADER
+                     The mobile nav component is called as the FIRST child of
+                     .header-content. It renders:
+                       • the hamburger <button> (inline, visible mobile-only)
+                       • the overlay <div>  (fixed, invisible until opened)
+                       • the drawer <div>   (fixed, off-screen until opened)
+                       • the drawer <script> (self-contained IIFE)
+                     Pass mobile_active_page so the drawer highlights Overview.
+                     ═══════════════════════════════════════════════════════════ -->
+                <header class="dashboard-header">
+                    <div class="header-content">
+
+                        <!-- ↓ MOBILE NAV COMPONENT (hamburger + drawer) -->
+                        <t t-set="mobile_active_page" t-value="'overview'" />
+                        <t t-call="customer_support.portal_mobile_nav_component" />
+
+                        <div class="header-nav">
+                            <a href="#" class="nav-link active" id="portalOverviewNav">
+                                <i class="bi bi-speedometer2 me-2"></i>Overview </a>
+                            <a href="/customer_support/tickets/list" class="nav-link"
+                                id="portalTicketsNav">
+                                <i class="bi bi-ticket-detailed me-2"></i>Tickets </a>
+                            <a href="#" class="nav-link" id="portalReportingNav">
+                                <i class="bi bi-folder-fill me-2"></i>Reports </a>
+                            <a href="/customer_support/chatbot" class="nav-link">
+                                <i class="bi bi-question-circle me-2"></i>FAQ </a>
+                        </div>
+                        <div class="header-right">
+                            <div class="header-actions">
+                                <a href="/customer_support/create_ticket" class="btn-new-ticket">
+                                    <i class="bi bi-plus-circle me-2"></i>New Ticket </a>
+                            </div>
+                            <div class="user-profile dropdown">
+
+                                <!-- NOTIFICATION BELL -->
+                                <div class="notif-wrap me-3">
+                                    <button class="notif-btn" id="portalNotifBell"
+                                        title="Notifications">
+                                        <i class="bi bi-bell-fill"></i>
+                                        <span class="notif-badge d-none" id="portalNotifBadge">0</span>
+                                    </button>
+                                    <div class="notif-dropdown" id="portalNotifDropdown">
+                                        <div class="notif-header">
+                                            <h6><i class="bi bi-bell me-2" style="color:#059669;"></i>
+                                                Notifications</h6>
+                                            <button class="notif-mark-read" id="portalMarkRead">Mark
+                                                all read</button>
+                                        </div>
+                                        <div class="notif-list" id="portalNotifList">
+                                            <div class="notif-empty">
+                                                <i class="bi bi-arrow-repeat"
+                                                    style="font-size:1.5rem;display:block;margin-bottom:.5rem;"></i>
+                                                Loading... </div>
+                                        </div>
+                                        <div class="notif-footer">
+                                            <a href="#" id="portalNotifViewTickets">View my tickets
+                                                &#8594;</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <a class="d-flex align-items-center text-white dropdown-toggle"
+                                    href="#" id="userProfileDropdown" data-bs-toggle="dropdown"
+                                    aria-expanded="false" style="text-decoration: none;">
+                                    <span class="user-name me-3">
+                                        <t t-esc="user.name" />
+                                    </span>
+                                    <img t-att-src="'/web/image/res.users/%s/avatar_128' % user.id"
+                                        alt="User Avatar" class="user-avatar"
+                                        onerror="this.src='/web/static/img/avatar_gray.svg'" />
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    aria-labelledby="userProfileDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="/customer_support/profile">
+                                            <i class="bi bi-person me-2"></i>Edit Profile </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="/customer_support/logout_manual">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Logout </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- ALERTS -->
+                <div class="container-fluid mt-3 px-4">
+                    <t t-if="request.params.get('success')">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i><strong>Success!</strong>
+                            Ticket created successfully. <button type="button" class="btn-close"
+                                data-bs-dismiss="alert"></button>
+                        </div>
+                    </t>
+                    <t t-if="request.params.get('error')">
+                        <div class="alert alert-error alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Error!</strong>
+                            Failed to create ticket. <button type="button" class="btn-close"
+                                data-bs-dismiss="alert"></button>
+                        </div>
+                    </t>
+                    <t t-if="request.params.get('created')">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i><strong>Success!</strong>
+                            Ticket has been created successfully. <button type="button"
+                                class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- ═══ OVERVIEW PAGE ═══ -->
+                <div class="dashboard-content" id="portal-overview-page">
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2 class="card-title"><i class="bi bi-bar-chart-fill me-2"></i>Ticket
+                                    Analytics</h2>
+                                <div class="card-actions">
+                                    <span class="last-updated"><i class="bi bi-clock me-1"></i>Updated
+                                        just now</span>
+                                </div>
+                            </div>
+                            <div class="analytics-grid">
+                                <div class="stat-box" data-key="open_tickets">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-folder-plus"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Open Tickets</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('open_tickets', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">Active Tickets</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="total_tickets">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-stack"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Total Tickets</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('total_tickets', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">All Tickets</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="high_priority">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">High Priority</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('high_priority', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">High Priority</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="urgent">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-lightning-charge"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Urgent</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('urgent', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">Urgent Priority</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="analytics-grid">
+                                <div class="stat-box" data-key="avg_open_hours">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Avg Open Hours</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('avg_open_hours', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">Hours</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="total_hours">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-clock-fill"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Total Hours</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('total_hours', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">Hours Open</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="avg_high_hours">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-exclamation-octagon"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Avg High Priority Hours</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('avg_high_hours', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">Hours</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="avg_urgent_hours">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-lightning-charge-fill"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Avg Urgent Hours</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('avg_urgent_hours', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">Hours</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="analytics-grid">
+                                <div class="stat-box" data-key="resolved_tickets">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-check-circle"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Resolved Tickets</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('resolved_tickets', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">Fixed Tickets</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="solve_rate">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-percent"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Solve Rate</div>
+                                        <div class="stat-value"><t
+                                                t-esc="analytics.get('solve_rate', 0)" />%</div>
+                                        <div class="stat-subtitle">Success Rate</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="high_resolved">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-check-square"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">High Priority Resolved</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('high_resolved', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">High Fixed</div>
+                                    </div>
+                                </div>
+                                <div class="stat-box" data-key="urgent_resolved">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-check-all"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Urgent Resolved</div>
+                                        <div class="stat-value">
+                                            <t t-esc="analytics.get('urgent_resolved', 0)" />
+                                        </div>
+                                        <div class="stat-subtitle">Urgent Fixed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions mt-4">
+                        <div class="actions-grid">
+                            <a href="/customer_support/create_ticket" class="action-card">
+                                <div class="action-icon">
+                                    <i class="bi bi-plus-circle-fill"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h4>Create New Ticket</h4>
+                                    <p>Submit a new support request</p>
+                                </div>
+                            </a>
+                            <a href="/customer_support/tickets/list" class="action-card">
+                                <div class="action-icon">
+                                    <i class="bi bi-list-task"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h4>View All Tickets</h4>
+                                    <p>See all your support tickets</p>
+                                </div>
+                            </a>
+                            <a href="#" class="action-card" id="portalReportActionCard">
+                                <div class="action-icon">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h4>Generate Report</h4>
+                                    <p>Download performance report</p>
+                                </div>
+                            </a>
+                            <a href="/customer_support/chatbot" class="action-card">
+                                <div class="action-icon">
+                                    <i class="bi bi-question-circle-fill"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h4>Help Center</h4>
+                                    <p>Browse FAQ and guides</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- /portal-overview-page -->
+
+                <!-- ═══ REPORTS PAGE ═══ -->
+                <div class="dashboard-content" id="portal-reporting-page" style="display:none;">
+
+                    <!-- header -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;">
+                        <div>
+                            <h5 style="margin:0;font-weight:700;font-size:1.15rem;color:#065f46;display:flex;align-items:center;gap:.6rem;">
+                                <span style="width:36px;height:36px;background:linear-gradient(135deg,#0c4a6e,#0284c7);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;">
+                                    <i class="bi bi-folder-fill" style="color:#fff;font-size:.95rem;"></i>
+                                </span>
+                                Project Reports
+                            </h5>
+                            <p style="margin:.4rem 0 0 44px;font-size:.84rem;color:#5b7fa6;">
+                                Closure reports forwarded to you by the support team.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- loading -->
+                    <div id="portalRptLoading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:4rem 0;">
+                        <div style="position:relative;width:52px;height:52px;">
+                            <div style="position:absolute;inset:0;border-radius:50%;border:3px solid #e0f2fe;"></div>
+                            <div class="spinner-border" role="status" style="position:absolute;inset:0;width:52px;height:52px;color:#059669;border-width:3px;"></div>
+                        </div>
+                        <span style="color:#5b7fa6;font-size:.92rem;font-weight:500;">Loading your reports…</span>
+                    </div>
+
+                    <!-- empty state -->
+                    <div id="portalRptEmpty" style="display:none;text-align:center;padding:4.5rem 1rem;">
+                        <div style="width:80px;height:80px;background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;box-shadow:0 4px 15px rgba(12,74,110,0.1);">
+                            <i class="bi bi-folder2-open" style="font-size:2.2rem;color:#059669;"></i>
+                        </div>
+                        <h6 style="color:#065f46;font-weight:700;margin-bottom:.5rem;font-size:1rem;">No Reports Yet</h6>
+                        <p style="font-size:.87rem;color:#5b7fa6;max-width:340px;margin:0 auto;line-height:1.6;">
+                            Reports will appear here once the support team forwards your project closure report.
+                        </p>
+                    </div>
+
+                    <!-- reports grid -->
+                    <div id="portalRptList" style="display:none;">
+                        <div id="portalRptBody" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.1rem;"></div>
+                    </div>
+                </div>
+                <!-- /portal-reporting-page -->
+
+                <!-- ═══ REPORT PREVIEW MODAL ═══ -->
+                <div class="modal fade" id="portalRptModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header"
+                                style="background:linear-gradient(135deg,#022c22,#065f46);color:#fff;border-radius:0;">
+                                <div>
+                                    <h5 class="modal-title mb-0">
+                                        <i class="bi bi-file-earmark-bar-graph-fill me-2"></i>
+                                        <span id="portalRptModalTitle">Project Closure Report</span>
+                                    </h5>
+                                    <small style="opacity:.7;" id="portalRptModalSub"></small>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-0" id="portalRptModalBody"
+                                style="background:#f8f9fa;min-height:200px;"></div>
+                            <div class="modal-footer" style="border-top:1px solid rgba(5,150,105,0.1);">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                    style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">Close</button>
+                                <button type="button" id="portalRptDownloadBtn"
+                                    style="background:#059669;color:#fff;border:none;border-radius:8px;padding:.5rem 1.25rem;font-weight:600;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:background .18s;"
+                                    onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
+                                    <i class="bi bi-download"></i>Download PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /dashboard-wrapper -->
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+            <!-- ═══ LIVE ANALYTICS POLLER ═══ -->
+            <script type="text/javascript">
+                //<![CDATA[
+(function () {
+    'use strict';
+    var INTERVAL = 15000;
+    var A = [
+        { key: 'open_tickets',     sel: '[data-key="open_tickets"] .stat-value' },
+        { key: 'total_tickets',    sel: '[data-key="total_tickets"] .stat-value' },
+        { key: 'high_priority',    sel: '[data-key="high_priority"] .stat-value' },
+        { key: 'urgent',           sel: '[data-key="urgent"] .stat-value' },
+        { key: 'avg_open_hours',   sel: '[data-key="avg_open_hours"] .stat-value' },
+        { key: 'total_hours',      sel: '[data-key="total_hours"] .stat-value' },
+        { key: 'avg_high_hours',   sel: '[data-key="avg_high_hours"] .stat-value' },
+        { key: 'avg_urgent_hours', sel: '[data-key="avg_urgent_hours"] .stat-value' },
+        { key: 'resolved_tickets', sel: '[data-key="resolved_tickets"] .stat-value' },
+        { key: 'solve_rate',       sel: '[data-key="solve_rate"] .stat-value', sfx: '%' },
+        { key: 'high_resolved',    sel: '[data-key="high_resolved"] .stat-value' },
+        { key: 'urgent_resolved',  sel: '[data-key="urgent_resolved"] .stat-value' }
+    ];
+    var P = [
+        { key: 'today_closed',       sel: '[data-key="today_closed"] .performance-value' },
+        { key: 'avg_resolve_rate',   sel: '[data-key="avg_resolve_rate"] .performance-value', sfx: '%' },
+        { key: 'daily_target',       sel: '[data-key="daily_target"] .performance-value', sfx: '%' },
+        { key: 'achievement',        sel: '[data-key="achievement"] .performance-value', sfx: '%' },
+        { key: 'sample_performance', sel: '[data-key="sample_performance"] .score-badge', sfx: '%' }
+    ];
+    function upd(sel, val, sfx) { var el = document.querySelector(sel); if (el) el.textContent = val + (sfx || ''); }
+    function flash(sel) {
+        var el = document.querySelector(sel);
+        if (el) { el.style.transition = 'color 0.3s'; el.style.color = '#0284c7'; setTimeout(function () { el.style.color = ''; }, 600); }
+    }
+    function updBar(v) {
+        var b = document.querySelector('.progress-bar');
+        if (b) { b.style.width = v + '%'; b.className = 'progress-bar ' + (v >= 80 ? 'bg-success' : 'bg-warning'); }
+    }
+    function updBarLabel(v) {
+        var ls = document.querySelectorAll('.progress-label span');
+        if (ls.length >= 2) ls[1].textContent = v + '%';
+    }
+    function updTime() {
+        var t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.querySelectorAll('.last-updated').forEach(function (el) { el.innerHTML = '<i class="bi bi-clock me-1"></i>Updated at ' + t; });
+    }
+    function run() {
+        fetch('/customer_support/dashboard/analytics', { method: 'GET', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (d) {
+            var a = d.analytics || {}, p = d.performance || {};
+            A.forEach(function (i) { var v = a[i.key]; if (v !== undefined) { upd(i.sel, v, i.sfx || ''); flash(i.sel); } });
+            P.forEach(function (i) { var v = p[i.key]; if (v !== undefined) upd(i.sel, v, i.sfx || ''); });
+            if (p.achievement !== undefined) { updBar(p.achievement); updBarLabel(p.achievement); }
+            updTime();
+        })
+        .catch(function (e) { console.warn('Analytics refresh failed:', e); });
+    }
+    document.addEventListener('DOMContentLoaded', function () { run(); setInterval(run, INTERVAL); });
+})();
+                //]]>
+            </script>
+
+            <!-- ═══ PORTAL NAVIGATION + BELL + REPORTING ═══ -->
+            <script type="text/javascript">
+                //<![CDATA[
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── AUTO-DISMISS ALERTS ───────────────────────────────────────────────
+    setTimeout(function () {
+        document.querySelectorAll('.alert').forEach(function (a) {
+            try { new bootstrap.Alert(a).close(); } catch (e) { a.style.display = 'none'; }
+        });
+    }, 5000);
+
+    // ── KANBAN COUNTS ─────────────────────────────────────────────────────
+    function updatePortalCounts() {
+        ['new', 'in_progress', 'resolved', 'closed'].forEach(function (state) {
+            var col = document.getElementById('portal-col-' + state);
+            var countEl = document.getElementById('portal-count-' + state);
+            if (col && countEl) countEl.textContent = col.querySelectorAll('.kanban-card').length;
+        });
+    }
+    updatePortalCounts();
+
+    // ── PAGE SWITCHING ────────────────────────────────────────────────────
+    var pages = {
+        overview:  document.getElementById('portal-overview-page'),
+        kanban:    document.getElementById('portal-kanban-page'),
+        reporting: document.getElementById('portal-reporting-page')
+    };
+    var kanbanBtn = document.getElementById('portalKanbanBtn');
+
+    function hideAllPages() {
+        Object.keys(pages).forEach(function (k) { if (pages[k]) pages[k].style.display = 'none'; });
+    }
+    function setActiveNav(navId, isKanban) {
+        document.querySelectorAll('.header-nav .nav-link').forEach(function (l) { l.classList.remove('active'); });
+        var el = document.getElementById(navId);
+        if (el) el.classList.add('active');
+        if (kanbanBtn) kanbanBtn.classList.toggle('active', !!isKanban);
+    }
+    function showOverview()  { hideAllPages(); pages.overview.style.display = 'block';   setActiveNav('portalOverviewNav', false); }
+    function showKanban()    { hideAllPages(); pages.kanban.style.display = 'block';     setActiveNav('portalTicketsNav', true);  updatePortalCounts(); }
+    function showReporting() {
+        hideAllPages(); pages.reporting.style.display = 'block';
+        setActiveNav('portalReportingNav', false);
+        loadPortalReports();
+    }
+
+    var overviewNav = document.getElementById('portalOverviewNav');
+    if (overviewNav) overviewNav.addEventListener('click', function (e) { e.preventDefault(); showOverview(); });
+    var ticketsNav = document.getElementById('portalTicketsNav');
+    if (ticketsNav) ticketsNav.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.location.href = '/customer_support/tickets/list';
+    });
+    var reportingNav = document.getElementById('portalReportingNav');
+    if (reportingNav) reportingNav.addEventListener('click', function (e) { e.preventDefault(); showReporting(); });
+    var reportActionCard = document.getElementById('portalReportActionCard');
+    if (reportActionCard) reportActionCard.addEventListener('click', function (e) { e.preventDefault(); showReporting(); });
+    var listBtn = document.getElementById('portalListBtn');
+    if (listBtn) listBtn.addEventListener('click', function () { window.location.href = '/customer_support/tickets/kanban'; });
+    var kanbanActiveBtn = document.getElementById('portalKanbanActiveBtn');
+    if (kanbanActiveBtn) kanbanActiveBtn.addEventListener('click', function () { showKanban(); });
+
+    document.querySelectorAll('#portal-kanban-page .kanban-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            var id = this.getAttribute('data-ticket-id');
+            if (id) window.location.href = '/customer_support/customer/ticket/' + id;
+        });
+    });
+    document.querySelectorAll('.action-card').forEach(function (card) {
+        card.addEventListener('click', function (e) {
+            var href = this.getAttribute('href');
+            if (!href || href === '#' || href.endsWith('#')) {
+                e.preventDefault();
+                var self = this;
+                self.style.transform = 'scale(0.95)';
+                setTimeout(function () { self.style.transform = ''; }, 150);
+            }
+        });
+    });
+
+    // ── NOTIFICATION BELL ─────────────────────────────────────────────────
+    var bell      = document.getElementById('portalNotifBell');
+    var dropdown  = document.getElementById('portalNotifDropdown');
+    var badge     = document.getElementById('portalNotifBadge');
+    var notifList = document.getElementById('portalNotifList');
+
+    if (bell && dropdown) {
+        bell.addEventListener('click', function (e) { e.stopPropagation(); dropdown.classList.toggle('open'); });
+        document.addEventListener('click', function () { dropdown.classList.remove('open'); });
+        dropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+    }
+    var markReadBtn = document.getElementById('portalMarkRead');
+    if (markReadBtn) {
+        markReadBtn.addEventListener('click', function () {
+            fetch('/customer_support/customer/notifications/mark_read', { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function () {
+                if (badge) { badge.classList.add('d-none'); badge.textContent = '0'; }
+                if (notifList) { notifList.innerHTML = '<div class="notif-empty"><i class="bi bi-check-circle-fill" style="font-size:2rem;color:#22c55e;display:block;margin-bottom:.5rem;"></i>All caught up!</div>'; }
+            })
+            .catch(function (e) { console.warn('Mark read failed:', e); });
+        });
+    }
+    var viewTicketsLink = document.getElementById('portalNotifViewTickets');
+    if (viewTicketsLink) {
+        viewTicketsLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (dropdown) dropdown.classList.remove('open');
+            showKanban();
+        });
+    }
+    function sanitise(str) { var d = document.createElement('div'); d.textContent = String(str || ''); return d.innerHTML; }
+    function renderNotifications(items) {
+        if (!notifList) return;
+        if (!items || !items.length) {
+            notifList.innerHTML = '<div class="notif-empty"><i class="bi bi-check-circle-fill" style="font-size:2rem;color:#22c55e;display:block;margin-bottom:.5rem;"></i>No new notifications</div>';
+            if (badge) badge.classList.add('d-none');
+            return;
+        }
+        if (badge) { badge.textContent = items.length; badge.classList.remove('d-none'); }
+        var typeLabels = { status_change: 'Status Update', assigned: 'Assigned', sla_breach: 'SLA Breach' };
+        notifList.innerHTML = items.map(function (n) {
+            var cls       = sanitise(n.cls   || 'status');
+            var icon      = sanitise(n.icon  || 'bi-bell-fill');
+            var ticketName = sanitise(n.ticket_name || n.ticket_id || '');
+            var typeLabel  = sanitise(typeLabels[n.type] || 'Notification');
+            var msg       = sanitise(n.message || '');
+            var time      = sanitise(n.time   || '');
+            var title     = ticketName ? ticketName + ' &middot; ' + typeLabel : typeLabel;
+            return '<div class="notif-item">'
+                + '<div class="notif-icon-wrap ' + cls + '"><i class="bi ' + icon + '"></i></div>'
+                + '<div class="notif-body">'
+                +   '<div class="notif-title">' + title + '</div>'
+                +   '<div class="notif-sub">' + msg + '</div>'
+                +   '<div class="notif-time-text">' + time + '</div>'
+                + '</div>'
+                + '<div class="notif-dot ' + cls + '"></div>'
+                + '</div>';
+        }).join('');
+    }
+    function loadNotifications() {
+        fetch('/customer_support/customer/notifications', { method: 'GET', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { renderNotifications(data.notifications || []); })
+        .catch(function () { renderNotifications([]); });
+    }
+    loadNotifications();
+    setInterval(loadNotifications, 30000);
+
+    // ── PORTAL REPORTS ────────────────────────────────────────────────────
+    var _portalRptLoaded = false;
+
+    function prJsonCall(url, params) {
+        return fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: params || {} })
+        }).then(function (r) { return r.json(); }).then(function (d) { return d.result || d; });
+    }
+
+    function loadPortalReports() {
+        if (_portalRptLoaded) return;
+        var loading = document.getElementById('portalRptLoading');
+        var empty   = document.getElementById('portalRptEmpty');
+        var list    = document.getElementById('portalRptList');
+        if (loading) loading.style.display = 'flex';
+        if (empty)   empty.style.display   = 'none';
+        if (list)    list.style.display    = 'none';
+
+        prJsonCall('/customer_support/customer/reports/list', {})
+        .then(function (res) {
+            if (loading) loading.style.display = 'none';
+            var reports = (res.reports || []);
+            if (!reports.length) {
+                if (empty) empty.style.display = 'block';
+                return;
+            }
+            var tbody = document.getElementById('portalRptBody');
+            if (tbody) {
+                tbody.innerHTML = reports.map(function (r) {
+                    var typeTag = r.project_type
+                        ? '<span style="flex-shrink:0;font-size:.7rem;font-weight:600;letter-spacing:.04em;background:#e0f2fe;color:#059669;border:1px solid rgba(2,132,199,0.2);border-radius:20px;padding:.2rem .65rem;">' + escH(r.project_type) + '</span>'
+                        : '';
+                    var keyTag = r.project_key
+                        ? '<span style="display:inline-block;margin-top:.35rem;font-size:.68rem;font-weight:600;letter-spacing:.05em;background:#f0f9ff;color:#5b7fa6;border-radius:5px;padding:.1rem .45rem;">' + escH(r.project_key) + '</span>'
+                        : '';
+                    return '<div style="background:#fff;border:1px solid rgba(12,74,110,0.1);border-radius:14px;box-shadow:0 2px 10px rgba(12,74,110,0.07);padding:1.3rem 1.4rem;display:flex;flex-direction:column;gap:.9rem;">'
+                        + '  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;">'
+                        + '    <div>'
+                        + '      <div style="font-weight:700;font-size:.97rem;color:#065f46;line-height:1.3;">' + escH(r.project_name) + '</div>'
+                        + keyTag
+                        + '    </div>'
+                        + typeTag
+                        + '  </div>'
+                        + '  <div style="display:flex;flex-direction:column;gap:.4rem;padding:.75rem;background:#f0f9ff;border-radius:9px;">'
+                        + '    <div style="display:flex;align-items:center;gap:.55rem;font-size:.81rem;color:#5b7fa6;">'
+                        + '      <i class="bi bi-calendar3" style="color:#059669;font-size:.85rem;"></i>'
+                        + '      <span>Generated: <strong style="color:#065f46;">' + escH(r.generated_on || '—') + '</strong></span>'
+                        + '    </div>'
+                        + '    <div style="display:flex;align-items:center;gap:.55rem;font-size:.81rem;color:#5b7fa6;">'
+                        + '      <i class="bi bi-send-check" style="color:#059669;font-size:.85rem;"></i>'
+                        + '      <span>Received: <strong style="color:#065f46;">' + escH(r.forwarded_on || '—') + '</strong></span>'
+                        + '    </div>'
+                        + '  </div>'
+                        + '  <button style="width:100%;background:#059669;color:#fff;border:none;border-radius:9px;padding:.55rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem;transition:background .18s;" onmouseover="this.style.background=\'#0284c7\'" onmouseout="this.style.background=\'#0c4a6e\'" onclick="portalOpenReport(' + r.id + ')">'
+                        + '    <i class="bi bi-eye"></i> Preview &amp; Download'
+                        + '  </button>'
+                        + '</div>';
+                }).join('');
+            }
+            if (list) list.style.display = 'block';
+            _portalRptLoaded = true;
+        })
+        .catch(function (e) {
+            console.error('loadPortalReports error:', e);
+            if (loading) loading.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:.75rem;padding:3rem 0;"><div style="width:56px;height:56px;background:#fff1f0;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="bi bi-exclamation-triangle" style="font-size:1.5rem;color:#dc2626;"></i></div><span style="color:#dc2626;font-weight:600;font-size:.92rem;">Could not load reports</span><span style="color:#5b7fa6;font-size:.83rem;">Please refresh the page to try again.</span></div>';
+        });
+    }
+
+    function escH(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    window.portalOpenReport = function (fwdId) {
+        var body  = document.getElementById('portalRptModalBody');
+        var title = document.getElementById('portalRptModalTitle');
+        var sub   = document.getElementById('portalRptModalSub');
+        var dlBtn = document.getElementById('portalRptDownloadBtn');
+        if (body) body.innerHTML = '<div style="padding:2rem;text-align:center;color:#6c757d;">'
+            + '<div class="spinner-border text-primary" role="status"></div>'
+            + '<div style="margin-top:.75rem;">Loading report…</div></div>';
+        if (dlBtn) { dlBtn.disabled = true; dlBtn.innerHTML = '<i class="bi bi-download me-1"></i>Download PDF'; }
+        new bootstrap.Modal(document.getElementById('portalRptModal')).show();
+
+        prJsonCall('/customer_support/customer/report/detail', { report_id: fwdId })
+        .then(function (res) {
+            if (res.error || !res.report) {
+                if (body) body.innerHTML = '<div style="padding:2rem;color:#dc2626;">' + escH(res.error || 'Failed to load report.') + '</div>';
+                return;
+            }
+            var r = res.report;
+            if (title) title.textContent = r.project_name + ' — Project Closure Report';
+            if (sub)   sub.textContent   = 'Ref: ' + (r.project_key || '-') + '  ·  Generated ' + r.generated_on;
+            var html = buildClosureReportHtml(r);
+            if (body) body.innerHTML = html;
+            if (dlBtn) {
+                dlBtn.disabled = false;
+                dlBtn.onclick = function () { portalDownloadPdf(r.project_name, dlBtn); };
+            }
+        })
+        .catch(function (e) {
+            console.error('portalOpenReport error:', e);
+            if (body) body.innerHTML = '<div style="padding:2rem;color:#dc2626;">Network error. Please try again.</div>';
+        });
+    };
+
+    function portalDownloadPdf(projectName, btn) {
+        var el  = document.getElementById('portalRptModalBody');
+        var filename = ((projectName || 'closure_report') + '_closure_report').replace(/\s+/g, '_').toLowerCase() + '.pdf';
+        if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+        html2pdf().set({
+            margin:      [10, 10, 10, 10],
+            filename:    filename,
+            image:       { type: 'jpeg', quality: 0.97 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:   { mode: ['css', 'legacy'] }
+        }).from(el).save().then(function () {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-download me-1"></i>Download PDF'; }
+        });
+    }
+
+    function buildClosureReportHtml(r) {
+        var team      = Array.isArray(r.team) ? r.team : [];
+        var customers = Array.isArray(r.customers) ? r.customers : [];
+        var allTkts   = Array.isArray(r.all_ticket_details) ? r.all_ticket_details : [];
+        var slaRate   = r.sla_rate || 0;
+        var resolveRate = r.resolve_rate || 0;
+
+        function e(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        var S = {
+            wrap:    'font-family:"Segoe UI",Arial,sans-serif;color:#1a1a2e;background:#fff;padding:2rem 2.2rem;',
+            secHead: 'font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#1a3a5c;border-bottom:2px solid #1a3a5c;padding-bottom:.35rem;margin:1.4rem 0 .75rem;',
+            th:      'padding:.55rem .7rem;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:#1a3a5c;color:#fff;white-space:nowrap;',
+            td:      'padding:.5rem .7rem;font-size:.8rem;border-bottom:1px solid #e9ecef;vertical-align:top;',
+            tdBold:  'padding:.5rem .7rem;font-size:.8rem;border-bottom:1px solid #e9ecef;font-weight:700;',
+            label:   'font-size:.72rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;',
+            val:     'font-size:.9rem;font-weight:600;color:#1a1a2e;margin-top:.1rem;',
+        };
+        function sec(txt, newPage) {
+            var pb = newPage ? 'page-break-before:always;break-before:page;' : '';
+            return '<div style="' + S.secHead + pb + '">' + txt + '</div>';
+        }
+        function kv(lbl, val) {
+            return '<div style="margin-bottom:.55rem;"><div style="' + S.label + '">' + lbl + '</div><div style="' + S.val + '">' + val + '</div></div>';
+        }
+        function slaCell(st) {
+            var b = (st||'').toLowerCase()==='breached';
+            return '<span style="display:inline-block;padding:.15rem .5rem;border-radius:3px;font-size:.7rem;font-weight:700;' + (b?'background:#fde8e6;color:#922b21;':'background:#d5f5e3;color:#1e8449;') + '">' + (b?'BREACHED':'MET') + '</span>';
+        }
+        function stateCell(st) {
+            var s=(st||'').toLowerCase();
+            var bg=s.includes('resolv')||s.includes('clos')?'#d5f5e3':s.includes('progress')?'#fef9e7':'#f2f3f4';
+            var cl=s.includes('resolv')||s.includes('clos')?'#1e8449':s.includes('progress')?'#9a7d0a':'#555';
+            return '<span style="display:inline-block;padding:.15rem .45rem;border-radius:3px;font-size:.7rem;font-weight:600;background:'+bg+';color:'+cl+';">'+e(st)+'</span>';
+        }
+        function priCell(p) {
+            var s=(p||'').toLowerCase();
+            var bg=s==='urgent'?'#fde8e6':s==='high'?'#fef3cd':s==='low'?'#f2f3f4':'#e8f4fd';
+            var cl=s==='urgent'?'#922b21':s==='high'?'#9a7d0a':s==='low'?'#555':'#1a6a9a';
+            return '<span style="display:inline-block;padding:.15rem .45rem;border-radius:3px;font-size:.7rem;font-weight:600;background:'+bg+';color:'+cl+';">'+e(p)+'</span>';
+        }
+        function statBox(val, lbl, color) {
+            return '<div style="flex:1;text-align:center;padding:.75rem .5rem;border:1px solid #e9ecef;border-radius:6px;border-top:3px solid '+(color||'#1a3a5c')+';page-break-inside:avoid;break-inside:avoid;">'
+                + '<div style="font-size:1.5rem;font-weight:700;color:'+(color||'#1a1a2e')+';">'+val+'</div>'
+                + '<div style="font-size:.68rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem;">'+lbl+'</div></div>';
+        }
+
+        var headerHtml = '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:1.2rem;border-bottom:3px solid #1a3a5c;margin-bottom:1.2rem;page-break-inside:avoid;break-inside:avoid;">'
+            + '<div>'
+            + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#6c757d;margin-bottom:.35rem;">Official Project Closure Report</div>'
+            + '<div style="margin:0;font-size:1.45rem;font-weight:700;letter-spacing:.5px;color:#1a3a5c;">'+e(r.project_name)+'</div>'
+            + '<div style="font-size:.82rem;color:#6c757d;margin-top:.25rem;">'+e(r.project_type||'')+(r.project_key?'&nbsp;&nbsp;|&nbsp;&nbsp;Ref: <strong>'+e(r.project_key)+'</strong>':'')+'</div>'
+            + (r.customer_name ? '<div style="font-size:.82rem;font-weight:600;color:#1a3a5c;margin-top:.3rem;">Prepared for: '+e(r.customer_name)+'</div>' : '')
+            + '</div>'
+            + '<div style="text-align:right;">'
+            + '<div style="font-size:.72rem;color:#6c757d;">Dragon Coders</div>'
+            + '<div style="font-size:.68rem;color:#9ca3af;margin-top:.15rem;">Generated: '+e(r.generated_on)+'</div>'
+            + '</div></div>';
+
+        var overviewHtml = sec('Project Overview')
+            + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem 1.5rem;page-break-inside:avoid;break-inside:avoid;">'
+            + kv('Project Reference', e(r.project_key||'-')) + kv('Project Type', e(r.project_type||'-'))
+            + kv('Focal Person', e(r.focal_person||'-')) + kv('Support Start', e(r.start_date))
+            + kv('Support End', e(r.end_date)) + kv('Compliance', e(r.compliance_flags||'None'))
+            + '</div>'
+            + (r.project_goals ? '<div style="margin-top:.6rem;padding:.65rem .85rem;background:#f8f9fc;border-left:3px solid #1a3a5c;border-radius:0 4px 4px 0;font-size:.82rem;"><span style="font-size:.72rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Goals</span><p style="margin:.25rem 0 0;white-space:pre-line;color:#374151;">'+e(r.project_goals)+'</p></div>' : '');
+
+        var teamRows = team.map(function(m){ return '<tr><td style="'+S.td+'">'+e(m.name)+'</td><td style="'+S.td+'">'+e(m.role)+'</td></tr>'; }).join('');
+        var custRows = customers.map(function(c){ return '<tr><td style="'+S.td+'">'+e(c.name)+'</td><td style="'+S.td+'">'+e(c.email||'-')+'</td></tr>'; }).join('');
+        var teamCustHtml = sec('Project Team &amp; Customers')
+            + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">'
+            + '<div><div style="font-size:.75rem;font-weight:600;color:#1a3a5c;margin-bottom:.4rem;">Team Members</div>'
+            + '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="'+S.th+'">Name</th><th style="'+S.th+'">Role</th></tr></thead>'
+            + '<tbody>'+(teamRows||'<tr><td colspan="2" style="'+S.td+'color:#6c757d;">No team data.</td></tr>')+'</tbody></table></div>'
+            + '<div><div style="font-size:.75rem;font-weight:600;color:#1a3a5c;margin-bottom:.4rem;">Customers Served</div>'
+            + '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="'+S.th+'">Name</th><th style="'+S.th+'">Email</th></tr></thead>'
+            + '<tbody>'+(custRows||'<tr><td colspan="2" style="'+S.td+'color:#6c757d;">No customer data.</td></tr>')+'</tbody></table></div>'
+            + '</div>';
+
+        var ticketRows = allTkts.map(function(t,i){
+            return '<tr style="background:'+(i%2===0?'#fff':'#f8f9fc')+';page-break-inside:avoid;break-inside:avoid;">'
+                +'<td style="'+S.tdBold+'white-space:nowrap;">'+e(t.ticket_id)+'</td>'
+                +'<td style="'+S.td+'word-break:break-all;overflow-wrap:break-word;white-space:normal;hyphens:auto;">'+e(t.subject)+(t.description?'<br><span style="font-size:.72rem;color:#6c757d;">'+e(t.description)+'</span>':'')+'</td>'
+                +'<td style="'+S.td+'">'+e(t.customer)+'</td>'
+                +'<td style="'+S.td+'white-space:nowrap;">'+e(t.raised_on)+'</td>'
+                +'<td style="'+S.td+'white-space:nowrap;">'+e(t.resolved_on)+'</td>'
+                +'<td style="'+S.td+'">'+e(t.solved_by)+'</td>'
+                +'<td style="'+S.td+'">'+priCell(t.priority)+'</td>'
+                +'<td style="'+S.td+'">'+stateCell(t.state)+'</td>'
+                +'<td style="'+S.td+'">'+slaCell(t.sla_status)+'</td>'
+                +'</tr>';
+        }).join('');
+        var ticketHtml = sec('Ticket Register — Complete Record', true)
+            + '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;table-layout:fixed;">'
+            + '<colgroup><col style="width:8%"><col style="width:22%"><col style="width:12%"><col style="width:9%"><col style="width:9%"><col style="width:12%"><col style="width:8%"><col style="width:10%"><col style="width:10%"></colgroup>'
+            + '<thead><tr>'
+            + '<th style="'+S.th+'width:8%">ID</th><th style="'+S.th+'width:22%">Subject</th>'
+            + '<th style="'+S.th+'width:12%">Customer</th><th style="'+S.th+'width:9%">Raised</th>'
+            + '<th style="'+S.th+'width:9%">Resolved</th><th style="'+S.th+'width:12%">Resolved By</th>'
+            + '<th style="'+S.th+'width:8%">Priority</th><th style="'+S.th+'width:10%">Status</th>'
+            + '<th style="'+S.th+'width:10%">SLA</th>'
+            + '</tr></thead><tbody>'
+            + (ticketRows||'<tr><td colspan="9" style="'+S.td+'text-align:center;color:#6c757d;padding:1rem;">No ticket data.</td></tr>')
+            + '</tbody></table></div>';
+
+        var summaryHtml = sec('Performance Summary', true)
+            + '<div style="display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;page-break-inside:avoid;break-inside:avoid;">'
+            + statBox(r.total_tickets,       'Total Tickets',    '#1a3a5c')
+            + statBox(r.resolved_tickets,    'Resolved',         '#16a34a')
+            + statBox(r.open_tickets,        'Open at Closure',  r.open_tickets>0?'#d97706':'#6c757d')
+            + statBox(resolveRate+'%',       'Resolve Rate',     resolveRate>=80?'#16a34a':resolveRate>=50?'#d97706':'#dc2626')
+            + statBox(r.sla_met,             'SLA Met',          '#16a34a')
+            + statBox(r.sla_breached,        'SLA Breached',     r.sla_breached>0?'#dc2626':'#6c757d')
+            + statBox(slaRate+'%',           'SLA Compliance',   slaRate>=80?'#16a34a':'#d97706')
+            + statBox(r.avg_resolution_hrs+'h', 'Avg Resolution','#1a3a5c')
+            + '</div>';
+
+        return '<div id="portalRptContent" style="'+S.wrap+'">'
+            + headerHtml + overviewHtml + teamCustHtml + ticketHtml + summaryHtml
+            + '</div>';
+    }
+
+    // ── BACK BUTTON TRAP ──────────────────────────────────────────────────
+    var logoutModal    = document.getElementById('logoutWarningModal');
+    var modalStayBtn   = document.getElementById('modalStayBtn');
+    var modalLogoutBtn = document.getElementById('modalLogoutBtn');
+
+    var initParams = new URLSearchParams(window.location.search);
+    if (!initParams.get('view')) {
+        history.pushState(null, null, window.location.href);
+    }
+    window.addEventListener('popstate', function () {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('view')) return;
+        history.pushState(null, null, window.location.href);
+        if (logoutModal) logoutModal.classList.add('show');
+    });
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+            var showParams = new URLSearchParams(window.location.search);
+            if (!showParams.get('view')) history.pushState(null, null, window.location.href);
+        }
+    });
+    if (modalStayBtn)   modalStayBtn.addEventListener('click',   function () { if (logoutModal) logoutModal.classList.remove('show'); });
+    if (modalLogoutBtn) modalLogoutBtn.addEventListener('click', function () { window.location.href = '/customer_support/logout_manual'; });
+    if (logoutModal)    logoutModal.addEventListener('click',    function (e) { if (e.target === logoutModal) logoutModal.classList.remove('show'); });
+
+    // ── AUTO SWITCH VIEW FROM URL HASH ────────────────────────────────────
+    if (window.location.hash === '#reporting') {
+        showReporting();
+        history.replaceState(null, null, window.location.pathname);
+    } else if (window.location.hash === '#kanban') {
+        showKanban();
+        history.replaceState(null, null, window.location.pathname);
+    }
+});
+// bfcache guard: reload if browser restores this page from cache after logout
+window.addEventListener('pageshow', function (e) {
+    if (e.persisted) { window.location.reload(); }
+});
+                //]]>
+            </script>
+        <!-- Session timeout tracker -->
+        <script type="text/javascript" src="/customer_support/static/src/js/session_timeout.js"></script>
+        </t>
+    </template>
+</odoo>

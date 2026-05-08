@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Arial,sans-serif;">
+    <div
+        style="max-width:600px;margin:32px auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #dde3ec;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
+        <div style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);padding:28px 40px;">
+            <p
+                style="margin:0 0 6px;color:rgba(255,255,255,0.75);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;">
+                Ticket Update</p>
+            <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">Your ticket has been assigned &#10003;
+            </h1>
+            <p style="margin:6px 0 0;color:rgba(255,255,255,0.82);font-size:14px;">{{ticket_name}}</p>
+        </div>
+        <div style="padding:36px 40px;">
+            <p style="font-size:15px;color:#0f172a;margin:0 0 16px;">Dear <strong>{{customer_name}}</strong>,</p>
+            <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 24px;">Your ticket has been assigned to
+                <strong>{{agent_name}}</strong>, who will be working on your issue.</p>
+            <div
+                style="background:#f0fdf4;border-radius:10px;padding:16px 20px;margin-bottom:24px;border-left:4px solid #10b981;">
+                <p style="margin:0;font-size:14px;color:#065f46;line-height:1.6;">&#10003; <strong>Your ticket is now
+                        under active review.</strong> You will receive updates as progress is made.</p>
+            </div>
+            <div
+                style="background:#f8fafc;border-radius:10px;padding:20px 24px;margin-bottom:24px;border:1px solid #dde3ec;">
+                <p
+                    style="margin:0 0 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;">
+                    Ticket Details</p>
+                <table style="width:100%;border-collapse:collapse;">
+                    <tr>
+                        <td
+                            style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;font-weight:600;width:130px;">
+                            Ticket ID</td>
+                        <td
+                            style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#0f172a;font-size:13px;font-family:monospace;font-weight:600;">
+                            {{ticket_name}}</td>
+                    </tr>
+                    <tr>
+                        <td
+                            style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;font-weight:600;">
+                            Subject</td>
+                        <td style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#0f172a;font-size:13px;">
+                            {{ticket_subject}}</td>
+                    </tr>
+                    <tr>
+                        <td
+                            style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;font-weight:600;">
+                            Assigned To</td>
+                        <td
+                            style="padding:8px 0;border-bottom:1px solid #f1f5f9;color:#0f172a;font-size:13px;font-weight:700;">
+                            {{agent_name}}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600;">Status</td>
+                        <td style="padding:8px 0;"><span
+                                style="display:inline-block;background:#1e5a8e;color:#ffffff;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;">ASSIGNED</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div
+                style="background:#fef9ec;border-radius:8px;padding:14px 18px;margin-bottom:28px;border-left:4px solid #f59e0b;">
+                <p
+                    style="margin:0 0 6px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#92400e;">
+                    What happens next?</p>
+                <p style="margin:0;font-size:13px;color:#78350f;line-height:1.6;">Your support agent will review your
+                    issue and provide a resolution. You will be notified at each stage of the process.</p>
+            </div>
+            <div style="text-align:center;margin:32px 0;">
+                <a href="{{ticket_url}}"
+                    style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:#ffffff;text-decoration:none;padding:13px 36px;border-radius:8px;font-size:14px;font-weight:700;box-shadow:0 4px 12px rgba(16,185,129,0.30);">Track
+                    Your Ticket &rarr;</a>
+            </div>
+            <p style="font-size:13px;color:#94a3b8;margin:0;">Best regards,<br><strong style="color:#475569;">Customer
+                    Support Team</strong></p>
+        </div>
+        <div style="background:#f8fafc;padding:16px 40px;text-align:center;border-top:1px solid #dde3ec;">
+            <p style="margin:0;font-size:11px;color:#94a3b8;">This is an automated notification. Please do not reply.
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

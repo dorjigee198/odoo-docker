@@ -1,0 +1,525 @@
+/* ============================================= */
+
+/* MOBILE STYLES — landing_chat_mobile.css       */
+
+/* Import this AFTER landing_chat.css            */
+
+/* ============================================= */
+
+/* ============================================= */
+
+/* GLOBAL MOBILE FOUNDATION                      */
+
+/* Prevent text scaling, enable safe areas       */
+
+/* ============================================= */
+
+html {
+    /* Stop iOS from auto-bumping font sizes */
+    text-size-adjust: 100%;
+}
+
+/* Use the full device viewport height — accounts for
+   browser chrome collapsing on scroll (dvh = dynamic) */
+@supports (height: 100dvh) {
+    html, body {
+        height: 100dvh;
+    }
+
+    .app-shell,
+    .main-chat,
+    .sidebar {
+        height: 100dvh;
+    }
+}
+
+/* ============================================= */
+
+/* TABLET — up to 1024px                         */
+
+/* ============================================= */
+
+@media (width <= 1024px) {
+    :root {
+        --sidebar-width: 260px;
+    }
+
+    .chat-messages {
+        padding: 1.5rem 1.75rem;
+    }
+
+    .quick-replies {
+        padding: 0.75rem 1.75rem;
+    }
+
+    .input-area {
+        padding: 1rem 1.5rem 1.25rem;
+    }
+
+    .message-content-wrap {
+        max-width: min(68%, 600px);
+    }
+}
+
+/* ============================================= */
+
+/* MOBILE — up to 768px                          */
+
+/* Sidebar becomes a full overlay drawer         */
+
+/* ============================================= */
+
+@media (width <= 768px) {
+    /* ── Sidebar: fixed overlay drawer ── */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+
+        /* Use dvh for accurate full-screen height on mobile */
+        height: 100dvh;
+        height: 100vh; /* fallback */
+        width: 82vw;
+        max-width: 300px;
+        min-width: 0;
+
+        /* Slide via transform instead of width — much smoother on mobile */
+        transform: translateX(-110%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 100;
+        box-shadow: 6px 0 48px rgb(0, 0, 0, 0.45);
+
+        /* Override desktop collapsed/open width logic */
+        border-right: none;
+    }
+
+    /* Sidebar open state — controlled by JS adding .open class on mobile */
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* On mobile, .collapsed has no effect — we use transform instead */
+    .sidebar.collapsed {
+        width: 82vw;
+        max-width: 300px;
+        min-width: 0;
+        transform: translateX(-110%);
+        border-right: none;
+    }
+
+    /* Keep sidebar-inner at full width of the sidebar */
+    .sidebar-inner {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* ── Overlay backdrop ── */
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgb(10, 15, 30, 0.55);
+        backdrop-filter: blur(3px);
+        z-index: 99;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.visible {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* ── Main chat takes full width ── */
+    .main-chat {
+        width: 100%;
+
+        /* Safe area padding for notched phones */
+        padding-top: env(safe-area-inset-top);
+    }
+
+    /* ── Chat Header ── */
+    .chat-header {
+        padding: 0.8rem 1.1rem;
+
+        /* Ensure header stays behind sidebar toggle */
+        gap: 0.75rem;
+    }
+
+    /* Toggle button slightly smaller on mobile */
+    .sidebar-toggle-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+    }
+
+    .sidebar-toggle-btn svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .chat-header-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        font-size: 0.9rem;
+    }
+
+    .chat-header-name {
+        font-size: 0.92rem;
+    }
+
+    .chat-header-status {
+        font-size: 0.72rem;
+    }
+
+    /* ── Messages area ── */
+    .chat-messages {
+        padding: 1.1rem 1rem;
+        gap: 1.1rem;
+    }
+
+    /* Bubbles take more horizontal space on small screens */
+    .message-content-wrap {
+        max-width: 82%;
+    }
+
+    .message-bubble {
+        font-size: 0.94rem;
+        line-height: 1.55;
+        padding: 0.85rem 1.1rem;
+        border-radius: 16px;
+    }
+
+    .bot-bubble {
+        border-bottom-right-radius: 4px;
+    }
+
+    .user-bubble {
+        border-bottom-right-radius: 4px;
+    }
+
+    .msg-sender {
+        font-size: 0.7rem;
+    }
+
+    .msg-timestamp {
+        font-size: 0.66rem;
+    }
+
+    .msg-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+
+    /* ── Typing indicator ── */
+    .typing-bubble {
+        padding: 0.85rem 1.1rem;
+        border-radius: 16px;
+        border-bottom-right-radius: 4px;
+    }
+
+    .typing-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    /* ── Quick replies ── */
+    .quick-replies {
+        padding: 0.6rem 1rem;
+        gap: 0.45rem;
+    }
+
+    .quick-reply-btn {
+        font-size: 0.82rem;
+        padding: 0.48rem 0.95rem;
+    }
+
+    /* ── Input area ── */
+    .input-area {
+        padding: 0.8rem 0.9rem;
+
+        /* Safe area bottom padding for home bar on iPhone */
+        padding-bottom: max(0.9rem, env(safe-area-inset-bottom));
+    }
+
+    .input-wrap {
+        padding: 0.38rem 0.38rem 0.38rem 1rem;
+        border-radius: 14px;
+        gap: 0.7rem;
+    }
+
+    .input-wrap input {
+        font-size: 1rem; /* 1rem = 16px — prevents iOS zoom on focus */
+        padding: 0.45rem 0;
+    }
+
+    #send-msg-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+
+    #send-msg-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .input-footer {
+        font-size: 0.68rem;
+        margin-top: 0.4rem;
+    }
+
+    /* ── Sidebar brand ── */
+    .sidebar-brand {
+        padding: 1.4rem 1.25rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .brand-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+    }
+
+    .brand-name {
+        font-size: 0.95rem;
+    }
+
+    .brand-tagline {
+        font-size: 0.68rem;
+    }
+
+    /* ── New chat button ── */
+    .new-chat-btn {
+        margin: 1rem 1rem 0.4rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.88rem;
+        border-radius: 10px;
+    }
+
+    /* ── History items ── */
+    .sidebar-section-label {
+        padding: 0.85rem 1.25rem 0.35rem;
+        font-size: 0.65rem;
+    }
+
+    .history-item {
+        font-size: 0.84rem;
+        padding: 0.65rem 0.8rem;
+        border-radius: 8px;
+    }
+
+    .history-empty {
+        font-size: 0.8rem;
+        padding: 1.25rem 0.75rem;
+    }
+}
+
+/* ============================================= */
+
+/* SMALL MOBILE — up to 480px                    */
+
+/* ============================================= */
+
+@media (width <= 480px) {
+    .chat-messages {
+        padding: 0.9rem 0.85rem;
+        gap: 0.95rem;
+    }
+
+    .message-content-wrap {
+        max-width: 90%;
+    }
+
+    .message-bubble {
+        font-size: 0.92rem;
+        padding: 0.8rem 1rem;
+        border-radius: 14px;
+    }
+
+    .msg-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+    }
+
+    /* Quick replies wrap into 2-per-row on small screens */
+    .quick-replies {
+        padding: 0.55rem 0.85rem;
+        gap: 0.4rem;
+    }
+
+    .quick-reply-btn {
+        flex: 1 1 42%;
+        text-align: center;
+        font-size: 0.79rem;
+        padding: 0.45rem 0.7rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Input — 16px prevents iOS zoom, never go below */
+    .input-wrap input {
+        font-size: 1rem;
+    }
+
+    /* Hide footer hint to reclaim vertical space */
+    .input-footer {
+        display: none;
+    }
+
+    .chat-header {
+        padding: 0.7rem 0.9rem;
+        gap: 0.6rem;
+    }
+
+    .chat-header-name {
+        font-size: 0.88rem;
+    }
+
+    .chat-header-status {
+        font-size: 0.68rem;
+    }
+
+    .sidebar-toggle-btn {
+        width: 34px;
+        height: 34px;
+    }
+}
+
+/* ============================================= */
+
+/* VERY SMALL — up to 360px (Galaxy S8 etc.)     */
+
+/* ============================================= */
+
+@media (width <= 360px) {
+    .chat-messages {
+        padding: 0.8rem 0.75rem;
+    }
+
+    .message-bubble {
+        font-size: 0.9rem;
+        padding: 0.75rem 0.9rem;
+    }
+
+    .message-content-wrap {
+        max-width: 93%;
+    }
+
+    .quick-reply-btn {
+        font-size: 0.76rem;
+        padding: 0.42rem 0.6rem;
+    }
+
+    .chat-header-name {
+        font-size: 0.85rem;
+    }
+}
+
+/* ============================================= */
+
+/* LANDSCAPE MOBILE — short viewport             */
+
+/* ============================================= */
+
+@media (height <= 500px) and (orientation: landscape) {
+    .chat-header {
+        padding: 0.55rem 1rem;
+    }
+
+    .chat-header-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .chat-header-name {
+        font-size: 0.88rem;
+    }
+
+    .chat-header-status {
+        display: none; /* Reclaim vertical space in landscape */
+    }
+
+    .chat-messages {
+        padding: 0.75rem 1rem;
+        gap: 0.8rem;
+    }
+
+    .quick-replies {
+        /* Horizontal scroll instead of wrapping in landscape */
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0.5rem 1rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .quick-replies::-webkit-scrollbar {
+        display: none;
+    }
+
+    .quick-reply-btn {
+        flex-shrink: 0;
+        font-size: 0.8rem;
+        padding: 0.42rem 0.85rem;
+    }
+
+    .input-area {
+        padding: 0.55rem 0.9rem;
+        padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
+    }
+
+    .input-footer {
+        display: none;
+    }
+}
+
+/* ============================================= */
+
+/* TOUCH TARGETS — all interactive elements      */
+
+/* min 44px tap target per Apple HIG / WCAG      */
+
+/* ============================================= */
+
+@media (width <= 768px) {
+    .quick-reply-btn,
+    .new-chat-btn,
+    .sidebar-toggle-btn,
+    #send-msg-btn {
+        min-height: 44px;
+    }
+
+    .history-item {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Prevent double-tap zoom on buttons */
+    button {
+        touch-action: manipulation;
+    }
+}
+
+/* ============================================= */
+
+/* HIDE desktop-only elements on mobile          */
+
+/* ============================================= */
+
+@media (width <= 768px) {
+    /* The old mobile-menu-btn is fully replaced by sidebar-toggle-btn */
+    .mobile-menu-btn {
+        display: none !important;
+    }
+}

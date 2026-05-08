@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="create_ticket_form" name="Create Support Ticket">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+                    rel="stylesheet" />
+                <link rel="stylesheet"
+                    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+                <link rel="stylesheet" href="/customer_support/static/src/css/create_ticket.css?v=2" />
+            </t>
+
+            <div class="container mt-4 mt-md-5 mb-5">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-9 col-xl-8">
+                        <div class="card support-card">
+                            <div class="card-header">
+                                <h3 class="mb-0">
+                                    <i class="fas fa-ticket-alt me-2"></i>Create New Support Ticket </h3>
+                            </div>
+                            <div class="card-body">
+                                <form action="/customer_support/submit_ticket" method="post"
+                                    enctype="multipart/form-data" id="ticketForm">
+                                    <input type="hidden" name="csrf_token"
+                                        t-att-value="request.csrf_token()" />
+
+                                    <!-- Subject -->
+                                    <div class="mb-4">
+                                        <label for="subject" class="form-label"> Subject <span
+                                                class="required-asterisk">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="subject"
+                                            name="subject" required="required"
+                                            placeholder="Brief description of your issue" />
+                                        <div class="form-text">Keep it short and descriptive</div>
+                                    </div>
+
+                                    <!-- Project -->
+                                    <div class="mb-4">
+                                        <label for="project" class="form-label"> Project <span
+                                                class="required-asterisk">*</span>
+                                        </label>
+                                        <select class="form-select" id="project" name="project_id"
+                                            required="required">
+                                            <option value="">-- Select a Project --</option>
+                                            <t t-foreach="projects" t-as="project">
+                                                <option t-att-value="project.id"
+                                                    t-esc="project.name"></option>
+                                            </t>
+                                        </select>
+                                        <div class="form-text">Select the project related to this
+                                            ticket</div>
+                                    </div>
+
+                                    <!-- Description -->
+                                    <div class="mb-4">
+                                        <label for="description" class="form-label"> Description <span
+                                                class="required-asterisk">*</span>
+                                        </label>
+                                        <textarea class="form-control" id="description"
+                                            name="description" rows="6" required="required"
+                                            placeholder="Provide detailed information..."></textarea>
+                                    </div>
+
+                                    <!-- Priority -->
+                                    <div class="mb-4">
+                                        <label for="priority" class="form-label"> Priority <span
+                                                class="required-asterisk">*</span>
+                                        </label>
+                                        <select class="form-select" id="priority" name="priority">
+                                            <option value="low">Low - General inquiry</option>
+                                            <option value="medium" selected="selected">Medium - Need
+                                                assistance</option>
+                                            <option value="high">High - Affecting work</option>
+                                            <option value="urgent">Urgent - Critical issue</option>
+                                        </select>
+                                    </div>
+
+                                    <!--
+                                    ============================================================
+                                         ATTACHMENTS
+                                         FIX: The previous implementation used a hidden <input> and
+                                         DataTransfer() to programmatically assign files back to it.
+                                         This is unreliable across browsers — the assignment is
+                                         silently ignored, leaving the input empty on submit.
+
+                                         Fix: Use the real <input type="file"> directly, positioned
+                                         inside the styled drop area via CSS (opacity:0, position
+                                         absolute) so it covers the entire area and captures both
+                                         clicks and drops. The browser owns the FileList natively
+                                         so it is always submitted correctly.
+                                    ============================================================ -->
+                                    <div class="mb-4">
+                                        <label class="form-label">Attachments</label>
+
+                                        <!-- Drop area with the REAL file input overlaid on top.
+                                             The input is transparent and covers the whole area,
+                                             so clicking anywhere on the box opens the file picker. -->
+                                        <div class="attachment-area position-relative"
+                                            id="attachmentDropArea">
+
+                                            <!-- Visible UI content inside the drop area -->
+                                            <div class="attachment-icon">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                            </div>
+                                            <div class="attachment-text">
+                                                Upload screenshots, documents, or any files
+                                            </div>
+                                            <div class="attachment-subtext"> Drag and drop files
+                                                here or <span class="browse-link">browse</span> to
+                                                upload </div>
+                                            <div class="form-text"> Supported formats: Images, PDF,
+                                                Docs<br />Max 10MB per file </div>
+
+                                            <!-- REAL input: transparent overlay covering the whole
+                                                 drop area. The browser handles the FileList natively,
+                                                 so files are always included in the POST. -->
+                                            <input
+                                                type="file"
+                                                id="attachment"
+                                                name="attachment"
+                                                multiple="multiple"
+                                                style="
+                                                    position: absolute;
+                                                    top: 0; left: 0;
+                                                    width: 100%; height: 100%;
+                                                    opacity: 0;
+                                                    cursor: pointer;
+                                                    z-index: 10;
+                                                "
+                                            />
+                                        </div>
+
+                                        <!-- File preview list (display only — does not affect
+                                        submission) -->
+                                        <div class="file-list" id="fileList"></div>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="d-flex flex-column flex-md-row gap-3 mt-5">
+                                        <button type="submit" class="btn btn-primary flex-fill">
+                                            <i class="fas fa-paper-plane me-2"></i>Submit Ticket </button>
+                                        <a href="/customer_support/dashboard"
+                                            class="btn btn-secondary flex-fill">
+                                            <i class="fas fa-times me-2"></i>Cancel </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+            <script type="text/javascript">
+                <![CDATA[
+                document.addEventListener('DOMContentLoaded', function () {
+
+                    // The real file input that the browser submits natively
+                    const attachmentInput = document.getElementById('attachment');
+                    const attachmentDropArea = document.getElementById('attachmentDropArea');
+                    const fileList = document.getElementById('fileList');
+
+                    // --------------------------------------------------------
+                    // File change handler — update the visual preview list.
+                    // NOTE: We no longer maintain a separate selectedFiles array
+                    // or use DataTransfer. We read directly from input.files so
+                    // the preview always matches what will actually be submitted.
+                    // --------------------------------------------------------
+                    attachmentInput.addEventListener('change', function () {
+                        updateFileList(Array.from(this.files));
+                    });
+
+                    // --------------------------------------------------------
+                    // Drag-and-drop: prevent browser from navigating to the file
+                    // --------------------------------------------------------
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (eventName) {
+                        attachmentDropArea.addEventListener(eventName, function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        });
+                    });
+
+                    attachmentDropArea.addEventListener('dragenter', function () {
+                        attachmentDropArea.classList.add('dragover');
+                    });
+                    attachmentDropArea.addEventListener('dragover', function () {
+                        attachmentDropArea.classList.add('dragover');
+                    });
+                    attachmentDropArea.addEventListener('dragleave', function () {
+                        attachmentDropArea.classList.remove('dragover');
+                    });
+
+                    // Handle dropped files by assigning them to the real input
+                    // via DataTransfer so the browser keeps ownership of the list.
+                    attachmentDropArea.addEventListener('drop', function (e) {
+                        attachmentDropArea.classList.remove('dragover');
+
+                        const droppedFiles = e.dataTransfer.files;
+                        if (!droppedFiles.length) return;
+
+                        // Merge dropped files with any already selected files
+                        const dt = new DataTransfer();
+
+                        // Keep existing files
+                        Array.from(attachmentInput.files).forEach(function (f) {
+                            dt.items.add(f);
+                        });
+
+                        // Add new dropped files (skip duplicates by name+size)
+                        Array.from(droppedFiles).forEach(function (f) {
+                            const isDuplicate = Array.from(attachmentInput.files).some(
+                                function (existing) {
+                                    return existing.name === f.name && existing.size === f.size;
+                                }
+                            );
+                            if (!isDuplicate) {
+                                if (f.size > 10 * 1024 * 1024) {
+                                    alert('File "' + f.name + '" exceeds the 10MB limit.');
+                                } else {
+                                    dt.items.add(f);
+                                }
+                            }
+                        });
+
+                        // Assign back — this works here because WE created the
+                        // DataTransfer, so the browser accepts the assignment.
+                        attachmentInput.files = dt.files;
+                        updateFileList(Array.from(attachmentInput.files));
+                    });
+
+                    // --------------------------------------------------------
+                    // Render the visual file preview list below the drop area.
+                    // This is display-only — submission uses input.files directly.
+                    // --------------------------------------------------------
+                    function updateFileList(files) {
+                        if (files.length > 0) {
+                            attachmentDropArea.classList.add('hide');
+                            fileList.classList.add('show');
+                            fileList.innerHTML = '';
+
+                            files.forEach(function (file, index) {
+                                var iconClass = 'fas fa-file';
+                                if (file.type.startsWith('image/')) {
+                                    iconClass = 'fas fa-file-image';
+                                } else if (file.type === 'application/pdf') {
+                                    iconClass = 'fas fa-file-pdf';
+                                } else if (file.type.includes('word') || file.type.includes('document')) {
+                                    iconClass = 'fas fa-file-word';
+                                }
+
+                                var fileItem = document.createElement('div');
+                                fileItem.className = 'file-item';
+                                fileItem.innerHTML =
+                                    '<i class="' + iconClass + ' file-icon"></i>' +
+                                    '<div class="file-name">' + file.name + ' (' + formatFileSize(file.size) + ')</div>' +
+                                    '<button type="button" class="file-remove" data-index="' + index + '">' +
+                                    '<i class="fas fa-times"></i></button>';
+                                fileList.appendChild(fileItem);
+                            });
+
+                            // Remove button — rebuilds input.files without that file
+                            document.querySelectorAll('.file-remove').forEach(function (btn) {
+                                btn.addEventListener('click', function () {
+                                    var idx = parseInt(this.getAttribute('data-index'));
+                                    var dt = new DataTransfer();
+                                    Array.from(attachmentInput.files).forEach(function (f, i) {
+                                        if (i !== idx) dt.items.add(f);
+                                    });
+                                    attachmentInput.files = dt.files;
+                                    updateFileList(Array.from(attachmentInput.files));
+                                });
+                            });
+
+                        } else {
+                            // No files selected — show the drop area again
+                            attachmentDropArea.classList.remove('hide');
+                            fileList.classList.remove('show');
+                            fileList.innerHTML = '';
+                        }
+                    }
+
+                    function formatFileSize(bytes) {
+                        if (bytes === 0) return '0 Bytes';
+                        var k = 1024;
+                        var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                        var i = Math.floor(Math.log(bytes) / Math.log(k));
+                        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                    }
+
+                });
+                ]]>
+            </script>
+        </t>
+    </template>
+</odoo>
